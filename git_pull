@@ -1,0 +1,3 @@
+git remote add origin https://github.com/NanoDataCenter/nano_data_center.git
+git remote -v 
+git pull origin master
