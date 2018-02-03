@@ -1,0 +1,4 @@
+git remote add origin-1  https://github.com/antirez/redis.git
+git remote -v
+git pull origin-1 master
+
