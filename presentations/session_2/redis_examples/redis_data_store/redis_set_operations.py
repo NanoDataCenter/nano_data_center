@@ -16,7 +16,7 @@ import json
 # handle  is only good for one redis data base
 # decode_responses=True prevents binary string conflicts in python3
 #
-redis_handle = redis.StrictRedis( host = "localhost", port = 6379, db =0, decode_responses=True)
+redis_handle = redis.StrictRedis( host = "localhost", port = 6379, db =20, decode_responses=True)
 print(redis_handle)
 redis_handle.delete("key_set_1")
 redis_handle.delete("key_set_2")

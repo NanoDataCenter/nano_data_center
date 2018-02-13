@@ -5,7 +5,7 @@ from  redis_utilities.redis_rpc_server_py3 import Redis_Rpc_Server
 
 
 
-redis_handle = redis.StrictRedis("127.0.0.1", 6379 ,0,decode_responses = True )
+redis_handle = redis.StrictRedis("127.0.0.1", 6379 ,20,decode_responses = True )
 
 
 ref_time = time.time()
