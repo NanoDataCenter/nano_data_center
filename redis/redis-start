@@ -1,5 +1,0 @@
-#mount /dev/sda1 /datadisk
-#cp /datadisk/redis/dump.rdb  /datadisk/redis/backup.rdb
-/sbin/sysctl vm.overcommit_memory=1
-/home/pi/nano_data_center/redis/redis-server /home/pi/nano_data_center/redis/redis_server.conf&
-/home/pi/nano_data_center/redis/redis-server /home/pi/nano_data_center/redis/redis_backup.conf&
