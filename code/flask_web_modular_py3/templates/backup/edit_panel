@@ -1,0 +1,18 @@
+
+<script type="text/javascript" src="/static/js/edit_schedule.js"></script>
+
+<div id=edit_panel>
+      <div id="master_save">
+      <h3 id=edit_panel_header> Modify Setup For Schedule </h3>
+       <div>
+        <input type="button" id = "edit_panel_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "edit_panel_cancel" value="Cancel" data-inline="true"  /> 
+       </div>
+      </div>
+
+   {% include 'edit_schedule_start_time' %}   
+   {% include 'edit_steps' %}
+   {% include 'edit_a_step' %} 
+   {% include 'edit_a_valve' %} 
+
+</div>

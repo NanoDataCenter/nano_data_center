@@ -1,0 +1,47 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+        <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+        <link rel="shortcut icon" href="/static/favicon.ico">
+        {% set title = title %}
+        {% set header_name = title %}
+	<title>{{title_name}}</title>
+        {% include 'include_files.html' %}
+        
+	<script  type="text/javascript">
+            eto_data = {{eto_data_json}}    
+            pin_list = {{pin_list_json}}        
+        </script>
+        <script type="text/javascript" src="/static/js/eto_setup.js"></script>
+        <script type="text/javascript" src="/static/js/eto_controls.js"></script>
+
+</head> 
+<body> 
+
+<div data-role="page"> 
+
+{% include 'header.html' %}  
+{% include 'menu.html' %}
+<div id="main_panel">
+   <h3>Select Action</h3>
+   <select name="action-choice" id="action-choice-a">
+      <option selected  value="nooption">No Option</option>
+      <option value="edit">Edit Eto Resource</option>
+      <option value="add">Add Eto Resource</option>
+      <option value="delete">Delete Eto Resource</option>
+   </select>
+<fieldset data-role="controlgroup">
+	<legend>Select ETO Resource:</legend>
+        {% for item in eto_data %}
+     	   <input type="radio" name="eto_emiter" id="eto_emiter_id_{{loop.index -1}}" value={{loop.index-1}}  />
+           {% set label_text = "Controller: "+item.controller+ "  Valve: "+st(item.pin) +" Recharge Rate: "+st(item.recharge_rate) + " Recharge Level: "+st(item.recharge_eto) %}
+     	   <label for="eto_emiter_id_{{loop.index-1}}">{{label_text }} </label>
+     	{% endfor %}
+        
+</fieldset>
+</div>
+{% include 'eto_setup' %}
+</div><!-- /page -->
+</html>
+</body>

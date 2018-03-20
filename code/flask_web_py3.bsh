@@ -1,0 +1,9 @@
+while [ 1 ]
+do
+   echo "flask_web.bsh"
+   export FLASK_DEBUG=0
+   /usr/bin/python3 flask_web_py3.py 2>  /tmp/flask_web_py3.err 
+   mv /tmp/flask_web_py3.err  /tmp/flask_web_py3.errr
+   python3 cloud_event_queue_py3.py "reboot" "flask_web_py3.py"
+   sleep 5
+done

@@ -1,0 +1,193 @@
+
+{% macro canvas( canvasName = "test", featuredColor = "Green", featuredMeasure = 0, qualScale1 = 0, qualScale1Color = "Black", titleText = "Step 1", maxValue = 35 ,std = "a") -%}
+			$("{{ "#"+canvasName }}").bullet({
+                                featuredColor: "{{ featuredColor }}",
+				featuredMeasure: {{ featuredMeasure }},
+				//compMeasure1: 100,
+				qualScale1: {{ qualScale1 }},
+				minValue: 0,
+				maxValue: {{ maxValue }},
+                                limit_std: {{ std }},
+                                titleText: "{{ titleText }}",
+                                qualScale1Color: "{{ qualScale1Color }}"
+			})
+   
+{%- endmacro %}
+
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+        
+	<script type="text/javascript" src="/static/js_library/dygraph-combined.js"></script>
+  
+        <script type="text/javascript" src="/static/js_library/bullet.js"></script>
+        <script >
+
+$(document).ready(function() {
+                        {% set header="Schedule OverView" %}
+                        function click_function()
+                        {
+                         var schedule_index = $("#titleList")[0].selectedIndex;
+                          
+                          var temp = window.location;
+                          temp = String(temp)
+                          var temp1 = temp.split("//");
+                          var temp2 = temp1[1].split("/");
+                          var len = temp2.length
+                          temp2[len-1] = String(schedule_index)
+                          var str1 = temp2.toString()
+                          var res = temp1[0]+"//"
+                          var res1 = res + temp2.join("/")
+                          window.location = res1
+                         }
+                        function open_dialog()
+                        {
+                             $("#titleList")[0].selectedIndex ={{ schedule_id }};
+                            $("#titleList").selectmenu();
+                            $("#titleList").selectmenu("refresh");
+                         }
+                        
+                        {% set schedule_name = schedule_list[schedule_id] %}
+                        schedule_name = "{{ schedule_name }}"
+                        $("#header_name").html("Schedule: "+ "{{ schedule_name }} <br>  Overall Current Statistics" )
+                        temp1 = $( window ).width()
+                        $("#titleList")[0].selectedIndex =  {{ schedule_id }};
+
+                         {% for i in canvas_list %}
+                           
+                          $("#{{ i["canvasName"] }}")[0].height = 50;
+                          $("#{{ i["canvasName"] }}")[0].width = temp1
+                        {% endfor %}
+                        {% for i in canvas_list:  %}
+
+                        {% set canvasName     =  i["canvasName"] %}
+                        {% set featuredColor  =  i["featuredColor"] %}
+                        {% set featuredMeasure = i["featuredMeasure"]  %}
+                        {% set qualScale1      = i["qualScale1"]       %}
+                        {% set qualScale1Color = i["qualScale1Color"]  %}
+                        {% set titleText       = i["titleText"] %}
+                        {% set std             = i["limit"] %}
+                        {{ canvas( canvasName = canvasName, featuredColor = featuredColor, featuredMeasure = featuredMeasure, 
+                                   qualScale1 = qualScale1, qualScale1Color = qualScale1Color, titleText = titleText, maxValue = max_flow_rate, std=std ) }}
+                        {% endfor %}
+                       {% for i in canvas_list:  %}
+                           
+                          function slider_fill_{{i["canvasName"]}}()
+                          { 
+                             limit = $("#slider-fill_{{ i["canvasName"]}}A").val()
+                            
+                             
+                           {% set canvasName     =  i["canvasName"] %}
+                           {% set featuredColor  =  i["featuredColor"] %}
+                           {% set featuredMeasure = i["featuredMeasure"]  %}
+                           {% set qualScale1      = i["qualScale1"]       %}
+                           {% set qualScale1Color = i["qualScale1Color"]  %}
+                           {% set titleText       = i["titleText"] %}
+                           {% set std             = i["limit"] %}
+                           {{canvas( canvasName = canvasName, featuredColor = featuredColor, featuredMeasure = featuredMeasure, 
+                                   qualScale1 = "limit", qualScale1Color = qualScale1Color, titleText = titleText, maxValue = max_flow_rate, std=std )}}
+                          
+
+
+                          }
+                           
+                          $("#slider-fill_{{ i["canvasName"]}}A").bind("change",slider_fill_{{ i["canvasName"]}})
+                        {% endfor %}
+
+                        function cancel_function()
+                        {
+                           var url;
+                           
+                           url = window.location.href;
+                           window.location.href = url;
+                         }
+
+                        function save_function()
+                        {
+                           var json_data = {}
+                           var json_string;
+                           var url;
+
+                           json_object = {}
+                           json_object["schedule"] = "{{schedule_name}}"
+                           
+                           var temp = []
+                           {% for i in canvas_list:  %}
+                              temp.push( $("#slider-fill_{{ i["canvasName"]}}A").val() )
+                           {% endfor %}
+                           json_object["limit_data"] = temp
+ 
+                           var json_string = JSON.stringify(json_object);
+                           url = window.location.href;
+                           var result = confirm("Do you want to change limit data ?");
+                           if( result == true )
+                           {    // making update
+                                 $.ajax
+                                 ({
+                                     type: "POST",
+                                     url: '/ajax/update_current_limit',
+                                     dataType: 'json',
+                                     async: false,
+                                     contentType: "application/json",
+                                     data: json_string,
+                                     success: function () 
+		                     {
+                                       window.location.href = url;
+  
+                                     },
+                                     error: function () 
+		                    {
+                                       alert('/ajax/update_current_limit'+"  Server Error Change not made");
+                                       window.location.href = url;
+		       
+                                    }
+                                  })
+                           }
+
+                         }
+
+
+
+
+                        $("#edit_panel_cancel").bind("click",cancel_function )
+                        $("#edit_panel_save").bind("click", save_function )
+                        $("#make_changes").bind("click",click_function);
+                        $("#change_setting").on("popupafteropen", open_dialog);
+
+		});
+
+
+        </script>
+<body> 
+
+<div data-role="page"> 
+
+    {% include 'menu_overal_current' %}
+           <div id="master_save">
+         <h3 id=edit_panel_header> Modify Setup For Schedule  {{schedule_name}}</h3>
+            <div>
+              <input type="button" id = "edit_panel_save" value="Save"  data-inline="true"  /> 
+             <input type="button" id = "edit_panel_cancel" value="Cancel" data-inline="true"  /> 
+           </div>
+         </div>
+
+    <div>
+
+   
+        
+        {% for i in canvas_list:  %}
+           <canvas id="{{ i["canvasName"] }}"   ></canvas>
+          
+           <input type="range" name="slider-fill_{{ i["canvasName"]}}" id="slider-fill_{{ i["canvasName"]}}A" value="{{i["qualScale1"]}}" min="0" max={{max_flow_rate}} data-highlight="true" step=".05" />
+
+        {% endfor %}
+<br>
+<br>
+<br>
+</div><!-- /page -->
+</html>
+

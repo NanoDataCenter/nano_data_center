@@ -1,0 +1,23 @@
+ <div  id=edit_a_valve data-role="content" class="content" >
+       <div id="edit_a_valve_select">
+      
+            <h3>Select Controller</h3>
+    	    <select  name="valve_controller" id="valve_controllera" data-inline="true" >
+              <option value=0>CONTROLLER_1 </option>
+              <option value=1>CONTROLLER_2 </option>
+            </select>
+            <h3>Select Valve </h3>
+    	    <select  name="valve_valve" id="valve_valvea"  data-inline="true"  >
+              <option value=1>Valve: 1 min</option>
+              <option value=2>Valve: 2</option>
+         
+            </select>
+
+       </div>
+      <h3 > Modify Valve Setting </h3>
+       <div>
+        <input type="button" id = "edit_valve_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "edit_valve_cancel" value="Cancel" data-inline="true"  /> 
+       </div>
+
+</div>

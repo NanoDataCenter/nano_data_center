@@ -1,0 +1,31 @@
+
+{% extends "base_template" %}
+
+{% block custom_javascript %}
+	<script type="text/javascript" >
+     {% include '/js/socket_io/socket.io.js' %}
+     {% include '/js/socket_io/socket_io_test.js' %}
+ </script>
+
+{% endblock %}
+
+
+
+{% block application %}
+  
+   <button type="button" id="connect_button">Connect </button>
+   <button type="button" id="disconnect_button">Disconnect </button>
+   <button type="button" id="ping_button">Ping </button>
+   <div data-role="fieldcontain">
+   <label for="ping_input">Ping Input:</label>
+   <input type="text" name="ping_input" id="ping_input" value=""  />
+   </div>	
+
+   <div data-role="fieldcontain">
+   <label for="ping_result">Ping Results:</label>
+   <input type="text" name="ping_result" id="ping_result" value=""  />
+   </div>	
+
+
+{% endblock %}
+

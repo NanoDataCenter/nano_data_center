@@ -1,0 +1,148 @@
+<html>
+<head>
+	  <meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+   <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+
+   {% if filename == "schedule_control" %}
+       {% set title = 'Irrigation Diagnostics Turn On by Schedule' %}
+   {% endif %}
+
+   {% if filename == "controller_pin" %}
+       {% set title = 'Irrigation Diagnostics Turn On by Controller/Pin' %}
+   {% endif %}
+
+   {% if filename == "valve_group" %}
+       {% set title = 'Irrigation Diagnostics Turn On by Valve Group' %}
+   {% endif %}
+
+   {% set header_name = title %}
+	      <title>{{title_name}}</title>
+   {% include 'common_setup' %}
+	
+	
+	 <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+
+  </script>
+
+  {% if filename == "schedule_control" %}
+           <script type="text/javascript" >
+           {% include "js/irrigation_functions/diagnostic_schedule_control.js" %}
+           </script>
+   {% endif %}
+
+	
+   {% if filename == "valve_group" %}
+           <script type="text/javascript" >
+           {% include "js/irrigation_functions/diagnostic_valve_group.js" %}
+           </script>
+   {% endif %}
+
+   {% if filename == "controller_pin" %}
+           <script type="text/javascript" >
+           {% include "js/irrigation_functions/diagnostic_pin_control.js" %}
+           </script>
+   {% endif %}
+
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+       
+   {% include 'menu' %}
+   <!-- /header -->
+   
+
+  {% if filename == "schedule_control" %}
+       <h4>Select Operating Function</h4> 
+       <select id="op_mode">
+	         <option value="CLEAR">Clear</option>
+	         <option value="QUEUE_SCHEDULE_STEP_TIME">Queue Schedule Step Time</option>
+	         <option value="OPEN_MASTER_VALVE">Open Master Valve</option>
+	         <option value="CLOSE_MASTER_VALVE">Close Master Valve</option>
+	     </select>
+
+      <div id = "schedule_div">      
+      <h4 id="schedule_label">Select Schedule</h4> 
+	     <select id="manual_schedule">
+	     </select>
+      </div>
+      
+      <div id = "manual_div">
+      <h4 id="step_label">Select step</h4> 
+	     <select id="manual_step">
+	     </select>
+      </div>
+	       <div id = "run_div"> 
+
+       <h4 id ="run_label">Select Run Time (1 to 60 Minutes) </h4> 
+       <select id="run_time">
+       </select>
+      </div>
+    
+   
+   {% endif %}
+
+   {% if filename == "controller_pin" %}
+        <h4>Select Operating Function</h4> 
+       <select id="op_mode">
+	         <option value="CLEAR">Clear</option>
+	         <option value="DIRECT_VALVE_CONTROL">Queue Controller/Pin Step Time</option>
+	         <option value="OPEN_MASTER_VALVE">Open Master Valve</option>
+	         <option value="CLOSE_MASTER_VALVE">Close Master Valve</option>
+	     </select>
+
+     
+       <div id = "schedule_div"> 
+       <h4 id="schedule_controller">Select Controller</h4> 
+	      <select id="controller_select">
+	      </select>
+
+
+       <h4 id="step_pin">Select Pin</h4> 
+	      <select id="select_pin">
+	      </select>  
+
+       <h4 id ="run_label">Select Run Time (1 to 60 Minutes) </h4> 
+       <select id="run_time">
+       </select>
+      </div>
+
+     
+   {% endif %}
+
+   {% if filename == "valve_group" %}
+      <h4>Select Operating Function</h4> 
+       <select id="op_mode">
+	         <option value="CLEAR">Clear</option>
+	         <option value="DIRECT_VALVE_CONTROL">Queue Valve Group/Valve Time</option>
+	         <option value="OPEN_MASTER_VALVE">Open Master Valve</option>
+	         <option value="CLOSE_MASTER_VALVE">Close Master Valve</option>
+	     </select>
+
+     
+       <div id = "schedule_div"> 
+       <h4 >Select Valve Group</h4> 
+	      <select id="valve_group_select">
+	      </select>
+
+
+       <h4 id="step_pin">Select Valve</h4> 
+	      <select id="valve_select">
+	      </select>  
+
+       <h4 id ="run_label">Select Run Time (1 to 60 Minutes) </h4> 
+       <select id="run_time">
+       </select>
+      </div>
+         
+   {% endif %}
+
+   <button type="button" id="change_mode">Click to Make Mode Change</button>
+
+   </div><!-- /page -->
+</body>
+</html>

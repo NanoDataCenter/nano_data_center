@@ -1,0 +1,84 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+        <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+        <link rel="shortcut icon" href="/static/favicon.ico">
+	<title>{{title_name}}</title>
+        {% include 'include_files.html' %}
+
+        <script type="text/javascript" >
+           cut_off_list   = {{ cut_off_list }}
+           cut_off_index  = {{ flow_index }}
+        </script>
+        <script type="text/javascript" >
+             $(document).ready(
+              function()
+              {
+
+ 
+                  $( "#cut_off_trigger_id" ).bind( "click", function(event, ui) 
+                  {
+
+                     var json_data = {}
+                         json_object = {}
+                         json_object["hash_name"] = "CONTROL_VARIABLES"
+                         json_object["key_list"] = {}
+                         json_object["key_list"]["FLOW_CUT_OFF"]  = $("#cut_off_trigger").val()
+
+                         var json_string = JSON.stringify(json_object);
+
+                         var result = confirm("Do you wish to change cut_off value ?");
+                         if( result == true )
+                         {    // making update
+                              $.ajax
+                                ({
+                                   type: "POST",
+                                   url: '/ajax/set_redis_hkeys',
+                                   dataType: 'json',
+                                   async: false,
+                                   //json object to sent to the authentication url
+                                   data: json_string,
+	                           contentType: "application/json",
+                                   success: function () 
+		                   {
+                                        alert("Changes Made")
+                                   },
+                                   error: function () 
+		                   {
+                                      alert('/ajax/set_redis_hkeys'+"Server error");
+	                           }
+                                })
+                         }// if
+                    }) // change gallon trigger
+	         
+                    $("#cut_off_trigger")[0].selectedIndex = {{ flow_index }};
+                    $("#cut_off_trigger").selectmenu(); 
+                    $("#cut_off_trigger").selectmenu("refresh");
+             } );
+     </script>
+
+</head> 
+<body> 
+
+<div data-role="page"> 
+
+{% include 'header.html' %}
+{% include 'menu.html' %}
+
+<h3>Flow Limit to Initiate Cut Off </h3> 
+<select id="cut_off_trigger">
+   {% for i in cut_off_list %}
+         <option value={{i}}>{{i}}</option>
+   {% endfor %}
+</select>
+<br>
+<br>
+<button type="button" id="cut_off_trigger_id">Click to Change Cut Off Rate </button>
+ 
+   
+    
+
+
+</div><!-- /page -->
+</html>

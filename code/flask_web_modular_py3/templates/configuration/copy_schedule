@@ -1,0 +1,66 @@
+<html>
+<head>
+	 <meta charset="utf-8">
+	 <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+  <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  {% set title = title %}
+  {% set header_name = title %}
+	 <title>{{title_name}}</title>
+  {% include 'common_setup' %}
+
+
+	  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+	<script  type="text/javascript">
+            
+            schedule_data = {{ schedule_data_json }}
+            schedule_list = Object.keys(schedule_data)
+            pin_list      = {{ pin_list }}
+            
+ </script>
+	
+	
+         <script type="text/javascript">
+            template_type = "copy"
+         </script>
+
+	
+        
+     <script type="text/javascript">
+     {% include  "js/configuration/ajax_functions.js" %}
+     {% include  "js/configuration/copy_schedule.js" %}
+
+    </script>
+ 
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+   {% include 'menu' %}
+    <fieldset data-role="controlgroup">
+        <legend>Select Irrigation Schedule to Copy</legend>
+        {% for item in schedule_list %}        
+          <input type="radio" name="copy" id="{{item}}" >
+          <label for="{{item}}">{{item}}</label>
+       {% endfor %}
+    </fieldset>
+   <h3>Enter New Schedule Name:</h3>
+   <input type="text" id="new_schedule" value=""  />
+   <input type="button" id = "action_button" value="Copy Irrigation Schedule" />
+</div><!-- /page -->
+</html>
+</body>
+
+
+
+
+
+
+
+
+

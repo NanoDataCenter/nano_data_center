@@ -1,0 +1,280 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+        <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+        <link rel="shortcut icon" href="/static/favicon.ico">
+        {% set title = title %}
+        {% set header_name = title %}
+	<title>{{title_name}}</title>
+        {% include 'include_files.html' %}
+	<script  type="text/javascript">
+            
+            system_actions = {{ system_actions_json }}
+          
+            
+        </script>
+
+        <script type="text/javascript" src="/static/js/system_action.js"></script>
+
+	
+
+
+	  
+	
+
+</head> 
+<body> 
+
+<div data-role="page"> 
+
+{% include 'header.html' %}
+{% include 'menu.html' %}
+
+<div  id="choice_action" data-role="content" class="content" >
+   <div id="choice-0">
+     <label for="select-choice-0" class="select"><h3>Select Action:</h3></label>
+     <select  name="select-choice-0" id="action_select">
+       <option value="NO_ACTION">NO ACTION</option>
+       {% for item in system_actions %}
+           <option value="{{ item["name"] }}">{{ item["name"] }}</option>
+       {% endfor %}
+    </select>
+  </div>
+</div>
+
+
+<div id=edit_panel>
+      <div id="master_save">
+          <h3 id=edit_panel_header> Modify Setup For Schedule </h3>
+          <div>
+              <input type="button" id = "edit_panel_save" value="Save"  data-inline="true"  /> 
+              <input type="button" id = "edit_panel_cancel" value="Cancel" data-inline="true"  /> 
+          </div>
+      </div>
+       <h3>Select To Enable Service </h3>
+       <label><input type="checkbox" id="enable_checkbox">Enable Service</label>
+
+       <h3>Select Starting Time </h3>
+    	<select id="starting_time">
+	    <option value=[0,0]>00:00</option>
+	    <option value=[0,15]>00:15</option>
+	    <option value=[0,30]>00:30</option>
+	    <option value=[0,45]>00:45</option>
+	    <option value=[1,0]>01:00</option>
+	    <option value=[1,15]>01:15</option>
+	    <option value=[1,30]>01:30</option>
+	    <option value=[1,45]>01:45</option>
+	    <option value=[2,0]>02:00</option>
+	    <option value=[2,15]>02:15</option>
+	    <option value=[2,30]>02:30</option>
+	    <option value=[2,45]>02:45</option>
+	    <option value=[3,0]>03:00</option>
+	    <option value=[3,15]>03:15</option>
+	    <option value=[3,30]>03:30</option>
+	    <option value=[3,45]>03:45</option>
+	    <option value=[4,0]>04:00</option>
+	    <option value=[4,15]>04:15</option>
+	    <option value=[4,30]>04:30</option>
+	    <option value=[4,45]>04:45</option>
+	    <option value=[5,0]>05:00</option>
+	    <option value=[5,15]>05:15</option>
+	    <option value=[5,30]>05:30</option>
+	    <option value=[5,45]>05:45</option>
+	    <option value=[6,0]>06:00</option>
+	    <option value=[6,15]>06:15</option>
+	    <option value=[6,30]>06:30</option>
+	    <option value=[6,45]>06:45</option>
+	    <option value=[7,0]>07:00</option>
+	    <option value=[7,15]>07:15</option>
+	    <option value=[7,30]>07:30</option>
+	    <option value=[7,45]>07:45</option>
+	    <option value=[8,0]>08:00</option>
+	    <option value=[8,15]>08:15</option>
+	    <option value=[8,30]>08:30</option>
+	    <option value=[8,45]>08:45</option>
+	    <option value=[9,0]>09:00</option>
+	    <option value=[9,15]>09:15</option>
+	    <option value=[9,30]>09:30</option>
+	    <option value=[9,45]>09:45</option>
+	    <option value=[10,0]>10:00</option>
+	    <option value=[10,15]>10:15</option>
+	    <option value=[10,30]>10:30</option>
+	    <option value=[10,45]>10:45</option>
+	    <option value=[11,0]>11:00</option>
+	    <option value=[11,15]>11:15</option>
+	    <option value=[11,30]>11:30</option>
+	    <option value=[11,45]>11:45</option>
+	    <option value=[12,0]>12:00</option>
+	    <option value=[12,15]>12:15</option>
+	    <option value=[12,30]>12:30</option>
+	    <option value=[12,45]>12:45</option>
+	    <option value=[13,0]>13:00</option>
+	    <option value=[13,15]>13:15</option>
+	    <option value=[13,30]>13:30</option>
+	    <option value=[13,45]>13:45</option>
+	    <option value=[14,0]>14:00</option>
+	    <option value=[14,15]>14:15</option>
+	    <option value=[14,30]>14:30</option>
+	    <option value=[14,45]>14:45</option>
+	    <option value=[15,0]>15:00</option>
+	    <option value=[15,15]>15:15</option>
+	    <option value=[15,30]>15:30</option>
+	    <option value=[15,45]>15:45</option>
+	    <option value=[16,0]>16:00</option>
+	    <option value=[16,15]>16:15</option>
+	    <option value=[16,30]>16:30</option>
+	    <option value=[16,45]>16:45</option>
+	    <option value=[17,0]>17:00</option>
+	    <option value=[17,15]>17:15</option>
+	    <option value=[17,30]>17:30</option>
+	    <option value=[17,45]>17:45</option>
+	    <option value=[18,0]>18:00</option>
+	    <option value=[18,15]>18:15</option>
+	    <option value=[18,30]>18:30</option>
+	    <option value=[18,45]>18:45</option>
+	    <option value=[19,0]>19:00</option>
+	    <option value=[19,15]>19:15</option>
+	    <option value=[19,30]>19:30</option>
+	    <option value=[19,45]>19:45</option>
+	    <option value=[20,0]>20:00</option>
+	    <option value=[20,15]>20:15</option>
+	    <option value=[20,30]>20:30</option>
+	    <option value=[20,45]>20:45</option>
+	    <option value=[21,0]>21:00</option>
+	    <option value=[21,15]>21:15</option>
+	    <option value=[21,30]>21:30</option>
+	    <option value=[21,45]>21:45</option>
+	    <option value=[22,0]>22:00</option>
+	    <option value=[22,15]>22:15</option>
+	    <option value=[22,30]>22:30</option>
+	    <option value=[22,45]>22:45</option>
+	    <option value=[23,0]>23:00</option>
+	    <option value=[23,15]>23:15</option>
+	    <option value=[23,30]>23:30</option>
+	    <option value=[23,45]>23:45</option>
+
+	</select>
+
+      <h3>Select Latest Starting Time </h3>
+    	<select id="ending_time">
+	    <option value=[0,0]>00:00</option>
+	    <option value=[0,15]>00:15</option>
+	    <option value=[0,30]>00:30</option>
+	    <option value=[0,45]>00:45</option>
+	    <option value=[1,0]>01:00</option>
+	    <option value=[1,15]>01:15</option>
+	    <option value=[1,30]>01:30</option>
+	    <option value=[1,45]>01:45</option>
+	    <option value=[2,0]>02:00</option>
+	    <option value=[2,15]>02:15</option>
+	    <option value=[2,30]>02:30</option>
+	    <option value=[2,45]>02:45</option>
+	    <option value=[3,0]>03:00</option>
+	    <option value=[3,15]>03:15</option>
+	    <option value=[3,30]>03:30</option>
+	    <option value=[3,45]>03:45</option>
+	    <option value=[4,0]>04:00</option>
+	    <option value=[4,15]>04:15</option>
+	    <option value=[4,30]>04:30</option>
+	    <option value=[4,45]>04:45</option>
+	    <option value=[5,0]>05:00</option>
+	    <option value=[5,15]>05:15</option>
+	    <option value=[5,30]>05:30</option>
+	    <option value=[5,45]>05:45</option>
+	    <option value=[6,0]>06:00</option>
+	    <option value=[6,15]>06:15</option>
+	    <option value=[6,30]>06:30</option>
+	    <option value=[6,45]>06:45</option>
+	    <option value=[7,0]>07:00</option>
+	    <option value=[7,15]>07:15</option>
+	    <option value=[7,30]>07:30</option>
+	    <option value=[7,45]>07:45</option>
+	    <option value=[8,0]>08:00</option>
+	    <option value=[8,15]>08:15</option>
+	    <option value=[8,30]>08:30</option>
+	    <option value=[8,45]>08:45</option>
+	    <option value=[9,0]>09:00</option>
+	    <option value=[9,15]>09:15</option>
+	    <option value=[9,30]>09:30</option>
+	    <option value=[9,45]>09:45</option>
+	    <option value=[10,0]>10:00</option>
+	    <option value=[10,15]>10:15</option>
+	    <option value=[10,30]>10:30</option>
+	    <option value=[10,45]>10:45</option>
+	    <option value=[11,0]>11:00</option>
+	    <option value=[11,15]>11:15</option>
+	    <option value=[11,30]>11:30</option>
+	    <option value=[11,45]>11:45</option>
+	    <option value=[12,0]>12:00</option>
+	    <option value=[12,15]>12:15</option>
+	    <option value=[12,30]>12:30</option>
+	    <option value=[12,45]>12:45</option>
+	    <option value=[13,0]>13:00</option>
+	    <option value=[13,15]>13:15</option>
+	    <option value=[13,30]>13:30</option>
+	    <option value=[13,45]>13:45</option>
+	    <option value=[14,0]>14:00</option>
+	    <option value=[14,15]>14:15</option>
+	    <option value=[14,30]>14:30</option>
+	    <option value=[14,45]>14:45</option>
+	    <option value=[15,0]>15:00</option>
+	    <option value=[15,15]>15:15</option>
+	    <option value=[15,30]>15:30</option>
+	    <option value=[15,45]>15:45</option>
+	    <option value=[16,0]>16:00</option>
+	    <option value=[16,15]>16:15</option>
+	    <option value=[16,30]>16:30</option>
+	    <option value=[16,45]>16:45</option>
+	    <option value=[17,0]>17:00</option>
+	    <option value=[17,15]>17:15</option>
+	    <option value=[17,30]>17:30</option>
+	    <option value=[17,45]>17:45</option>
+	    <option value=[18,0]>18:00</option>
+	    <option value=[18,15]>18:15</option>
+	    <option value=[18,30]>18:30</option>
+	    <option value=[18,45]>18:45</option>
+	    <option value=[19,0]>19:00</option>
+	    <option value=[19,15]>19:15</option>
+	    <option value=[19,30]>19:30</option>
+	    <option value=[19,45]>19:45</option>
+	    <option value=[20,0]>20:00</option>
+	    <option value=[20,15]>20:15</option>
+	    <option value=[20,30]>20:30</option>
+	    <option value=[20,45]>20:45</option>
+	    <option value=[21,0]>21:00</option>
+	    <option value=[21,15]>21:15</option>
+	    <option value=[21,30]>21:30</option>
+	    <option value=[21,45]>21:45</option>
+	    <option value=[22,0]>22:00</option>
+	    <option value=[22,15]>22:15</option>
+	    <option value=[22,30]>22:30</option>
+	    <option value=[22,45]>22:45</option>
+	    <option value=[23,0]>23:00</option>
+	    <option value=[23,15]>23:15</option>
+	    <option value=[23,30]>23:30</option>
+	    <option value=[23,45]>23:45</option>  
+	</select>
+
+   <h3>Select Day of the Week <h3>
+    <fieldset data-role="controlgroup"  data-type="horizontal" >
+        <input type="checkbox" name="checkbox-v-2a" id="sunday">
+        <label for="sunday">Sunday</label>
+        <input type="checkbox" name="checkbox-v-2b" id="monday">
+        <label for="monday">Monday</label>
+        <input type="checkbox" name="checkbox-v-2c" id="tuesday">
+        <label for="tuesday">Tuesday</label>
+        <input type="checkbox" name="checkbox-v-2d" id="wednesday">
+        <label for="wednesday">Wednesday</label>
+        <input type="checkbox" name="checkbox-v-2e" id="thursday">
+        <label for="thursday">Thursday</label>
+        <input type="checkbox" name="checkbox-v-2f" id="friday">
+        <label for="friday">Friday</label>
+         <input type="checkbox" name="checkbox-v-2g" id="saturday">
+        <label for="saturday">Saturday</label>
+    </fieldset>
+</div>	    
+
+</div><!-- /page -->
+</html>
+</body>

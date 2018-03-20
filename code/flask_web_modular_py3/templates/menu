@@ -1,0 +1,29 @@
+
+{#  Defining the header #}
+<div id="header" data-role="header" data-theme="b">
+        
+        <a id="bars-button_1" data-icon="bars" class="ui-btn-right" style="margin-top:10px;"data-rel="popup" data-position-to="window" href="#status_panel">Status</a>
+         <a id="bars-button" data-icon="bars" class="ui-btn-left" style="margin-top:10px;" data-rel="popup" data-position-to="window" href="#navpanel">Menu</a>
+        <h4>{{ header_name }}</h4>
+        <h4 id = page_status >Current Status:  </h4>
+</div><!-- /header -->
+ 
+<style>
+        /*this block should go in the styles.css file*/
+        .ui-panel-inner {
+            padding:7px; /*make the buttons flush edge to edge*/
+        }
+        .ui-controlgroup {
+            margin:7px; /*make the buttons flush to the top*/
+        }
+        #header {
+            height:60px;
+        }
+        #bars-button {
+            margin:5px;
+        }
+    
+</style>
+
+{% include 'menu_left' %}
+{% include 'menu_right' %}

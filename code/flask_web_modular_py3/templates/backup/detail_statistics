@@ -1,0 +1,382 @@
+
+
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+        
+	<script type="text/javascript" src="/static/js_library/dygraph-combined.js"></script>
+ 
+
+<script>
+
+$(document).ready(
+ function()
+ {  
+                        schedule_data = {{ schedule_data }}
+                        schedule_list = {{ schedule_list_json }}
+                       
+                        $("#legend_name").html("{{ legend_name }}")
+                        
+                        function open_dialog()
+                        {
+                            
+                            $("#chart_type")[0].selectedIndex ={{ chart_type }};
+                            $("#chart_type").selectmenu();
+                            $("#chart_type").selectmenu("refresh");
+
+                            $("#schedule")[0].selectedIndex ={{ schedule_id }};
+                            $("#schedule").selectmenu();
+                            $("#schedule").selectmenu("refresh");
+{% if chart_data["flow_sensor_flag"] == True %}
+
+
+                             $("#flow_sensor")[0].selectedIndex ={{ flow_sensor_id }};
+                            $("#flow_sensor").selectmenu();
+                            $("#flow_sensor").selectmenu("refresh");
+
+{% endif %}
+                             
+                            $("#step")[0].selectedIndex ={{ step_id }};
+                            $("#step").selectmenu();
+                            $("#step").selectmenu("refresh");
+{% if chart_data["time_step_flag"] == True %}
+                             $("#time_index")[0].selectedIndex ={{ time_id }};
+                            $("#time_index").selectmenu();
+                            $("#time_index").selectmenu("refresh");
+{% endif %}
+                           
+                        }
+
+    function click_function_a()
+    {
+       var chart_index          = $("#chart_type")[0].selectedIndex;
+{% if chart_data["flow_sensor_flag"] == True %}
+       var flow_sensor_index    = $("#flow_sensor")[0].selectedIndex;
+{% else %}
+       var flow_sensor_index = 0
+{% endif %}
+
+       var schedule_index       = $("#schedule")[0].selectedIndex;
+       var step_index           = 0
+{% if chart_data["time_step_flag"] == True %}
+       var time_index           = $("#time_index")[0].selectedIndex;
+{% else %}
+        var time_index = 0
+{% endif %}
+        temp =  schedule_list[$("#schedule").val()] 
+        step_number =  schedule_data[ temp ]["step_number"]
+        
+        $("#step_id").empty()
+        html = '<select id="step">'
+        for( i = 0; i < step_number; i++ )
+        {
+          html += "<option value= "+i+"  >Step   ---> "+(i+1)+"</option>"
+        }
+        html += "</select>"
+        $("#step_id").html(html)
+        $("#step")[0].selectedIndex = 0;
+        $("#step").selectmenu();
+        $("#step").selectmenu("refresh")
+        
+
+        //window.location = "/detail_statistics/"+chart_index+"/"+flow_sensor_index+"/"+schedule_index+"/"+step_index+"/"+time_index
+       
+       
+    }
+
+
+    function click_function()
+    {
+
+
+       var chart_index          = $("#chart_type")[0].selectedIndex;
+{% if chart_data["flow_sensor_flag"] == True %}
+       var flow_sensor_index    = $("#flow_sensor")[0].selectedIndex;
+{% else %}
+       var flow_sensor_index = 0
+{% endif %}
+
+       var schedule_index       = $("#schedule")[0].selectedIndex;
+       var step_index           = $("#step")[0].selectedIndex;
+{% if chart_data["time_step_flag"] == True %}
+       var time_index           = $("#time_index")[0].selectedIndex;
+{% else %}
+        var time_index = 0
+{% endif %}
+        
+        window.location = "/detail_statistics/"+chart_index+"/"+flow_sensor_index+"/"+schedule_index+"/"+step_index+"/"+time_index
+        
+       
+    }
+
+
+/*
+**  The remaining code generates the graph
+**
+**
+**
+**
+**
+**
+*/
+      ajax_path     = "{{ chart_data["ajax_path"] }}"  
+      limit_low     = {{ chart_data['limit_low'] }}
+      limit_high    = {{ chart_data['limit_high'] }}
+
+      data = [];
+      var t = new Date();
+      for (var i = 100; i >= 0 ; i--)
+      {
+           var x = new Date(t.getTime() - i * 60000);
+           data.push([x,0]);
+      }
+     
+      var hh = new Dygraph(document.getElementById("div_g"), data,
+                          {
+                            width  : $(window).width()*.9,
+                            height : $(window).height()*.65,
+                            drawPoints: true,
+                            showRoller: true,
+{% if logscale == True %}
+                    logscale:   true,
+{% else %}
+                    logscale: false,
+{% endif %}
+
+                            valueRange: [ limit_low , limit_high ],
+                             labels: {{ label_array }}
+
+                          });
+     
+     
+      var strip_chart_update = function(data)
+      {  
+	hh.updateOptions( { 'file': data } );
+      }
+
+      
+
+     var ajax_success = function(data)
+     {
+       var temp
+       var temp_1
+       var tempDate
+       
+       
+       
+       tempDate = new Date()
+      
+ 
+       
+       temp = data;
+       graph_data = [];
+      
+
+       if( (typeof data ) == 'object')
+       {
+          
+          for ( i = 0; i < data.length ; i++)
+          {
+             var x = new Date(data[i][0]*1000);
+
+            graph_data.push([x,data[i][1]*{{conversion_factor}} ]);
+	    
+          }
+       }
+
+       
+       strip_chart_update( graph_data )
+
+       
+
+     }
+
+     var ajax_request = function()
+     {
+  
+       var data_object;
+       var data_string;
+      
+       var chart_index          = {{ chart_type }};
+{% if chart_data["flow_sensor_flag"] == True %}
+       var flow_sensor_index    = {{ flow_sensor_id }};
+{% else %}
+       var flow_sensor_index = 0
+{% endif %}
+
+       var schedule_index       = {{ schedule_id }};
+       var step_index           = {{ step_id }};
+{% if chart_data["time_step_flag"] == True %}
+       var time_index           = {{ time_id }};
+{% else %}
+        var time_index = 0
+{% endif %}
+        $("#make_changes").bind("click",click_function);
+       $("#change_setting").on("popupafteropen", open_dialog);
+       $("#schedule").bind("change", click_function_a);
+       data_path = "/detail_statistics_ajax/"+chart_index+"/"+flow_sensor_index+"/"+schedule_index+"/"+step_index+"/"+time_index
+
+       data_string = JSON.stringify( data_object );
+       $.ajax
+       ({
+                    type: "GET",
+                    url:  data_path,
+                    dataType: 'json',
+                    async: false,
+                    //json object to sent to the authentication url
+                    data: [],
+                   
+
+{% if chart_data["time_generation"] == True %}
+                    success: filter_graph_data,
+{% endif %}
+{% if chart_data["average_generation"] == True %}
+                    success: ajax_success,
+{% endif %}
+                 
+                    error: function () 
+		    {
+		      
+                       alert(data_path +"  Server Error Request Not Successful");
+		   
+		       
+                    }
+        })
+	  
+     }
+ 
+  function filter_missing_data( count, data)
+  {
+    while( data.length < count )
+    {
+      data.push(0)
+    }
+    
+    return data
+  }
+
+ function filter_graph_data(data)
+  {
+     var std;
+     var count;
+     var working_data;
+     
+     working_data = []
+
+
+     if( data[0] == null )
+     {
+       data[0] = {}
+       data[0].data = []
+     }
+     count = data[0]["count"]
+    
+     if( data[1] == null )
+     {
+       data[1] = {}
+       data[1].data = []
+      
+     }
+     if( data[2] == null )
+     {
+       data[2] = {}
+       data[2].data = []
+      
+     }
+      if( data[3] == null )
+     {
+       data[3] = {}
+       data[3].data = []
+      
+     }
+     if( data[4] == null )
+     {
+       data[4] = {}
+       data[4].data = []
+      
+     }
+     
+        
+     working_data.push( filter_missing_data(count,data[0].data) )
+     working_data.push( filter_missing_data(count,data[1].data) )
+     working_data.push( filter_missing_data(count,data[2].data) )
+     working_data.push( filter_missing_data(count,data[3].data) )
+     working_data.push( filter_missing_data(count,data[4].data) )
+     draw_graph( count, working_data[0], working_data[1], working_data[2], working_data[3], working_data[4] )
+    
+
+  }
+
+  function draw_graph( length, data_1, data_2, data_3, data_4, data_5 )
+  {
+       var i;
+       var graph_data;
+       var x;
+       var avg;
+       var std;
+       
+ 
+       graph_data = [];
+      
+       var t = new Date();
+       
+       for( i = 0; i < length; i++  )
+       {
+	  
+          
+          var x = new Date(t.getTime()  -(length -1 - i) * 60000);
+
+          graph_data.push([x, data_1[i]*{{ conversion_factor }},
+			      data_2[i]*{{ conversion_factor }}, 
+			      data_3[i]*{{ conversion_factor }}, 
+			      data_4[i]*{{ conversion_factor }}, 
+			      data_5[i]*{{ conversion_factor }}, 
+			       ]);
+
+	  
+       }
+       strip_chart_update( graph_data );
+         
+   }
+
+
+
+   
+   ajax_request()
+
+
+  
+  });
+
+
+</script>  
+        
+<body> 
+
+<div data-role="page"> 
+    {% include 'menu_detailled_statistics' %}
+<center>
+<h4 id=legend_name>xxxxxxx</h4>
+</center>    
+
+     
+
+
+  
+    
+
+
+       
+<div id="div_g" "></div>
+     
+ 
+
+</div><!-- /page -->
+</html>
+
+
+        

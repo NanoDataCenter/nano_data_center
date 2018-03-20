@@ -1,0 +1,105 @@
+<html>
+<head>
+	 <meta charset="utf-8">
+	 <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+  <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  
+  <style>
+        /*this block should go in the styles.css file*/
+        .ui-panel-inner {
+            padding:7px; /*make the buttons flush edge to edge*/
+        }
+        .ui-controlgroup {
+            margin:7px; /*make the buttons flush to the top*/
+        }
+        #header {
+            height:60px;
+        }
+        #bars-button {
+            margin:5px;
+        }
+    </style>
+	 <title>{{title_name}}</title>
+        
+  {% include 'common_setup' %}
+	<script type="text/javascript" src="/static/js_library/dygraph-combined.js"></script>
+
+	  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+
+
+	<script type="text/javascript" >
+     remote_index = {{remote_index}}
+     remotes  = {{address_list}}
+     time_data = {{data}} 
+     let ref_field_index   ={{start_index}}
+ </script>
+
+
+	<script type="text/javascript" >
+     {% include '/js/modbus/remote_data.js' %}
+ </script>
+
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+   {% include 'menu' %}
+   <!-- /header -->
+    
+
+<div data-role="popup" id="change_index" data-theme="a"
+         data-display="overlay" data-position="right"> 
+    <h4>Select Data Field</h4>
+    <select id="field_index">
+    </select>
+   <a  id="cancel_index_changes"   data-role="button" data-theme="a" data-icon="delete"  >Close</a>
+   <a  id="make_index_changes" data-role="button" data-theme="a"  data-icon="forward">Make Changes</a>
+    
+</div>    
+    
+ <div data-role="popup" id="change_remotes" data-theme="a"
+         data-display="overlay" data-position="right"> 
+    <h4>Select Remote</h4>
+    <select id="remote_index">
+    </select>
+   <a  id="cancel_remote_changes"   data-role="button" data-theme="a" data-icon="delete"  >Close</a>
+   <a  id="make_remote_changes" data-role="button" data-theme="a"  data-icon="forward">Make Changes</a>
+    
+</div> 
+ 
+    
+
+
+    <h3 id="title_banner"></h3>   
+    <h4  id="field_description" >This is a field description</h4>
+    <div id="div_g" "></div>
+   <div data-role="footer"  data-theme="b"> 
+       <a id="footer-button_0" data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       href="#change_remotes">Remotes</a>
+
+    <a id="footer-button_1" data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       href="#change_index">Fields</a>
+   <a id="footer-button_2" data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       >Refresh / Zoom Out</a>
+   
+    
+
+ </div>
+
+</div><!-- /page -->
+
+
+</html>
+

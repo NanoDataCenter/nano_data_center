@@ -1,0 +1,187 @@
+/* Banner Specific
+   -------------------------------- */
+
+.bannerColor {
+	background-color: teal;
+}
+
+.banner {
+	background-color: teal;
+}
+
+.banner button {
+	font-family: "Arial";
+	padding-bottom: 1px;
+	vertical-align: middle;
+}
+
+.banner label {
+	font-size: 2em;
+	font-weight: bold;
+}
+
+.buttonUpload {
+	font-size: 5em;
+	font-family: "Arial";
+	padding-bottom: 1px;
+	vertical-align: middle;
+}
+
+.function {
+	background-color: #eeeeee;
+}
+
+.function button {
+	font-family: "Arial";
+	padding-bottom: 1px;
+	vertical-align: middle;
+}
+
+#upload {
+	padding: 1px;
+	font-size: 1em;
+	font-family: "Arial";
+	padding-left: 5px;
+	padding-right: 5px;
+	vertical-align: middle;
+}
+
+#cfgLabel {
+	font-size: 2.8em;
+}
+
+
+/* Tab Specific
+   -------------------------------- */
+
+.tab {
+	font-size: 1em;
+}
+
+.tabBold {
+	font-weight: bold;
+}
+
+.tab button {
+	font-family: "Arial";
+	padding-bottom: 1px;
+	vertical-align: middle;
+}
+
+.tab input {
+	padding: 2px;
+	font-size: 9pt;
+	vertical-align: middle;
+}
+
+.tab select {
+	padding: 1px;
+	font-size: 9pt;
+	vertical-align: middle;
+}
+
+.tab textarea {
+	height: 12pt;
+	padding: 1px;
+	font-size: 9pt;
+	font-family: "Verdana";
+	vertical-align: baseline;
+}
+
+
+
+/* Main Specific
+   -------------------------------- */
+
+.main {
+	font-size: 0.8em;
+	font-family: "Verdana";
+}
+
+.main input {
+	padding: 2px;
+	font-size: 9pt;
+	font-family: "Verdana";
+	padding-bottom: 2px;
+	vertical-align: middle;
+}
+
+.main select {
+	padding: 1px;
+	font-size: 9pt;
+	font-family: "Verdana";
+	vertical-align: middle;
+}
+
+
+
+/* Menu Specific
+   -------------------------------- */
+
+.menu {
+	font-family: "Verdana";
+}
+
+.menuBanner {
+	font-size: 1em;
+	font-weight: bold;
+	background-color: teal;
+}
+
+.menuButton {
+	color: #000000;
+	font-size: 0.65em;
+	background-color: #cccccc;
+}
+
+.menuPulldown {
+	font-size: 15pt;
+}
+
+.menu a {
+	background-color: #cccccc;
+}
+
+.menu h3 {
+	color: #000000;
+	font-size: 0.65em;
+}
+
+
+
+/* Table Specific
+   -------------------------------- */
+
+tr.even {
+	background-color: #ffffff;
+}
+
+tr.first {
+	background-color: #66ccff;
+}
+
+tr.header {
+	background: #cccccc;
+}
+
+tr.odd {
+	background-color: #eeeeee;
+}
+
+.tbl {
+	font-size: 9pt;
+	vertical-align: middle;
+}
+
+.tbl button {
+	font-family: "Arial";
+	padding-bottom: 1px;
+	vertical-align: middle;
+}
+
+.textarea {
+  width: 100%;
+  height: 100%;
+  margin: 0; /* don't want to add to container size */
+  border: 0; /* don't want to add to container size */
+}

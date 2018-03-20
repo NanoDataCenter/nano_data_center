@@ -1,0 +1,145 @@
+<html>
+<head>
+	 <meta charset="utf-8">
+	 <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+  <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  <style>
+        /*this block should go in the styles.css file*/
+        .ui-panel-inner {
+            padding:7px; /*make the buttons flush edge to edge*/
+        }
+        .ui-controlgroup {
+            margin:7px; /*make the buttons flush to the top*/
+        }
+        #header {
+            height:60px;
+        }
+        #bars-button {
+            margin:5px;
+        }
+    </style>
+	 <title>{{title_name}}</title> 
+  {% set header_name = title %}
+
+	 <title>{{title}}</title>
+        
+  {% include 'common_setup' %}
+
+
+	  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+	
+	
+    <script type="text/javascript" src="/static/js_library/dygraph-combined.js"></script>
+	
+        
+     <script type="text/javascript">
+     schedule_id = {{ schedule_id }}
+     field_list = {{ field_list }};
+    
+     schedule_name = '{{ schedule_name }}';
+     schedule_list = {{ schedule_list }};
+     step_number   = {{ step_number }};
+     irrigation_data = {{ irrigation_data }};
+     step            = {{ schedule_step }};
+     schedule_data = {{ schedule_data }};
+     field_index        =  {{field_index}};
+      
+     limit_data      = {{limit_data}};
+     time_step_index      =  {{time_step_index}} 
+     display_number_index    =  {{display_number_index}}
+      {% include  "js/statistics/time_series_statistics.js" %}
+     </script>
+ 
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+   {% include 'menu' %}
+   <!-- /header -->
+   
+ <div data-role="popup" id="change_schedule_step" data-theme="a"
+         data-display="overlay" data-position="right"> 
+    <h4>Select Schedule/Step</h4>
+    <select id="schedule_select">
+    </select>
+    <select id="step_select">
+    </select>
+
+   <a  id="cancel_schedule_step"   data-role="button" data-theme="a" data-icon="delete"  >Close</a>
+   <a  id="save_schedule_step" data-role="button" data-theme="a"  data-icon="forward">Make Changes</a>
+    
+</div>   
+<div data-role="popup" id="change_field_index" data-theme="a"
+         data-display="overlay" data-position="right"> 
+    <h4>Select Field Index</h4>
+    <select id="field_select">
+    </select>
+
+   <a  id="cancel_field_index"   data-role="button" data-theme="a" data-icon="delete"  >Close</a>
+   <a  id="save_field_index" data-role="button" data-theme="a"  data-icon="forward">Make Changes</a>
+    
+</div>   
+ <div data-role="popup" id="change_step_index" data-theme="a"
+         data-display="overlay" data-position="right"> 
+    <h4>Select Time Step Index</h4>
+    <select id="time_step_index">
+    </select>
+
+   <a  id="cancel_step_index"   data-role="button" data-theme="a" data-icon="delete"  >Close</a>
+   <a  id="save_step_index" data-role="button" data-theme="a"  data-icon="forward">Make Changes</a>
+    
+</div>   
+<div data-role="popup" id="change_display_number" data-theme="a"
+         data-display="overlay" data-position="right"> 
+    <h4>Select Display Number</h4>
+    <select id="display_number_select">
+    </select>
+
+   <a  id="cancel_display_number"   data-role="button" data-theme="a" data-icon="delete"  >Close</a>
+   <a  id="save_display_number" data-role="button" data-theme="a"  data-icon="forward">Make Changes</a>
+    
+</div> 
+   <center>
+    <h5 id=legend_name>Data for Schedule {{schedule_name}} Irrigation Step {{ schedule_step+1}}</h5>
+    <h5 id=field_description>Data for Schedule {{schedule_name}} Irrigation Step {{ schedule_step+1}}</h5>
+   
+   </center>    
+
+   <div id="div_g" "></div>
+     
+    
+ 
+   <div data-role="footer"  data-position="fixed" data-theme="b"> 
+    <a id="footer-button_1" data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       href="#change_schedule_step">Change Schedule/Step </a>
+    <a id="footer-button_2" data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       href="#change_field_index">Change Field  </a>
+
+   <a id="footer-button_3" data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       href="#change_step_index">Change Time Step </a>
+
+   <a id="footer-button_4"  data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       href="#change_display_number">Change Time Display Number </a>
+ 
+   </div>
+   
+
+   
+
+
+</div><!-- /page -->
+</html>

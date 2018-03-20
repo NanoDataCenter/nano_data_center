@@ -1,0 +1,203 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+        <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+        <link rel="shortcut icon" href="/static/favicon.ico">
+        {% set title = title %}
+        {% set header_name = title %}
+	<title>{{title_name}}</title>
+        {% include 'include_files.html' %}
+	<script  type="text/javascript">
+            
+            schedule_data = {{ schedule_data_json }}
+            schedule_list = Object.keys(schedule_data)
+            pin_list      = {{ pin_list }}
+            
+        </script>
+
+{% if template_type  == "flow_limits" %}
+	<script  type="text/javascript">
+            limit_data = {{ limit_data_json }}
+
+         </script>
+{% endif %}
+
+{% if template_type  == "current_limits" %}
+	<script  type="text/javascript">
+            limit_data = {{ limit_data_json }}
+
+         </script>
+{% endif %}
+
+
+{% if template_type  == "add" %}
+         <script type="text/javascript">
+            template_type = "add"
+         </script>
+         <script type="text/javascript" src="/static/js/schedule_list.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_start_time.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_edit_steps.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_edit_a_step.js"></script>
+         <script type="text/javascript" src="/static/js/edit_a_valve.js"></script>
+{% endif %}   
+
+
+
+{% if template_type  == "copy" %}
+         <script type="text/javascript">
+            template_type = "copy"
+         </script>
+
+         <script type="text/javascript" src="/static/js/schedule_list.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_start_time.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_edit_steps.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_edit_a_step.js"></script>
+	 <script type="text/javascript" src="/static/js/edit_a_valve.js"></script>
+{% endif %} 
+
+
+{% if template_type  == "delete" %}
+         <script type="text/javascript">
+            template_type = "delete"
+         </script>
+
+         <script type="text/javascript" src="/static/js/schedule_list.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_start_time.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_edit_steps.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_edit_a_step.js"></script>
+         <script type="text/javascript" src="/static/js/edit_a_valve.js"></script>
+
+{% endif %} 
+{% if template_type  == "edit" %}
+         <script type="text/javascript">
+            template_type = "edit"
+         </script>
+
+        <script type="text/javascript" src="/static/js/schedule_list.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_start_time.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_edit_steps.js"></script>
+         <script type="text/javascript" src="/static/js/edit_schedule_edit_a_step.js"></script>
+         <script type="text/javascript" src="/static/js/edit_a_valve.js"></script>
+{% endif %}
+
+{% if template_type  == "flow_limits" %}
+         <script type="text/javascript">
+             template_type = "flow_limits"
+         </script>
+
+{% endif %}
+
+{% if template_type  == "current_limits" %}
+         <script type="text/javascript">
+            template_type = "current_limits"
+         </script>
+
+
+{% endif %}
+
+
+	
+
+
+	  
+	
+
+</head> 
+<body> 
+
+<div data-role="page"> 
+
+{% include 'header.html' %}
+{% include 'menu.html' %}
+<div id="define-schedule">
+{% if template_type  == "add" %}
+    <h3>Current Irrigation Schedules</h3>
+    <ol>
+       {% for item in schedule_list %}
+           <li>{{ item }}</li>
+       {% endfor %}
+    </ol>
+   
+   <h3>Enter New Schedule Name:</h3>
+   <input type="text" id="new_schedule" value=""  />
+   <input type="button" id = "action_button" value="Create New Irrigation Schedule" /> 
+   	
+{% endif %}   
+
+
+
+{% if template_type  == "copy" %}
+    <fieldset data-role="controlgroup">
+        <legend>Select Irrigation Schedule to Copy</legend>
+        {% for item in schedule_list %}        
+          <input type="radio" name="copy" id="{{item}}" >
+          <label for="{{item}}">{{item}}</label>
+       {% endfor %}
+    </fieldset>
+   <h3>Enter New Schedule Name:</h3>
+   <input type="text" id="new_schedule" value=""  />
+   <input type="button" id = "action_button" value="Copy Irrigation Schedule" /> 
+ 	
+{% endif %} 
+
+
+{% if template_type  == "delete" %}
+    <fieldset data-role="controlgroup">
+        <legend>Select Irrigation Schedules to Delete</legend>
+        {% for item in schedule_list %}        
+          <input type="radio" name="delete" id="{{item}}" >
+          <label for="{{item}}">{{item}}</label>
+       {% endfor %}
+    </fieldset>
+    <input type="button" id = "action_button" value="Delete Selected Irrigation Schedule" /> 
+{% endif %} 
+{% if template_type  == "edit" %}
+    <fieldset data-role="controlgroup">
+        <legend>Select Irrigation Schedule to Edit</legend>
+        {% for item in schedule_list %}        
+          <input type="radio"  name="edit" id="{{item}}" >
+          <label for="{{item}}">{{item}}</label>
+       {% endfor %}
+       <input type="button" id = "action_button" value="Edit Selected Irrigation Schedule" /> 
+    </fieldset>
+{% endif %}
+
+{% if template_type  == "flow_limits" %}
+    <fieldset data-role="controlgroup">
+        <legend>Select Irrigation Schedule to Edit</legend>
+        {% for item in schedule_list %}        
+          <input type="radio"  name="edit" id="{{item}}" >
+          <label for="{{item}}">{{item}}</label>
+       {% endfor %}
+       <input type="button" id = "action_button" value="Edit Selected Irrigation Schedule" /> 
+    </fieldset>
+{% endif %}
+
+{% if template_type  == "current_limits" %}
+    <fieldset data-role="current_limits">
+        <legend>Select Irrigation Schedule to Set Current Limit</legend>
+        {% for item in schedule_list %}        
+          <input type="radio"  name="edit" id="{{item}}" >
+          <label for="{{item}}">{{item}}</label>
+       {% endfor %}
+       <input type="button" id = "action_button",value="Edit Selected Irrigation Schedule" /> 
+    </fieldset>
+{% endif %}
+</div>
+
+{% if  ( template_type  == "flow_limits") or ( template_type == "current_limits" ) %}
+
+
+{% else %}
+
+{% include 'edit_panel' %}
+
+{% endif %}
+</div><!-- /page -->
+</html>
+</body>

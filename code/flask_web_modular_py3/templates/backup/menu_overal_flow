@@ -1,0 +1,59 @@
+
+<style>
+        /*this block should go in the styles.css file*/
+        .ui-panel-inner {
+            padding:7px; /*make the buttons flush edge to edge*/
+        }
+        .ui-controlgroup {
+            margin:7px; /*make the buttons flush to the top*/
+        }
+        #header {
+            height:60px;
+        }
+        #bars-button {
+            margin:5px;
+        }
+    </style>
+
+<div id="header" data-role="header" data-theme="b">
+        
+        <a id="bars-button_1" data-icon="bars" class="ui-btn-right" style="margin-top:10px;"data-rel="popup" data-position-to="window" href="#change_setting">Change Settings</a>
+         <a id="bars-button" data-icon="bars" class="ui-btn-left" style="margin-top:10px;" data-rel="popup" data-position-to="window" href="#navpanel">Menu</a>
+        <h4 id="header_name">{{ header_name }}</h4>
+</div><!-- /header -->
+ 
+
+{% include 'menu_left.html' %}
+
+<div data-role="popup" id="change_setting" data-theme="a"
+         data-display="overlay" data-position="right"> 
+    <h4>Select Flow Sensor</h4>
+    <select id="flowRate">
+      {% set j = 0 %}
+      {% for i in flow_sensors: %}
+         
+          <option value={{j}} >  {{i}} </option>
+          {% set j=j+1 %}
+      {% endfor %}
+    </select>
+   <h4> Select Schedule </h4>
+   <select id="titleList" name="values">
+      {% set j = 0 %}
+      {% for i in schedule_list: %}
+         
+          <option value={{j}} > {{i}} </option>
+          {% set j=j+1 %}
+      {% endfor %}
+    </select>
+   
+   <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete"  >Close</a>
+  <a href="#" id="make_changes" data-role="button" data-theme="a"  data-icon="forward">Make Changes</a>
+   
+  
+ 
+    
+</div>    
+    
+   
+ 
+       

@@ -1,0 +1,10 @@
+
+while [ 1 ]
+do
+   
+   ./redis-server ./redis.conf    2>  /tmp/redis_primary.err 
+   
+  
+   mv /tmp/redis_primary.err /tmp/redis_primary.errr
+
+done

@@ -1,0 +1,38 @@
+{% macro canvas( canvasName = "test", featuredColor = "Green", featuredMeasure = 0, qualScale1 = 0, qualScale1Color = "Black", titleText = "Step 1", maxValue = 35 ,std = "a") -%}
+			$("{{ "#"+canvasName }}").bullet({
+                                featuredColor: "{{ featuredColor }}",
+				featuredMeasure: {{ featuredMeasure }},
+				//compMeasure1: 100,
+				qualScale1: {{ qualScale1 }},
+				minValue: 0,
+				maxValue: {{ max_value }},
+                                limit_std: {{ std }},
+                                titleText: "{{ titleText }}",
+                                qualScale1Color: "{{ qualScale1Color }}"
+			})
+   
+{%- endmacro %}
+
+<script type="text/javascript">
+{% include  "js/eto_functions/eto_setup_parameter_setup.js" %}     
+</script>
+
+   
+<div id="parameter_div">
+ 
+   <center><h2 id="parameter_title">Title </h2>
+   <div>
+        <input type="button" id = "parameter_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "parameter_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "parameter_reset" value="Reset" data-inline="true"  /> 
+   </div>
+   </center>
+  
+   <canvas name="parameter_canvas" height=15  ></canvas>
+   <h4 id="parameter_display" >Recharge Level </h4>
+   <div data-role="fieldcontain" id="parameter_field">   
+    <input type="range" , id="parameter_input" value=".1" 
+                    min="0" max="1.0" data-highlight="true" step=".01" />
+   </div>
+</div>   
+

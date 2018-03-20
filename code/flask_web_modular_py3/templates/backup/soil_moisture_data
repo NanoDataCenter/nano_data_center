@@ -1,0 +1,35 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        
+
+        <title>Soil Moisture Data</title>
+
+        {% include 'include_files.html' %}
+        {% set header_name = 'Soil Moisture Data' %}
+        <script type="text/javascript" src="/static/js/moisture_update.js"></script>
+<body>        
+<div data-role="page"> 
+    
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+    <h4>Select Moisture Controller </h4> 
+    <select id="moisturecontroller_id">
+        {% for item in web_moisture_names -%}
+            <option value={{loop.index0}}>{{ item }}</option>
+        {%- endfor %}
+      
+    </select>
+    <h4><br><br>Click To Read Latest Results</button>
+    <button type="button" id="get_results">Click To Read Latest Results</button>
+    </h4>
+
+<div id="data" >
+  
+</div>
+
+</div><!-- /page -->
+</body>
+</html>

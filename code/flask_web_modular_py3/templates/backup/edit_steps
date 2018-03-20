@@ -1,0 +1,21 @@
+    <div  id=edit_steps data-role="content" class="content" >
+         <div id="choice-1">
+       <label for="select-choice-1" class="select"><h3>Select Edit Action:</h3></label>
+    	<select  name="select-choice-1" id="select-choice-1a">
+             
+            <option value=0>No Action</option>
+	    <option value=1>Edit Selected Step</option>
+            <option value=2>Insert Step At End</option>
+            <option value=3>Insert Step Before Selected Step</option>
+            <option value=4>Insert Step After Selected Step</option>
+            <option value=5>Delete Selected Step</option>
+            <option value=6>Edit Start Time</option>
+	</select>
+        </div>
+
+      <h3>list of current Steps </h3><BR>
+      <h3>Select Step To Operate On </h3><BR>
+        <div id="current_steps">
+        </div>
+        		   
+</div>

@@ -1,0 +1,93 @@
+{% macro canvas( canvasName = "test", featuredColor = "Green", featuredMeasure = 0, qualScale1 = 0, qualScale1Color = "Black", titleText = "Step 1", maxValue = 35 ,std = "a") -%}
+			$("{{ "#"+canvasName }}").bullet({
+                                featuredColor: "{{ featuredColor }}",
+				featuredMeasure: {{ featuredMeasure }},
+				//compMeasure1: 100,
+				qualScale1: {{ qualScale1 }},
+				minValue: 0,
+				maxValue: {{ max_current }},
+                                limit_std: {{ std }},
+                                titleText: "{{ titleText }}",
+                                qualScale1Color: "{{ qualScale1Color }}"
+			})
+   
+{%- endmacro %}
+
+
+
+
+<html>
+<head>
+	 <meta charset="utf-8">
+	 <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+  <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  {% set title = 'Control Functions' %}
+  {% set header_name = 'Control Functions' %}
+
+	 <title>{{title_name}}</title>
+        
+  {% include 'common_setup' %}
+
+
+	  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+	
+	
+
+	
+        
+     <script type="text/javascript">
+       {% include "js/irrigation_functions/manage_paramters.js" %}
+     </script>
+ 
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+   {% include 'menu' %}
+   <!-- /header -->
+ 
+        
+   <h4><br>Current Rain Day Setting: </h4> 
+	  <select id="rain_flag">
+	     <option value=0>Off</option>
+	     <option value=1>On</option>
+	  </select>
+   <h4>Click To Change Manage ETO<h4></button>
+   <button type="button" id="change_rain_flag">Click to Change Rain Flag </button>
+   
+
+   <h4>Control ETO Management</h4>
+   <h4><br><br>ETO Management Setting </h4>       
+	   <select id="eto_flag"> 
+       <option value=0>Off</option>
+	      <option  value=1>On</option>
+	   </select>
+    <h4>Click To Change Manage ETO</button></h4>
+    <button type="button" id="change_eto_flag">Click to Change ETO Management </button>
+
+   
+        
+    <canvas id="cleaning" height=50  ></canvas>
+          
+    <input type="range"  , id="cleaning_interval" value="{{1000}}" 
+                    min="0" max={{100000}} data-highlight="true" step="100" />
+
+  <h4>Gallons to Initiate Automatic Cleaning </h4> 
+  <button type="button" id="change_gallon_trigger">Click to Change Cleaning Interval </button>
+
+  <canvas id="max_flow" height=50  ></canvas>
+
+  <input type="range"  id="max_rate" value="{{5}}" 
+                    min="0" max={{40}} data-highlight="true" step="1" />
+
+   <h4>Flow Limit to Initiate Cut Off </h4> 
+   <button type="button" id="cut_off_trigger_id">Click to Change Cut Off Rate </button>
+
+</div><!-- /page -->
+</html>

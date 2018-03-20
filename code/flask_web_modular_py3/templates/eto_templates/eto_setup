@@ -1,0 +1,77 @@
+<html>
+<head>
+	 <meta charset="utf-8">
+	 <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+  <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  {% set title = 'Control Functions' %}
+  {% set header_name = 'Control Functions' %}
+
+	 <title>{{title_name}}</title>
+        
+  {% include 'common_setup' %}
+
+
+	  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+	
+	
+
+	   <script  type="text/javascript">
+            eto_data = {{eto_data_json}}    
+            pin_list = {{pin_list_json}}        
+    </script>
+	
+      
+     <script type="text/javascript">
+     {% include  "js/eto_functions/eto_setup.js" %}
+     
+     </script>
+ 
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+   {% include 'menu' %}
+   <!-- /header -->
+ <div id="main_panel">
+   <center><h3>Setup ETO Valve Stations</h3></center>
+   <h4 id="recharge_eto">ETO Recharge Level: </h4>
+   <h4 id="crop_utilization">Crop Utilization:</h4>
+   <h4 id="sprayer_effiency">Sprayer Efficency: </h4>
+   <h4 id="salt_flush_addition">Salt Flush Addition: </h4>
+
+   <center><h3>Select Action</h3></center>
+   <select name="action-choice" id="action-choice">
+      <option   value="nop">No Operation</option>
+      <option   value="recharge">Recharge Level</option>
+      <option   value="crop_util">Crop Utilization</option>
+      <option   value="salt">Salt Flush</option>
+      <option   value="sprayer">Sprayer Efficiency</option>
+      <option value="edit">Edit Eto Resource</option>
+      <option value="add">Add Eto Resource</option>
+      <option value="delete">Delete Eto Resource</option>
+   </select>
+<center><h3>Select ETO Resource </h3></center>
+<fieldset id = "station_list" data-role="controlgroup">
+	
+        {% for item in eto_data %}
+     	   <input type="radio" name="eto_emiter" id="eto_emiter_id_{{loop.index -1}}" value={{loop.index-1}}  />
+           {% set label_text = "Controller: "+item.controller+ "  Valve: "+st(item.pin) +" Recharge Rate: "+st(item.recharge_rate) + " Recharge Level: "+st(item.recharge_eto) %}
+     	   <label for="eto_emiter_id_{{loop.index-1}}">{{label_text }} </label>
+     	{% endfor %}
+        
+</fieldset>
+      
+
+</div>
+{% include 'eto_templates/eto_setup_parameter_setup' %}
+{% include 'eto_templates/eto_setup_station' %}
+</div><!-- /page -->
+
+
+</html>

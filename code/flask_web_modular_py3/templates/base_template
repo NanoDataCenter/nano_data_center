@@ -1,0 +1,60 @@
+<head>
+	 <meta charset="utf-8">
+	 <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+  <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  
+  <style>
+        /*this block should go in the styles.css file*/
+        .ui-panel-inner {
+            padding:7px; /*make the buttons flush edge to edge*/
+        }
+        .ui-controlgroup {
+            margin:7px; /*make the buttons flush to the top*/
+        }
+        #header {
+            height:60px;
+        }
+        #bars-button {
+            margin:5px;
+        }
+    </style>
+	
+        
+  {% include 'common_setup' %}
+
+
+	  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+
+
+
+	{% block custom_javascript %}{% endblock %}
+
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+   {% include 'menu' %}
+   <!-- /header -->
+    
+   {% block application %}{% endblock %}
+ 
+ 
+   {% block footer %}{% endblock %} 
+
+   
+ 
+    
+
+ 
+
+</div><!-- /page -->
+
+
+</html>
+

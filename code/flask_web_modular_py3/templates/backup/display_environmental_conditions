@@ -1,0 +1,24 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+        
+<body>  
+<div data-role="page"> 
+    
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+    <h1>Operational Parameters of Raspberry PI Controller</h1>
+    {% for key in keys %}
+    <h3>{{ key }} </h3>
+    {% for element in data[key] %}
+    {{ element }}<br>
+    {% endfor %}
+
+    {% endfor %}
+
+</div><!-- /page -->
+</body>
+</html>

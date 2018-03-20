@@ -1,0 +1,156 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+<body>        
+<div data-role="page"> 
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+
+{% if map_type == 0 %}
+        <h3>Location Of Valve Groups</h3>
+	<img  src="/static/app_images/valve_group_map.png">
+        <h3>Description of Valve Groups </h3>
+        
+
+         <h3>Valve Group #1</h3>
+         <h3>Land mark to #1 valve:  Well</h3>
+         <ol >
+            <li>Valve #1  Satellite_1:20  Flowers along side walk</li>
+            <li>Valve #2  Satellite_1:19  Well Water Drip Line</li>
+             <li>Valve #3 Satellite_1:14  Barbecue Clover Area</li>
+             <li>Valve #4 Satellite_1:18 Well Clover Area</li>
+               <li>Valve #5 Satellite_1:15 Triangle Pool Area</li>
+               <li>Valve #6 Satellite_1:17 Dragon Fruit — Fruit Tree Drip Line</li>
+               <li>Valve #7 Satellite_1:16 Pool Fence Area</li>
+        </ol>
+                           
+
+
+
+
+         <h3>Valve Group #2</h3>
+         <h3>Land mark to #1 valve:  Steps</h3>
+         <ol>
+         <li>Valve #1 Satellite_1:13  Lemon Tree Drip Line near Steps</li>
+         <li>Valve #2 Satellite_1:25 Middle Clover Near Well</li>
+         <li>Valve #3  Satellite_1:12 Middle Clover Near Barbecue</li>
+         <li>Valve #4 Satellite_1:11 Drip Line along garage</li>
+        </ol>
+        <h3>Valve Group #3</h3>
+         <h3>Land mark to #1 valve:  Door</h3>
+         <ol>
+         <li>Valve #1 Satellite_1:24 Flowers Toward Garage</li>
+         <li>Valve #2 Satellite_1:21 Flowers on Opposite Side of Garage</li>
+          <li>Valve #3 Satellite_1:22 Grass Toward Door</li>
+          <li>Valve #4 Satellite_1:23 Grass Zone Away From Door</li>
+       </ol>
+          <h3>Valve Group #4</h3>
+          <h3>Land mark to #1 valve:  Side Walk</h3>
+          <ol>
+          <li>Valve #1  Satellite_2:2  Upper area Near Property Line</li>
+              <li>Valve #2  Satellite_2:4  On Property Side of Valve #3</li>
+              <li>Valve #3  Satellite_2:3 Next to Valve 4</li>
+              <li>Valve #4  Satellite_2:1 Spray Area Next to Remote</li>
+              <li>Valve #5 Satellite_2:5  Sprayers along Drive Way</li>
+              <li>Valve #6 Satellite_2:6 Lower area near Property Line</li>
+       </ol>
+          <h3>Valve Group #5</h3>
+          <h3>Land mark to #1 valve:  Nearest Solar Panels</h3>
+          <ol>
+          <li>Valve #1 Satellite_1:9  Waters Fruit Trees on Block #9</li>
+              <li>Valve #2 Satellite_1:1 Hill Sprayers next to Large Rock</li>
+              <li>Valve #3/#4  Valves are tied together Satellite_1:2. Spray area rest of bank.</li>
+              <li>Valve #5 Satellite_1:6 Waters Avocado Block #6</li>
+       </ol>
+       <h3>Valve Group #6</h3>
+       <h3>Land mark to #1 valve:  Property Line</h3>
+       <ol>
+           <li>Valve #1 Satellite_2:13  Waters Avocado Block #4</li>
+           <li>Valve #2 Satellite_2:14 Waters Avocado Block #10</li>
+           <li>Valve #3 No Connection</li>
+           <li>Valve #4 Satellite_2:17 Drip Line and Sprayers along Road</li>
+           <li>Valve #5 No Connection</li>
+           <li>Valve #6 No Connection</li>
+           <li>Valve #7 No Connection</li>
+       </ol>
+          <h3>Valve Group #7</h3>
+          <h3>Land mark to #1 valve: Cindy’s House</h3>
+         <ol>
+             <li>Valve 1  Satellite_3:4  Not Connected</li>
+             <li>Valve 2 Satellite_3:3  Not Connected </li>
+             <li>Valve 3  Satellite_3:1 Avocado Block 5 </li>
+             <li>Valve 4 Satellite_3:6  Not Connected</li>
+             <li>Valve 5 Satellite_3:5  Avocado Block 11</li>
+             <li>Valve 6 Satellite_3:2  Drip Line Down the Hill</li>
+       </ol>
+  
+          <h3>Valve Group #8</h3>
+          <h3>Land mark to #1 valve: Cindy’s House</h3>
+          <ol>
+               <li>Valve #1 Satellite_3:13  Avocado Block #1</li>
+              <li>Valve #2 Satellite_3:14 Avocado Block #2</li>
+              <li>Valve #3 Satellite_3:18 Not Connected</li>
+              <li>Valve #4 Satellite_3:17  Not Connected</li>
+              <li>Valve #5 Not Connected</li>
+              <li>Valve #6 Satellite_3:15 Avocado Block #3</li>
+              <li>Valve #7 Satellite_3:19 Top Most Sprayers</li>
+       </ol>
+       <h3> Valve Group #9</h3>
+       <h3> Land mark to #1 valve: Road</h3>
+       <ol>
+               <li>Valve #1 Satellite_3:11 this side of driveway</li>
+               <li>Valve #2 Satellite_3:12 opposite side of driveway</li>
+       </ol>
+ 
+           <h3> Valve Group #10</h3>
+          <h3> Land mark to #1 valve: Road</h3>
+         <ol>
+         <li>Valve #1 Not Connected</li>
+         <li>Valve #2 Satellite_1:3  Drip line along side of Road</li>
+         <li>Valve #3 Satellite_1:7  Avocado Bank 7</li>
+         <li>Valve #4 Satellite_1:8 Avocado Bank 8</li>
+        </ol>
+
+{% endif %}
+
+{% if map_type == 1 %}
+        <h3>Location Of Remote Controllers</h3>
+	<img  src="/static/app_images/controller_site_map.png">
+        <h3>Remotes Control the Following Valve Groups</h3><br>
+        <h3>Remote_1:  Controls </h3>
+        <ol>
+          <li>Valve Group #1</li>
+          <li>Valve Group #2</li>
+          <li>Valve Group #3</li>
+          <li>Valve Group #5</li>
+          <li>Valve Group #10</li>
+        </ol>
+        <h3>Remote_2 Controls </h3>
+        <ol>
+           <li>Valve Group #4</li>
+           <li>Valve Group #6</li>
+        </ol>
+        <h3>Remote_3 Controls </h3>
+        <ol>
+          <li>Valve Group #7</li>
+          <li>Valve Group #8</li>
+          <li>Valve Group #9</li>
+       </ol>
+
+{% endif %}
+
+
+{% if map_type == 2 %}
+      
+        <h3>Location Of Avocado/Fruit Tree Blocks</h3>
+	<img  src="/static/app_images/Avocado_block_map.png">
+ 
+
+{% endif %}
+
+</div><!-- /page -->
+</body>
+</html>

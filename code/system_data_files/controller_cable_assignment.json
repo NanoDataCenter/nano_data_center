@@ -1,0 +1,143 @@
+[
+   { "name":"satellite_1", "pins":
+      [
+         "valve_group:5  valve:2   Waters Bank Closest to House",
+         "valve_group:5  valve:3   #3/#4  Valves are tied together Spray area away from house",
+         "valve_group:10  valve:2  Drip line along side of Road",
+         "valve_group:NC  valve:NC ",
+         "valve_group:NC  valve:NC ",
+
+         "valve_group:5  valve:4 Avocado Block 6",
+         "valve_group:8  valve:3 Avocado Bank 7",
+         "valve_group:8  valve:4 Avocado Bank 8",
+         "valve_group:5  valve:1 Fruit Trees on Block #9",
+         "valve_group:NC valve:NC ",
+
+         "valve_group:2 valve:4 Drip Line along garage",
+         "valve_group:2 valve:3 Grass Middle Clover Near Barbecue",
+         "valve_group:2 valve:1 Lemon Tree Drip Line near Steps",
+         "valve_group:1 valve:4 Grass Barbecue Clover Area",
+         "valve_group:1 valve:5 Triangle Pool Area",
+
+         "valve_group:1 valve:7 Pool Fence Area",
+         "valve_group:1 valve:6 Dragon Fruit — Fruit Tree Drip Line",
+         "valve_group:1 valve:3 Grass Well Clover Area",
+         "valve_group:1 valve:2 Well Water Drip Line",
+         "valve_group:1 valve:1 Flowers along side walk",
+
+         "valve_group:3 valve:2 Front Grass Zone Away From Door",
+         "valve_group:3 valve:3 Front Grass Toward Door",
+         "valve_group:3 valve:4 Flowers on Opposite Side of Garage",
+         "valve_group:3 valve:1 Flowers Toward Garage",
+         "valve_group:2 valve:2 Grass Middle Clover Near Well",
+
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+         "valve_group:Cleaning Valve, valve:1 ",
+         "valve_group:MASTER_VALVE, valve:1"
+        
+			
+     
+      ]
+    },
+
+
+       { "name":"satellite_2", "pins":
+      [
+         "valve_group:4 valve:2 On Property Side of Valve #3",
+         "valve_group:4 valve:4 Upper area Near Property Line", 
+         "valve_group:4 valve:3 Next to Valve 4",  
+
+         "valve_group:4 valve:1 Upper area Near Property Line",
+         "valve_group:4 valve:5 Sprayers along Drive Way",  
+         "valve_group:4 valve:6 Lower area near Property Line", 
+
+         "valve_group:NC valve:NC ", 
+         "valve_group:NC valve:NC ", 
+         "valve_group:NC valve:NC ", 
+
+         "valve_group:NC valve:NC ", 
+         "valve_group:NC valve:NC ", 
+         "valve_group:NC valve:NC ",    
+
+         "valve_group:6 valve:1 Avocado Block #4",  
+         "valve_group:6 valve:2 Avocado Block #10", 
+         "valve_group:NC valve:NC ",
+  
+         "valve_group:NC valve:NC ", 
+         "valve_group:6 valve:4 Drip Line and Sprayers along Road", 
+         "valve_group:NC valve:NC ",
+ 
+         "valve_group:NC valve:NC ", 
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ", 
+         
+         "valve_group:NC valve:NC " 
+ 
+      ]
+    },
+
+
+      
+
+
+      { "name":"satellite_3", "pins":
+      [
+         "valve_group:7 valve:  3 Avocado Block 5", 
+         "valve_group:7 valve:  2 NC",  
+         "valve_group:7 valve:  6 NC",  
+
+         "valve_group:7 valve: 1  NC", 
+         "valve_group:7 valve: 5 Avocado Block 11",  
+         "valve_group:7 valve: 4  NC", 
+
+         "valve_group:NC valve:NC ", 
+         "valve_group:NC valve:NC ", 
+         "valve_group:NC valve:NC ", 
+
+         "valve_group:NC valve:NC ", 
+         "valve_group:9 valve:1 Bottom Hill on Cindy's House Side", 
+         "valve_group:9 valve:2 Bottom Hill on the opposite site of drive way",    
+
+         "valve_group:8 valve:1 Avocado Block #1",
+         "valve_group:8 valve:2 Avocado Block #2",
+         "valve_group:8 valve:6 Avocado Block #3",
+
+         "valve_group:8 valve:5  NC ",
+         "valve_group:8 valve:4  NC",
+         "valve_group:8 valve:3  NC",
+
+         "valve_group:8 valve:7 Top Most Sprayers",
+         "valve_group:NC valve:NC ",
+         "valve_group:NC valve:NC ",
+
+         "valve_group:NC valve:NC "
+			
+     
+      ]
+    }  
+
+
+   
+
+
+   
+]

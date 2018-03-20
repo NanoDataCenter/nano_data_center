@@ -1,0 +1,189 @@
+    
+
+
+
+
+<div id="station_setup">
+       <div id="master_save">
+      <h3 id=edit_panel_header> Modify Setup For Controller Pin </h3>
+       <div>
+        <input type="button" id = "edit_panel_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "edit_panel_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "edit_panel_reset" value="Reset" data-inline="true"  /> 
+       </div>
+      </div>
+
+      <div id="add_controls">
+            <h3>Select Controller</h3>
+    	    <select  name="valve_controller" id="valve_controllera" data-inline="true" >
+              <option value=0>CONTROLLER_1 </option>
+              <option value=1>CONTROLLER_2 </option>
+            </select>
+            <h3>Select Valve </h3>
+    	    <select  name="valve_valve" id="valve_valvea"  data-inline="true"  >
+              <option value=1>Valve: 1 min</option>
+              <option value=2>Valve: 2</option>
+         
+            </select>
+
+
+      </div>
+
+       <h4 id="eto_capacity_label">Soil Capacity (inches):  ETO recharge rate (inches/hour): </h4>
+       
+   
+        <label for="soil_type" class="select">Select Soil Type:</label>
+        <select  name="soil_type"  id ="soil_type_id">
+        <option            value=0>Sand               .5-.7   in/foot </option>
+        <option selected   value=1>Fine Sand          .7-.9   in/foot </option>
+        <option            value=2>Loamy Sand         .9-1.1  in/foot </option>
+        <option            value=3>Loamy Fine Sand    1.1-1.2 in/foot </option>
+        <option            value=4>Loam               1.2-1.4 in/foot </option>
+        <option            value=5>Silt Loam          1.4-1.6 in/foot </option>
+        <option            value=6>Clay Loam          1.6-1.8 in/foot </option>
+        <option            value=7>Silty Clay         1.9-2.1 in/foot </option>
+        <option            value=8>Clay               2.1-2.4 in/foot </option>
+       </select>
+
+        
+        <label for="soil_depth" class="select">Select Effective Soil:</label>
+        <select name="soil_depth" id ="soil_depth_id">
+        <option            value=0>  .5 feet       </option>
+        <option            value=1>  1.0 feet      </option>
+        <option            value=2>  1.5 feet      </option>
+        <option   selected value=3>  2.0 feet      </option>
+        <option            value=4>  2.5 feet      </option>
+        <option            value=5>  3.0 feet      </option>
+        <option            value=6>  3.5 feet      </option>
+        <option            value=7>  4.0 feet      </option>
+       </select>
+
+        
+        <label for="recharge_ratio" class="select">Select Recharge Ratio:</label>
+        <select name="recharge_ratio"    id ="recharge_ratio_id">
+        <option            value=0>   5 %       </option>
+        <option            value=1>  10 %       </option>
+        <option            value=2>  15 %       </option>
+        <option            value=3>  20 %       </option>
+        <option            value=4>  25 %       </option>
+        <option  selected  value=5>  30 %  This is the general recomemdation          </option>
+        <option            value=6>  35 %       </option>
+        <option            value=7>  40 %      </option>
+        <option            value=8>  45 %       </option>
+        <option            value=9>  50 %      </option>
+       </select>
+       
+        
+        <label for="sprayer_radius" class="select">Select Effective Sprayer Radius</label>
+        <select name="sprayer_radius" id ="sprayer_radius_id">
+        <option            value=0>  .5 ft       </option>
+        <option            value=1>  1.0 ft       </option>
+        <option            value=2>  1.5 ft       </option>
+        <option            value=3>  2.0 ft       </option>
+        <option            value=4>  2.5 ft       </option>
+        <option            value=5>  3.0 ft       </option>
+        <option            value=6>  3.5 ft       </option>
+        <option            value=7>  4.0 ft       </option>
+        <option            value=8>  4.5 ft       </option>
+        <option            value=9>  5.0 ft       </option>
+        <option            value=10> 5.5 ft       </option>
+        <option            value=11> 6.0 ft       </option>
+        <option            value=12> 6.5 ft       </option>
+        <option            value=13> 7.0 ft       </option>
+        <option            value=14> 7.5 ft       </option>
+        <option            value=15> 8.0 ft       </option>
+        <option            value=16> 8.5 ft       </option>
+        <option            value=17> 9.0 ft       </option>
+        <option            value=18> 9.5 ft       </option>
+        <option            value=19>10.0 ft       </option>
+        <option            value=20>10.5 ft       </option>
+        <option            value=21>11.0 ft       </option>
+        <option            value=22>11.5 ft       </option>
+        <option            value=23>12.0 ft       </option>
+        <option            value=24>12.5 ft       </option>
+        <option            value=25>13.0 ft       </option>
+        <option            value=26>13.5 ft       </option>
+        <option            value=27>14.0 ft       </option>
+        <option            value=28>14.5 ft       </option>
+        <option            value=29>15.0 ft       </option>
+        <option            value=30>15.5 ft       </option>
+        <option            value=31>16.0 ft       </option>
+       </select>
+
+
+        <label for="sprayer_rate" class="select">Select Average Emitter Rate Gallons per Hour:</label>
+        <select name="sprayer_rate"  id ="sprayer_rate_id">
+        <option            value=1>  1 GPH       </option>
+        <option            value=2>  2 GPH       </option>
+        <option            value=3>  3 GPH       </option>
+        <option            value=4>  4 GPH       </option>
+        <option            value=5>  5 GPH       </option>
+        <option            value=6>  6 GPH       </option>
+        <option            value=7>  7 GPH       </option>
+        <option            value=8>  8 GPH       </option>
+        <option            value=9>  9 GPH       </option>
+        <option            value=10>10 GPH       </option>
+        <option            value=11>11 GPH       </option>
+        <option            value=12>12 GPH       </option>
+        <option            value=13>13 GPH       </option>
+        <option            value=14>14 GPH       </option>
+        <option            value=15>15 GPH       </option>
+        <option            value=16>16 GPH       </option>
+        <option            value=17>17 GPH       </option>
+        <option            value=18>18 GPH       </option>
+        <option            value=19>19 GPH       </option>
+        <option            value=20>20 GPH       </option>
+        <option            value=21>21 GPH       </option>
+        <option            value=22>22 GPH       </option>
+        <option            value=23>23 GPH       </option>
+        <option            value=24>24 GPH       </option>
+        <option            value=25>25 GPH       </option>
+        <option            value=26>26 GPH       </option>
+        <option            value=27>27 GPH       </option>
+        <option            value=28>28 GPH       </option>
+        <option            value=29>29 GPH       </option>
+        <option            value=30>30 GPH       </option>
+        <option            value=31>31 GPH       </option>
+        <option            value=32>32 GPH       </option>
+       </select>      
+
+    
+        <label for="sprayer_efficiency" class="select">Sprayer Efficiency:</label>
+        <select name="sprayer_efficiency"  id ="sprayer_efficiency_id">
+        <option            value=100>  100%       </option>
+        <option            value=95>    95%       </option>
+        <option            value=90>    90%       </option>
+        <option            value=85>    85%       </option>
+        <option            value=80>    80%       </option>
+        <option            value=75>    75%       </option>
+        <option            value=70>    70%       </option>
+        </select>  
+     
+
+        <label for="salt_flush" class="select">Salt Flush Factor:</label>
+        <select  name="salt_flush" id ="salt_flush_id">
+        <option            value=100>   None       </option>
+        <option            value=95>      5%       </option>
+        <option            value=90>     10%  Generally Recomended     </option>
+        <option            value=85>     15%      </option>
+        <option            value=80>     20%      </option>
+        </select>          
+
+       
+        <label for="crop_utilization" class="select">Crop Utilization:</label>
+        <select name="crop_utilization"  id ="crop_utilization_id">
+        <option            value=100>   100%      </option>
+        <option            value=95>     95%      </option>
+        <option            value=90>     90%      </option>
+        <option            value=85>     85%      </option>
+        <option            value=80>     80%  Generally Recomended     </option>
+        <option            value=85>     75%      </option>
+        <option            value=80>     70%      </option>
+        <option            value=85>     65%      </option>
+        <option            value=80>     60%      </option>
+        </select> 
+
+
+
+
+</div>

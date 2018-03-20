@@ -1,0 +1,131 @@
+ 
+{% macro canvas( canvasName = "test", featuredColor = "Green", featuredMeasure = 0, qualScale1 = 0, qualScale1Color = "Black", titleText = "Step 1", maxValue = 35 ,std = "a") -%}
+			$("{{ "#"+canvasName }}").bullet({
+                                featuredColor: "{{ featuredColor }}",
+				featuredMeasure: {{ featuredMeasure }},
+				//compMeasure1: 100,
+				qualScale1: {{ qualScale1 }},
+				minValue: 0,
+				maxValue: {{ max_value }},
+                                limit_std: {{ std }},
+                                titleText: "{{ titleText }}",
+                                qualScale1Color: "{{ qualScale1Color }}"
+			})
+   
+{%- endmacro %}
+
+   
+<div id="min_eto_set">
+ 
+   
+   <div>
+        <input type="button" id = "min_eto_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "min_eto_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "min_eto_reset" value="Reset" data-inline="true"  /> 
+   </div>
+   
+   <canvas name="min_eto_canvas" height=15  ></canvas>
+   <h4 id="min_eto_display" >Recharge Level </h4>
+   <div data-role="fieldcontain" id="min_eto_field">   
+    <input type="range" , id="min_eto_interval" value=".1" 
+                    min="0" max=".5" data-highlight="true" step=".01" />
+   </div>
+</div>   
+
+<div id="crop_utilization_set">
+ 
+   
+   <div>
+        <input type="button" id = "crop_utilization_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "crop_utilization_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "crop_utilization_reset" value="Reset" data-inline="true"  /> 
+   </div>
+
+   <canvas  height=15  ></canvas>  
+   <h4 id=crop_utilization_display >Crop utilization  </h4>
+   <div data-role="fieldcontain" id="crop_utilization_field"> 
+   <input type="range"  , id="crop_utilization_interval" value=".8" 
+                    min=".5" max="1.0" data-highlight="true" step=".01" />
+   </div>
+</div>
+
+<div id="salt_flush_set">
+ 
+      <div>
+        <input type="button" id = "salt_flush_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "salt_flush_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "salt_flush_reset" value="Reset" data-inline="true"  /> 
+   </div>
+  
+ 
+   <canvas n height=15  ></canvas>    
+   <h4 id=salt_flush_display >Salt Flush  </h4> 
+   <div data-role="fieldcontain" id="salt_flush_field"> 
+   <input type="range"  , id="salt_flush_interval" value=".1" 
+                    min="0" max="1.0" data-highlight="true" step=".01" />
+   </div>
+</div>
+
+<div id="sprayer_efficiency_set">
+ 
+ 
+   <div>
+        <input type="button" id = "sprayer_efficiency_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "sprayer_efficiency_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "sprayer_efficiency_reset" value="Reset" data-inline="true"  /> 
+   </div>
+
+
+   
+   <canvas  height=15  ></canvas>     
+   <h4 id=sprayer_efficiency_display >Sprayer Effiency : </h4>  
+   <div data-role="fieldcontain" id="sprayer_efficiency_field"> 
+   <input type="range"  , id="sprayer_efficiency_interval" value=".9" 
+                    min=".5" max="1.0" data-highlight="true" step=".01" />
+   </div>
+</div>
+
+
+
+<div id="station_setup_set">
+       <div id="master_save">
+      <h3 id=edit_panel_header> Modify Setup For Controller Pin </h3>
+       <div>
+        <input type="button" id = "station_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "station_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "station_reset" value="Reset" data-inline="true"  /> 
+       </div>
+      </div>
+
+      <div id="station_add_controls">
+            <h3>Select Controller</h3>
+    	    <select  name="valve_controller" id="controller" data-inline="true" >
+              <option value=0>CONTROLLER_1 </option>
+              <option value=1>CONTROLLER_2 </option>
+            </select>
+            <h3>Select Valve </h3>
+    	    <select  name="valve_valve" id="valve"  data-inline="true"  >
+              <option value=1>Valve: 1 min</option>
+              <option value=2>Valve: 2</option>
+         
+         </select>
+
+      </div>
+
+   <h3 id="station_display" >Current ETO Recharge is : </h3> 
+  
+   
+   <canvas  height=15  ></canvas>
+   <div data-role="fieldcontain" id="station_rate_field">     
+   <h4 id ="station_sprayer_rate_display"> Select Sprayer Rate (Gallons/Hour) </h4>
+   <input type="range"  , id="station_sprayer_rate" value="14" 
+                    min="0" max="24" data-highlight="true" step=".5" />
+   </div>
+    
+   <canvas  height=15  ></canvas> 
+   <h4 id ="station_radius_display"> Select Tree Radius (feet) </h4>    
+   <div data-role="fieldcontain" id="station_radius_field"> 
+   <input type="range"  , id="station_tree_radius" value="6" 
+                    min="0" max="10" data-highlight="true" step=".1" />
+   </div>
+</div>

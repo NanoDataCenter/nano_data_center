@@ -1,0 +1,1 @@
+{"bits": {"1": "C201", "3": "DS2", "2": "C2"}, "schedule": [[["satellite_1", [9], 60]], [["satellite_2", [13], 120], ["satellite_1", [6], 60]], [["satellite_2", [14], 120], ["satellite_3", [5], 60]], [["satellite_3", [1], 120], ["satellite_3", [13], 60]], [["satellite_3", [14], 121], ["satellite_3", [15], 60]], [["satellite_1", [7], 120]], [["satellite_1", [8], 120]]]}

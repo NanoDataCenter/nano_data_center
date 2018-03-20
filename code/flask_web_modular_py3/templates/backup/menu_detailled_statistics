@@ -1,0 +1,74 @@
+
+<style>
+        /*this block should go in the styles.css file*/
+        .ui-panel-inner {
+            padding:7px; /*make the buttons flush edge to edge*/
+        }
+        .ui-controlgroup {
+            margin:7px; /*make the buttons flush to the top*/
+        }
+        #header {
+            height:60px;
+        }
+        #bars-button {
+            margin:5px;
+        }
+    </style>
+
+<div id="header" data-role="header" data-theme="b">
+        
+        <a id="bars-button_1" data-icon="bars" class="ui-btn-right" style="margin-top:10px;"data-rel="popup" data-position-to="window" href="#change_setting">Change Settings</a>
+         <a id="bars-button" data-icon="bars" class="ui-btn-left" style="margin-top:10px;" data-rel="popup" data-position-to="window" href="#navpanel">Menu</a>
+        <h4 id="header_name">{{ header_name }}</h4>
+</div><!-- /header -->
+ 
+
+ {% include 'menu_left.html' %}
+ 
+
+<div data-role="popup" id="change_setting" data-theme="a"
+         data-display="overlay" data-position="right"> 
+
+       <select id="chart_type">
+{% for i in range(0,chart_list|length): %}
+        <option value= {{ i }} >Graph Type   --->   {{ chart_list[i] }}</option>
+{% endfor %}
+       </select>
+{% if chart_data["flow_sensor_flag"] == True %}
+       <select id="flow_sensor">
+{% for i in range(0,flow_sensors|length): %}
+        <option value= {{ i }} >Flow Sensor   --->   {{ flow_sensors[i] }}</option>
+{% endfor %}
+       </select>
+{% endif %}
+       
+       <select id="schedule">
+{% for i in range(0,schedule_list|length): %}
+        <option value= {{ i }} >Schedule   --->   {{ schedule_list[i] }}</option>
+{% endfor %}
+       </select>
+       <div id = "step_id">
+       <select id="step">
+          
+{% for i in range(0,step_number): %}
+        <option value= {{ i }} >Step   ---> {{ i+1 }}</option>
+{% endfor %}
+       </select>
+       </div>
+
+{% if chart_data["time_step_flag"] == True %}
+      <select id ="time_index">
+{% for i in range(0,50): %}
+      <option value = {{i}} >Time Index ---> {{i}}</option>
+{% endfor %}
+
+     </select>
+{% endif %}
+   <a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete"  >Close</a>
+   <a href="#" id="make_changes" data-role="button" data-theme="a"  data-icon="forward">Make Changes</a>
+    
+</div>    
+    
+   
+ 
+       

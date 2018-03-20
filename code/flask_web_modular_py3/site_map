@@ -1,0 +1,47 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+<body>        
+
+{% if map_type = 2 %}
+
+
+{% endif %}
+
+{% if map_type == 1 %}
+        <h3>Location Of Remote Controllers</h3>
+	<img  src="/static/app_images/controller_site_map.png">
+        <h3>Remotes Control the Following Valve Groups</h3><br>
+        <h3>Remote_1:  Controls </h3>
+        <ol>
+          <li>Valve Group #1</li>
+          <li>Valve Group #2</li>
+          <li>Valve Group #3</li>
+          <li>Valve Group #5</li>
+          <li>Valve Group #10</li>
+        </ol>
+        <h3>Remote_2 Controls </h3>
+        <ol>
+           <li>Valve Group #4</li>
+           <li>Valve Group #6</li>
+        </ol>
+        <h3>Remote_3 Controls </h3>
+        <ol>
+          <li>Valve Group #7</li>
+          <li>Valve Group #8</li>
+          <li>Valve Group #9</li>
+       </ol>
+
+{% endif %}
+
+
+{% if map_type == 2 %}
+
+
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+        
+	<script type="text/javascript" src="/static/js_library/dygraph-combined.js"></script>
+  
+        <script type="text/javascript" src="/static/js/sel_chart.js"></script>
+<body> 
+
+<div data-role="page"> 
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+
+    
+
+     
+
+
+    <input id ="ajax_command" type="hidden" path = "{{ queue }}"  limit_low ="{{ limit_low }}" limit_high="{{ limit_high }}" sel_function = "{{ sel_function }}"  x_axis="{{ x_axis }}" y_axis= "{{ y_axis }}" >
+    <div id="select">
+    <button type="button" id="refresh">Refresh</button>
+    <select id="flow_meter">
+    </select>
+    </div>
+       
+    <div id="div_g" "></div>
+     
+ 
+
+</div><!-- /page -->
+</html>
+

@@ -1,0 +1,107 @@
+
+{% macro canvas( canvasName = "test", featuredColor = "Green", featuredMeasure = 0, qualScale1 = 0, qualScale1Color = "Black", titleText = "Step 1", maxValue = 35) -%}
+			$("{{ "#"+canvasName }}").bullet({
+                                featuredColor: "{{ featuredColor }}",
+				featuredMeasure: "{{ featuredMeasure }}",
+				//compMeasure1: 100,
+				qualScale1: "{{ qualScale1 }}",
+				minValue: 0,
+				maxValue: {{maxValue}},
+                               
+                                titleText: "{{ titleText }}",
+                                qualScale1Color: "{{ qualScale1Color }}"
+			})
+   
+{%- endmacro %}
+
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+        
+	<script type="text/javascript" src="/static/js_library/dygraph-combined.js"></script>
+  
+        <script type="text/javascript" src="/static/js_library/bullet.js"></script>
+        <script >
+
+$(document).ready(function() {
+                        {% set header="Schedule OverView" %}
+                        {% set max_flow_rate = 35 %}
+                       
+                        {% set schedule_list = [[0,"house"],[1,"grass"],[2,"flowers"],[3,"avocados" ]] %}
+                        {% set schedule_name = schedule_list[schedule_id][1] %}
+                        
+                        $("#titleList")[0].selectedIndex =  {{ schedule_id }};
+                        {% set canvas_list = [ 
+                                             { "canvasName":"canvas1","featuredColor":"Green", "featuredMeasure":14.5,
+                                                "qualScale1":14.5, "qualScale1Color":"Black","titleText":"Step 1" },
+                                             { "canvasName":"canvas2","featuredColor":"Blue", "featuredMeasure":14.5,
+                                                "qualScale1":14.5, "qualScale1Color":"Black","titleText":"Step 2" },
+                                             { "canvasName":"canvas3","featuredColor":"Red", "featuredMeasure":14.5,
+                                                "qualScale1":14.5, "qualScale1Color":"Black","titleText":"Step 3" },
+
+                                          ]
+                 
+                        %}
+                        {% for i in canvas_list %}
+                          $("#{{ i["canvasName"] }}")[0].height = 50;
+                          $("#{{ i["canvasName"] }}")[0].width = $( window ).width()*.95
+                        {% endfor %}
+                        {% for i in canvas_list:  %}
+
+                        {% set canvasName     =  i["canvasName"] %}
+                        {% set featuredColor  =  i["featuredColor"] %}
+                        {% set featuredMeasure = i["featuredMeasure"]  %}
+                        {% set qualScale1      = i["qualScale1"]       %}
+                        {% set qualScale1Color = i["qualScale1Color"]  %}
+                        {% set titleText       = i["titleText"] %}
+                        {{ canvas( canvasName = canvasName, featuredColor = featuredColor, featuredMeasure = featuredMeasure, 
+                                   qualScale1 = qualScale1, qualScale1Color = qualScale1Color, titleText = titleText, maxValue = max_flow_rate ) }}
+                        {% endfor %}
+
+                        $("#titleList").bind("click",function(event,ui)
+                        {
+                          var schedule_index = $("#titleList")[0].selectedIndex;
+                          var temp = window.location;
+                          temp = String(temp)
+                          var temp1 = temp.split("//");
+                          var temp2 = temp1[1].split("/");
+                          var len = temp2.length
+                          temp2[len-1] = String(schedule_index)
+                          var str1 = temp2.toString()
+                          var res = temp1[0]+"//"
+                          var res1 = res + temp2.join("/")
+                         
+                          
+                          window.location = res1
+                        });
+
+		});
+
+
+        </script>
+<body> 
+
+<div data-role="page"> 
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+    <h1>{{header}}</h1>
+    <h4>Select Irrigation Schedule</h4>
+    <select id="titleList" name="values">
+      {% for i in schedule_list: %}
+          <option value={{ i[0]}} >{{i[1]}}</option>
+      {% endfor %}
+    </select>
+   <center>
+   <h4> Overview Data For Schedule {{ schedule_name }}<br>Maximum Flow Rate is {{ max_flow_rate }} </h4>
+   </center>
+        {% for i in canvas_list:  %}
+           <canvas id="{{ i["canvasName"] }}"   ></canvas>
+        {% endfor %}
+
+</div><!-- /page -->
+</html>
+

@@ -1,0 +1,23 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+        
+<body>        
+<div data-role="page"> 
+    
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+
+    
+       <h3>ETO RAW DATA </h3>
+       <h4>Working ETO Raw Data:  -----------     {{eto_data}} </h4>
+       <h4>Working Rain Data:     -----------     {{ rain_data }} </h4>
+       
+   
+
+</div><!-- /page -->
+</body>
+</html>

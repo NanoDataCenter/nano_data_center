@@ -1,0 +1,105 @@
+
+{% macro canvas( canvasName = "test", featuredColor = "Green", featuredMeasure = 0, qualScale1 = 0, qualScale1Color = "Black", titleText = "Step 1", maxValue = 35 ,std = "a") -%}
+			$("{{ "#"+canvasName }}").bullet({
+                                featuredColor: "{{ featuredColor }}",
+				featuredMeasure: {{ featuredMeasure }},
+				//compMeasure1: 100,
+				qualScale1: {{ qualScale1 }},
+				minValue: 0,
+				maxValue: {{ maxValue }},
+                                limit_std: {{ std }},
+                                titleText: "{{ titleText }}",
+                                qualScale1Color: "{{ qualScale1Color }}"
+			})
+   
+{%- endmacro %}
+
+
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+        
+	<script type="text/javascript" src="/static/js_library/dygraph-combined.js"></script>
+  
+        <script type="text/javascript" src="/static/js_library/bullet.js"></script>
+        <script >
+
+$(document).ready(function() {
+                        {% set header="Schedule OverView" %}
+                        
+                        function open_dialog()
+                        {
+                            
+                            $("#flowRate")[0].selectedIndex ={{ flow_id }};
+                            $("#flowRate").selectmenu();
+                            $("#flowRate").selectmenu("refresh");
+                            $("#titleList")[0].selectedIndex ={{ schedule_id }};
+                            $("#titleList").selectmenu();
+                            $("#titleList").selectmenu("refresh");
+                            
+                        }
+
+                        function click_function()
+                        {
+                         var schedule_index = $("#titleList")[0].selectedIndex;
+                          var flow_index = $("#flowRate")[0].selectedIndex;
+                          var temp = window.location;
+                          temp = String(temp)
+                          var temp1 = temp.split("//");
+                          var temp2 = temp1[1].split("/");
+                          var len = temp2.length
+                          temp2[len-1] = String(schedule_index)
+                          temp2[len-2] = String(flow_index)
+                          var str1 = temp2.toString()
+                          var res = temp1[0]+"//"
+                          var res1 = res + temp2.join("/")
+                          window.location = res1
+                         }
+                        
+                        {% set schedule_name = schedule_list[schedule_id] %}
+                        schedule_name = "{{ schedule_name }}"
+                        $("#header_name").html("Schedule: "+ "{{ schedule_name }} <br>  Overall Flow Statistics" )
+                        temp1 = $( window ).width()*.95
+
+                         {% for i in canvas_list %}
+                           
+                          $("#{{ i["canvasName"] }}")[0].height = 50;
+                          $("#{{ i["canvasName"] }}")[0].width = temp1
+                        {% endfor %}
+                        {% for i in canvas_list:  %}
+
+                        {% set canvasName     =  i["canvasName"] %}
+                        {% set featuredColor  =  i["featuredColor"] %}
+                        {% set featuredMeasure = i["featuredMeasure"]  %}
+                        {% set qualScale1      = i["qualScale1"]       %}
+                        {% set qualScale1Color = i["qualScale1Color"]  %}
+                        {% set titleText       = i["titleText"] %}
+                        {% set std             = i["limit"] %}
+                        {{ canvas( canvasName = canvasName, featuredColor = featuredColor, featuredMeasure = featuredMeasure, 
+                                   qualScale1 = qualScale1, qualScale1Color = qualScale1Color, titleText = titleText, maxValue = max_flow_rate, std=std ) }}
+                        {% endfor %}
+
+                        $("#make_changes").bind("click",click_function);
+                        
+                       
+                        $("#change_setting").on("popupafteropen", open_dialog);
+                        
+		});
+
+
+        </script>
+<body> 
+
+<div data-role="page"> 
+    {% include 'menu_overal_flow' %}
+    
+        {% for i in canvas_list:  %}
+           <canvas id="{{ i["canvasName"] }}"   ></canvas>
+        {% endfor %}
+
+</div><!-- /page -->
+</html>
+

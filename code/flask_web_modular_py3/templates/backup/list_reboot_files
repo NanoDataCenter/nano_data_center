@@ -1,0 +1,31 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        
+
+        <title>Python Reboot Files Time Stamps</title>
+
+        {% include 'include_files.html' %}
+        {% set header_name = 'Python Reboot Files Latest Time Stamps' %}
+       
+<body>        
+<div data-role="page"> 
+    
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+
+<h3>Python Reboot Files Latest Time Stamps</h3>
+
+
+<ol>
+{% for entry in file_list %}
+<li>{{entry}}</li>
+ 
+{% endfor %}
+</ol>
+
+</div><!-- /page -->
+</body>
+</html>

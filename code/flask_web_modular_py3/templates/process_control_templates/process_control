@@ -1,0 +1,58 @@
+<html>
+<head>
+	  <meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+   <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+
+   
+   {% set title = 'Manage Running Processes' %}
+
+
+   {% set header_name = title %}
+	
+   {% include 'common_setup' %}
+	
+	
+	 <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+
+  </script>
+
+  <script type="text/javascript" >
+       False = false
+       True = true
+       None = null
+       display_list = {{display_list}} 
+       command_queue_key = "{{command_queue_key}}"
+       process_data_key = "{{process_data_key}}"
+      {% include "js/process_control/process_control.js" %}
+  </script>
+
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+       
+   {% include 'menu' %}
+   <!-- /header -->
+
+   <h4>Refresh State</h4>       
+   <button type="button" id="refresh_b">Refresh</button>
+   <h4>Edit Managed Processes</h4>
+   <button type="button" id="change_state">Click to Change State</button> 
+   <h4>Toggle Check Box to Change State  -- Check to Enable  Uncheck to Disable</h4>
+   <div id="queue_elements">
+   </div>
+
+
+
+  
+</div>    
+    
+
+
+</div><!-- /page -->
+</html>
+

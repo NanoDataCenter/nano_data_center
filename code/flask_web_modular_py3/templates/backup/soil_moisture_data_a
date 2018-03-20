@@ -1,0 +1,60 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        
+
+        <title>'Soil Moisture Data</title>
+
+        {% include 'include_files.html' %}
+        {% set header_name = 'Soil Moisture Data' %}
+        <script type="text/javascript" src="/static/js/moisture_update_a.js"></script>
+<body>        
+<div data-role="page"> 
+    
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+    <h4>Select Moisture Controller </h4> 
+    <select id="moisturecontroller_id">
+	    <option value="CLEAR">Clear</option>
+	    <option value="NATIVE_SCHEDULE">Queue Schedule Step Time</option>
+	    <option value="OPEN_MASTER_VALVE">Open Master Valve</option>
+	    <option value="CLOSE_MASTER_VALVE">Close Master Valve</option>
+    </select>
+
+
+         <h4><br><br>Click To Refresh Readings</button>
+        <button type="button" id="Click_To_Refresh">Click To Refresh Readings</button>
+        </h4>
+       <h4>Temperature and Status Data </h4>
+       <ul>
+       <li>Current Reading Status       {{read_status}}     </li>
+       <li>One Wire Present:            {{one_wire_device}} </li>
+       <li>Moisture Temperature:        {{moisture_temp}}   </li>
+       <li>Air Temperature:             {{air_temp}}        </li>
+       <li>Air Humidity :               {{air_humidity}}    </li>
+       </ul>
+       <h3>Moisture Sensor Data</h3>
+       <ol>
+       {% for item in moisture_data %}
+       <li>{{item}}  </li>
+       {% endfor %}
+       </ol>
+       <h3>Raw Resistive Value</h3>
+       <ol>
+       {% for item in moisture_resistive_data %}
+       <li>{{item}} ohms </li>
+       {% endfor %}
+       </ol>
+       <h3>Moisture Sensor Configuration</h3>
+       <ol>
+       {% for item in moisture_configuration %}
+       <li>{{item}} </li>
+       {% endfor %}
+       </ol>
+   
+
+</div><!-- /page -->
+</body>
+</html>

@@ -1,0 +1,88 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+        <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+        <link rel="shortcut icon" href="/static/favicon.ico">
+	<title>{{title_name}}</title>
+        {% include 'include_files.html' %}
+
+        <script type="text/javascript" >
+           cleaning_list   = {{ cleaning_list }}
+           cleaning_index  = {{ cleaning_index }}
+        </script>
+        <script type="text/javascript" >
+             $(document).ready(
+              function()
+              {
+
+ 
+                  $( "#change_gallon_trigger" ).bind( "click", function(event, ui) 
+                  {
+
+                     var json_data = {}
+                         json_object = {}
+                         json_object["hash_name"] = "CONTROL_VARIABLES"
+                         json_object["key_list"] = {}
+                         json_object["key_list"]["CLEANING_INTERVAL"]  = $("#gallon_trigger").val()
+
+                         var json_string = JSON.stringify(json_object);
+                       
+                         var result = confirm("Do you wish to change cleaning interval ?");
+                         if( result == true )
+                         {    // making update
+                              $.ajax
+                                ({
+                                   type: "POST",
+                                   url: '/ajax/set_redis_hkeys',
+                                   dataType: 'json',
+                                   async: false,
+                                   //json object to sent to the authentication url
+                                   data: json_string,
+	                           contentType: "application/json",
+                                   success: function () 
+		                   {
+                                        alert("Changes Made")
+                                   },
+                                   error: function () 
+		                   {
+                                      alert('/ajax/set_redis_hkeys'+"Server error");
+	                           }
+                                })
+                         }// if
+                    }) // change gallon trigger
+	         
+                    $("#gallon_trigger")[0].selectedIndex = {{ cleaning_index }};
+                    $("#gallon_trigger").selectmenu(); 
+                    $("#gallon_trigger").selectmenu("refresh");
+             } );
+     </script>
+
+</head> 
+<body> 
+
+<div data-role="page"> 
+
+{% include 'header.html' %}
+{% include 'menu.html' %}
+
+<h3>Gallons to Initiate Automatic Cleaning </h3> 
+<select id="gallon_trigger">
+   {% for i in cleaning_list %}
+        {% if i == 0 %}
+            <option value={{i}}>OFF</option>
+        {% else %}
+            <option value={{i}}>{{i}}</option>
+        {% endif %}
+   {% endfor %}
+</select>
+<br>
+<br>
+<button type="button" id="change_gallon_trigger">Click to Change Cleaning Interval </button>
+ 
+   
+    
+
+
+</div><!-- /page -->
+</html>

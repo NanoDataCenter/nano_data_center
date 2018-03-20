@@ -1,0 +1,41 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+        <script>
+              interfaces_json    = '{{ json_interfaces }}'
+              remotes_json  = '{{ json_remotes    }}'
+        </script>
+        <script type="text/javascript" src="/static/js/modbus_ping.js"></script>
+<body>        
+<div data-role="page"> 
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+
+    <div>
+       <h3>Select Modbus UDP Interface</h3>
+       <select id="interface_type">
+       {% for item in interfaces -%}
+          <option value={{item}}>{{item}} </option>
+       {%- endfor %}  
+       </select>
+       <h3>Select Modbus Remote Address</h3>
+       <select id="remote_unit">
+       {% for remote in remotes[interfaces[0]] -%}
+          <option value={{remote}}>{{remote}} </option>
+       {%- endfor %}  
+       </select>
+       <h3>Click To Ping Device</h3>
+       <button type="button" id="ping_device">Ping Device</button>
+       <div data-role="fieldcontain">
+       <label for="ping_result">Ping Results:</label>
+       <input type="text" name="ping_result" id="ping_result" value=""  />
+       </div>	
+       </div>
+   </div>
+
+</div><!-- /page -->
+</body>
+</html>

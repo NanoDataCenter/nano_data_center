@@ -1,0 +1,31 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+	<link rel="shortcut icon" href="/static/favicon.ico">
+        {% include 'include_files.html' %}
+<body>        
+<div data-role="page"> 
+    {% include 'header.html' %}
+    {% include 'menu.html' %}
+
+
+
+  <h3>Description of Controller/Pins</h3>
+
+
+   {% for item in pin_list %} 
+   <div data-role="collapsible" data-theme="a"   data-collapsed="True" data-content-theme="a">
+        <h3>Pin List for Controller: {{item.name}}</h3>
+        <ul data-role="listview">
+             {% for i in item.pins %}
+                <li>Valve: {{loop.index}} Description:  {{i}}</a></li>
+              {% endfor %}     
+        </ul>
+
+    </div>
+    {% endfor %}
+
+</div><!-- /page -->
+</body>
+</html>

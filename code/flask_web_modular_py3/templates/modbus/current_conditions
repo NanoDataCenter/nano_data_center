@@ -1,0 +1,54 @@
+<html>
+<head>
+	 <meta charset="utf-8">
+	 <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+  <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  {% set title = 'Current Modbus Statistics' %}
+  {% set header_name = 'Current Modbus Statistics' %}
+
+	
+        
+  {% include 'common_setup' %}
+
+
+	  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+	
+	
+
+	
+        
+ 
+ 
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+   {% include 'menu' %}
+   <!-- /header -->
+    <div>
+       
+       <h3>  Time:  {{date_string}}
+       <h3>  Current Link Statistics</h3>
+
+       <h5>--  Message counts:  {{data["counts"]}} --   Message losses:  {{data["losses"]}} -- Message retries:  {{data["retries"]}} -- % Link is Busy:  {{data["time_ratio"]}}</</h5>
+
+       
+       {% for i in remote_list %}
+       {% set item = data["remotes"][i] %}
+
+       <h3>  Data for Remote: {{i}} </h3>
+       <h5> -- Message counts:  {{item["message_count"]}} -- Message retries: {{item["retries"]}} -- Message losses:  {{item["message_loss"]}}</h5>
+        {% endfor %}
+
+        
+   </div>
+
+
+</div><!-- /page -->
+</html>

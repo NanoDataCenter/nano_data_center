@@ -1,0 +1,208 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+        <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+        <link rel="shortcut icon" href="/static/favicon.ico">
+        {% if filename in ( "display_past_actions" ,"display_past_system_actions" ) %}
+           {% set title = 'Display Past Operations' %}
+           {% set header_name = 'Display Past Operations' %}
+        {% elif filename in ( "display_past_alerts","display_past_system_alerts") %}
+           {% set title = 'Display Past Alerts' %}
+           {% set header_name = 'Display Past Alerts' %}
+         {% else %}
+           {% set title = 'Control Functions' %}
+           {% set header_name = 'Control Functions' %}
+
+        {% endif %}
+     
+
+	<title>{{title_name}}</title>
+        {% include 'include_files.html' %}
+	
+	
+	
+
+	
+        {% if filename == "control" %}
+           <script type="text/javascript" src="/static/js/control.js"></script>
+        {% endif %}
+        {% if filename == "set_rain_day" %}
+           <script type="text/javascript" src="/static/js/rain_flag.js"></script>
+        {% endif %}
+        {% if filename == "eto_management" %}
+           <<script type="text/javascript" src="/static/js/eto_flag.js"></script>
+        {% endif %}
+        {% if filename == "eto_values" %}
+           <script type="text/javascript" src="/static/js/eto_handler.js"></script>
+        {% endif %}
+        {% if filename == "irrigation_queue" %}
+           <script type="text/javascript" src="/static/js/edit_work_queue.js"></script>
+        {% endif %}
+        {% if filename == "display_irrigation_queue" %}
+
+           <script type="text/javascript" src="/static/js/display_work_queue.js"></script>
+        {% endif %}
+
+       {% if filename in ( "display_past_alerts","display_past_actions")  %}
+	   <script >
+               reference_queue = "QUEUES:SPRINKLER:PAST_ACTIONS"
+          </script>
+          {% if filename == "display_past_actions" %}
+              <script type="text/javascript" src="/static/js/display_past_actions.js"></script>
+          {% else %}
+            <script type="text/javascript" src="/static/js/display_past_alerts.js"></script>
+          {% endif %}
+        {% endif %}
+        {% if filename in ( "display_past_system_actions","display_past_system_alerts") %}
+	   <script >
+               reference_queue = "QUEUES:SYSTEM:PAST_ACTIONS"
+               
+          </script>
+          {% if filename == "display_past_actions" %}
+              <script type="text/javascript" src="/static/js/display_past_actions.js"></script>
+          {% else %}
+            <script type="text/javascript" src="/static/js/display_past_alerts.js"></script>
+          {% endif %}
+ 	{% endif %}
+
+</head> 
+<body> 
+
+<div data-role="page"> 
+
+ {% include 'header.html' %}
+ {% include 'menu.html' %}
+<!-- /header -->
+{% if filename == "control" %}
+
+        <h3>Manually Control System</h3>     
+        <h4>Select Operating Mode</h4> 
+	<select id="op_mode">
+	    <option value="OFFLINE">Empty Irrigation Queue</option>
+	    <option value="QUEUE_SCHEDULE">Queue Schedule</option>
+	    <option value="QUEUE_SCHEDULE_STEP">Queue Schedule Step</option>
+	    <option value="CLEAN_FILTER">Clean Filter</option> 
+	    <option value="OPEN_MASTER_VALVE">Open Master Valve</option>
+	    <option value="CLOSE_MASTER_VALVE">Close Master Valve</option> 
+            <option value="RESTART_PROGRAM">Restart Irrigation Control</option>
+            <option value="RESET_SYSTEM">Reset System</option>
+            <option value="CHECK_OFF">Check Off Condition</option>
+            <option value="SUSPEND">Suspend Operation </option> 
+            <option value="RESUME">Resume Operation  </option> 
+            <option value="SKIP_STATION">Skip Irrigation Station  </option>
+            <option value="RESISTANCE_CHECK">Valve Resistance Check </option>        
+	</select>
+
+  
+	<div id = "schedule_div">
+        <h4 id="schedule_label">Select Schedule</h4> 
+	<select id="manual_schedule">
+	</select>
+        </div>
+        <div id ="manual_div">
+        <h4 id="step_label">Select step</h4> 
+	<select id="manual_step">
+	</select>
+	</div>
+       <div id = "run_div"> 
+       <h4 id ="run_label">Select Run Time (1 to 60 Minutes) </h4> 
+       <select id="run_time">
+        </select>
+        </div>
+        <h4><br><br>Click to Change Schedule Modifier</h4>
+         <button type="button" id="change_mode">Click to Change Mode Mode</button>  
+
+    
+{% endif %}
+{% if filename == "set_rain_day" %}
+
+        <h3>Control Rain Day</h3>
+       <h3><br>Current Rain Day Setting: </h3> 
+	<select id="rain_flag">
+	    <option selected value=0>Off</option>
+	    <option value=1>On</option>
+	</select>
+       <h3><br><br>Click To Change Manage ETO</button>
+        <button type="button" id="change_rain_flag">Click to Change Rain Flag </button>
+ 
+
+{% endif %}
+{% if filename == "eto_management" %}
+
+        <h3>Control ETO Management</h3>
+        <h3><br><br>ETO Management Setting </h3>       
+	   <select id="eto_flag"> 
+               <option value=0>Off</option>
+	       <option selected value=1>On</option>
+	   </select>
+        <h3><br><br>Click To Change Manage ETO</button>
+        <button type="button" id="change_eto_flag">Click to Change ETO Management </button>
+
+{% endif %}
+{% if filename == "eto_values" %}
+ 
+       <h3>Edit ETO Data</h3>
+        <button type="button" id="refresh_c">Reload Data</button>
+       <h3>Select Action For Checked Enities</h3> 
+       <select id="eto_op_mode">
+            <option selected value=0>No Action</option>
+	    <option value=1>Zero Selected ETO Data</option>
+	    <option value=2>Subtract .01 inch from ETO Data</option>
+	    <option value=3>Add .01 inch to ETO Data</option>
+	    <option value=4>Subtract .05 inch from ETO Data</option>
+	    <option value=5>Add .05 inch to ETO Data</option>
+	    <option value=6>Select All Elements</option>
+	    <option value=7>Unselect All Elememts</option>
+	    <option value=8>Reset ETO Data</option>
+	    <option value=9>Save ETO Data</option>    
+       </select>
+       <div id="eto_list">
+       </div>
+
+{% endif %}
+{% if filename == "irrigation_queue" %}
+
+         <button type="button" id="refresh_b">Refresh</button>
+        <h3>Edit Irrigation Queue</h3>
+        <button type="button" id="delete_limits">Delete Selected Elements</button> 
+        <div id="queue_elements">
+        </div>
+
+{% endif %}
+{% if filename == "display_irrigation_queue" %}
+
+       
+        <h3>Pending Irrigation Actions</h3>
+        <button type="button" id="refresh_c">Reload Data</button>
+        <div id="queue_elements">
+        </div>
+
+{% endif %}
+
+{% if filename in ( "display_past_actions","display_past_system_actions") %}
+
+         <button type="button" id="refresh_b">Reload Data</button>
+        <h3>Past Operational Actions</h3>
+        <button type="button" id="delete_limits">Delete Selected Elements</button> 
+        <div id="queue_elements">
+        </div>
+
+{% endif %}
+
+
+{% if filename in ( "display_past_alerts","display_past_system_alerts") %}
+
+         <button type="button" id="refresh_b">Reload Data</button>
+        <h3>Past Operational Alerts</h3>
+        <div id="queue_elements">
+        </div>
+
+{% endif %}
+  
+</div>    
+    
+
+
+</div><!-- /page -->
+</html>

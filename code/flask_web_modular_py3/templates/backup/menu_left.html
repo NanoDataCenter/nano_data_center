@@ -1,0 +1,146 @@
+
+<style>
+        /*this block should go in the styles.css file*/
+        .ui-panel-inner {
+            padding:7px; /*make the buttons flush edge to edge*/
+        }
+        .ui-controlgroup {
+            margin:7px; /*make the buttons flush to the top*/
+        }
+        #header {
+            height:60px;
+        }
+        #bars-button {
+            margin:5px;
+        }
+    </style>
+
+
+
+<div data-role="popup" id="navpanel" data-theme="a"
+         data-display="overlay" data-position="right">
+
+
+   <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <h3>Field Operation Diagnostics</h3>
+        <ul data-role="listview">
+            <li><a href="/diagnostics/schedule_control" target="_self">Turn On/Off By Schedule Step</a></li>
+            <li><a href="/diagnostics/controller_pin" target="_self">Turn On/Off By Controller Pin</a></li>
+            
+
+
+
+        </ul>
+   </div>
+ 
+
+        
+
+   <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <h3>Trendlines</h3>
+        <ul data-role="listview">
+           <li><a href ='/control/display_past_alerts' target="_self">Past Alerts</a></li>
+           <li><a href ='/control/display_past_actions' target="_self">Past Actions</a></li>
+           <li><a href="/control/display_irrigation_queue" target="_self">Pending Actions</a></li>
+            <li><a href ='/sel_chart/flow' target="_self">Recent Flow History</a></li>
+            <li><a href="/strip_chart/coil" target="_self">Recent Coil History</a></li>
+            
+            
+        </ul>
+    </div>
+
+   <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <h3>Automatic Operations </h3>
+        <ul data-role="listview">
+         <li><a href="/control/control" target="_self">Control Operation</a></li>
+         <li><a href="/control/set_rain_day" target="_self">Set Rain Day</a></li>
+         <li><a href="/control/eto_management" target="_self">Set Eto Management</a></li>
+         <li><a href="/control/eto_values" target="_self">Manage Eto Values</a></li>
+         <li><a href="/control/irrigation_queue" target="_self">Manage Irrigation Queue</a></li>
+
+        </ul>
+    </div>
+   <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <h3>Schedule Statistics</h3>
+        <ul data-role="listview">
+        <li><a href="/overall_flow_statistics/0/0" target="_self">Composite Flow Statistics</a></li>
+        <li><a href="/overall_current_statistics/0" target="_self">Composite Current Statistics</a></li>
+        <li><a href="/detail_statistics/0/0/0/0/0" target="_self">Detail Statistics</a></li>
+       
+
+
+
+        </ul>
+    </div>
+    
+       <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <h3>Schedule Related Configurations</h3>
+        <ul data-role="listview">
+            <li><a href="/add_schedule"               target="_self">Add  Schedule </a></li>
+            <li><a href="/copy_schedule"               target="_self">Copy Schedule </a></li>
+            <li><a href="/delete_schedules"           target="_self">Delete Schedule </a></li>
+            <li><a href="/edit_schedules"             target="_self">Edit Schedule </a></li>
+            <li><a href="/configure_flow_limits/0/0"      target="_self">Flow Limits</a></li>
+            <li><a href="/configure_current_limits/0"   target="_self">Current Limits</a></li>
+
+        </ul>
+ 
+    </div>
+    <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <h3>Misc Config</h3>
+        <ul data-role="listview">
+            <li><a href="/system_actions"   target="_self">Configure System Actions </a></li>
+            <li><a href="/eto_setup"        target="_self">ETO Configuration </a></li>
+            <li><a href="/configure_filter_cleaning"  target="_self">Configure Filter Cleaning Interval </a></li>
+            <li><a href="/configure_max_flow_rate"  target="_self">Configure Max Flow Rate Cutoff </a></li>
+        </ul>
+    </div>
+
+   <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <h3>Operational Diagnostics</h3>
+        <ul data-role="listview">
+            <li><a href ='/overall_resistance/0' target="_self">Coil Resistance</a></li>
+            <li><a href ='/overal_resistance_limits/0' target="_self">Coil Resistance Limits</a></li>
+            <li><a href ='/eto_raw_data' target="_self">ETO Raw Data</a></li>
+            <li><a href ='/soil_moisture_data' target="_self">Soil Moisture Data</a></li>
+
+            
+
+
+
+        </ul>
+    </div>
+   <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+        <h3>System Diagnostics</h3>
+        <ul data-role="listview">
+            <li><a href ='/control/display_past_system_alerts'  target="_self">Past System Alerts</a></li>
+            <li><a href ='/control/display_past_system_actions' target="_self">Past System Actions</a></li>
+            <li><a href ='/display_environmental_conditions' , target="_self">Equip Environ Params</a></li>
+            <li><a href=/modbus_statistics target="_self">Modbus Statistics</a></li>
+            <li><a href=/modbus_ping target ="_self">Modbus Ping </a></li>
+            <li><a href="/strip_chart/plc"  target="_self">View PLC Current History</a></li>
+            <li><a href="/view_running_process"  target="_self">View Running Python Processes</a></li>
+            <li><a href="/list_reboot_files"  target="_self">View Python Reboot Time Stamps</a></li>
+            <li><a href="/reboot_system"  target="_self">Reboot The System Over The Web</a></li>
+
+     
+
+        </ul>
+    </div>
+
+   <div data-role="collapsible" data-theme="a"  data-iconpos="right" data-collapsed="True" data-content-theme="c">
+       <h3>Site Map</h3>
+         <ul data-role="listview">
+            <li><a href="/site_map/0"    target="_self">Valve Group Site Map</a></li>
+            <li><a href="/site_map/1"    target="_self">Controller Site Map</a></li>
+            <li><a href="/site_map/2"    target="_self">Avocado Block Map</a></li>
+            <li><a href="/controller_pin_map"    target="_self">Controller Pin Map</a></li>
+        </ul>
+   </div>
+
+</div>
+ 
+
+
+ 
+       

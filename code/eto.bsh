@@ -1,0 +1,11 @@
+
+while [ 1 ]
+do
+   echo "executing eto interface module"
+   python3 eto_py3.py    2>  /tmp/eto_py3.err 
+   python3 cloud_event_queue_py3.py "reboot" "eto"
+   sleep 10
+   echo "dumping error file"
+   mv /tmp/eto_py3.err /tmp/eto_py3.errr
+
+done
