@@ -7,16 +7,23 @@ ONE_DAY = 3600*24
 
 class CIMIS_SPATIAL(object):
     # fetch from cimis site
-    def __init__(self, access_data):
+    def __init__(self, access_data,eto_sources,rain_sources):
+        self.eto_sources = eto_sources
         self.cimis_data = access_data
-        self.app_key = "appKey=" + self.cimis_data["api-key"]
+        self.app_key = "appKey=" + self.cimis_data["access_key"]
         self.cimis_url = self.cimis_data["url"]
         self.latitude = self.cimis_data["latitude"]
         self.longitude = self.cimis_data["longitude"]
+        self.priority = access_data["priority"]
 
-    def get_eto(self, time=time.time() - 1 * ONE_DAY):  # time is in seconds for desired day
+    def  compute_previous_day(self):
+        if self.eto_sources.hget("CIMIS_SAT:"+str(self.longitude)) != None:
+            print("*********************","am returning cimis_spatial")
+            return
+         
+        ts=time.time() - 1 * ONE_DAY  # time is in seconds for desired day
 
-        date = datetime.datetime.fromtimestamp(time).strftime('%Y-%m-%d')
+        date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
         lat_long = "lat=" + str(self.latitude) + ",lng=" + str(self.longitude)
         url = self.cimis_url + "?" + self.app_key + "&targets=" + \
             lat_long + "&startDate=" + date + "&endDate=" + date
@@ -30,10 +37,6 @@ class CIMIS_SPATIAL(object):
         temp = float(data["Data"]["Providers"][0]
                      ["Records"][0]['DayAsceEto']["Value"])
 
-        return temp
+        self.eto_sources.hset("CIMIS_SAT:"+str(self.longitude), { "eto":temp,"priority":self.priority,"status":"OK"})
 
 
-if __name__ == "__main__":
-   access_data  = { "api-key":"e1d03467-5c0d-4a9b-978d-7da2c32d95de"  , "url":"http://et.water.ca.gov/api/data"     , "longitude":  -117.299459  ,"latitude":33.578156  }
-   x =  CIMIS_SPATIAL(access_data)
-   print(x.get_eto())

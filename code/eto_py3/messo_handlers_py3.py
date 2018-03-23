@@ -3,25 +3,30 @@ import time
 import datetime
 import json
 ONE_DAY = 3600*24
-
+from .calculate_eto_py3 import Calculate_ETO
 
 class Messo_ETO(object):
-    def __init__(self, access_data,calculate_eto):
-        self.calculate_eto = calculate_eto
+    def __init__(self, access_data,eto_dict, rain_dict):
+        self.calculate_eto = Calculate_ETO()
+        self.eto_dict = eto_dict
         self.messo_data = access_data
-        self.alt = access_data["alt"]
-        self.lat = access_data["lat"]
-
-        self.app_key = self.messo_data["api-key"]
+        self.alt = access_data["altitude"]
+        self.lat = access_data["latitude"]
+        self.priority = access_data["priority"]
+        self.app_key = self.messo_data["access_key"]
         self.url = self.messo_data["url"]
         self.station = self.messo_data["station"]
         self.token = "&token=" + self.app_key
 
-    def get_daily_data(self, time=time.time()):
+    def compute_previous_day(self):
+        if self.eto_dict.hget("messo:"+self.station+":normal_eto" ) != None:
+           print("****************** messo eto returning")
+           return
+        ts = time.time()
         date_1 = datetime.datetime.fromtimestamp(
-            time - 1 * ONE_DAY).strftime('%Y%m%d')
+            ts - 1 * ONE_DAY).strftime('%Y%m%d')
         date_2 = datetime.datetime.fromtimestamp(
-            time - 0 * ONE_DAY).strftime('%Y%m%d')
+            ts - 0 * ONE_DAY).strftime('%Y%m%d')
         start_time = "&start=" + date_1 + "0800"
         end_time = "&end=" + date_2 + "0900"
 
@@ -59,26 +64,35 @@ class Messo_ETO(object):
             temp["SolarRadiationWatts/m^2"] = station_data["solar_radiation_set_1"][i]
             temp["TC"] = station_data["air_temp_set_1"][i]
             return_value_gust.append(temp)
-        print("return_value",return_value_normal)
-        return_value = {"normal_eto":self.calculate_eto.__calculate_eto__( return_value_normal, self.alt,self.lat ),
-                        "gust_eto":self.calculate_eto.__calculate_eto__(return_value_gust,self.alt,self.lat) }
-        return return_value
+        self.eto_dict.hset("messo:"+self.station+":normal_eto",
+                           { "eto":self.calculate_eto.__calculate_eto__( results  =  return_value_normal, alt = self.alt,lat = self.lat ), 
+                           "priority":self.priority,"status":"OK" })
+        self.eto_dict.hset("messo:"+self.station+":gust_eto",
+                           { "eto":self.calculate_eto.__calculate_eto__( return_value_gust, self.alt,self.lat ), "priority":100,"status":"OK" })
+
+        
 
 
 class Messo_Precp(object):
-    def __init__(self, access_data):
-        self.messo_data = access_data
-        self.app_key = self.messo_data["api-key"]
+    def __init__(self, data,eto_dict,rain_dict):
+        self.rain_dict = rain_dict
+        self.messo_data = data
+        self.app_key = self.messo_data["access_key"]
         self.url = self.messo_data["url"]
         self.station = self.messo_data["station"]
         self.token = "&token=" + self.app_key
 
-    def get_daily_data(self, time=time.time()):
+    def compute_previous_day(self):
+        
+        if self.rain_dict.hget("messo:"+self.station) != None:
+            print("*********************","am returning messo precp")
+            return
 
+        ts = time.time()
         date_1 = datetime.datetime.fromtimestamp(
-            time - 1 * ONE_DAY).strftime('%Y%m%d')
+            ts - 1 * ONE_DAY).strftime('%Y%m%d')
         date_2 = datetime.datetime.fromtimestamp(
-            time - 0 * ONE_DAY).strftime('%Y%m%d')
+            ts - 0 * ONE_DAY).strftime('%Y%m%d')
         start_time = "&start=" + date_1 + "0800"
         end_time = "&end=" + date_2 + "0900"
 
@@ -97,15 +111,7 @@ class Messo_Precp(object):
         station_data = station["OBSERVATIONS"]
         
         rain = float(station_data["total_precip_value_1"]) / 25.4
-        return rain
+        self.rain_dict.hset( "messo:"+self.station,  {"rain":rain,"priority":self.messo_data["priority"],"status":"OK"} )
+        
+       
 
-if __name__ == "__main__":
-    from .calculate_eto_py3 import Calculate_ETO
-    calculate_ETO = Calculate_ETO()
-    access_data = {"api-key":"8b165ee73a734f379a8c91460afc98a1"  ,"url":"http://api.mesowest.net/v2/stations/timeseries?" ,  "station":"SRUC1","alt":2400,"lat":33.2 }
-    eto =  Messo_ETO(access_data,calculate_ETO )
-    print("eto",eto.get_daily_data())
-    
-    access_data = {"api-key":"8b165ee73a734f379a8c91460afc98a1"  ,"url":"http://api.mesowest.net/v2/stations/precip?" ,  "station":"SRUC1" }
-    rain =  Messo_Precp(access_data)
-    print("rain",rain.get_daily_data())

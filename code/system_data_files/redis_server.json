@@ -3,5 +3,6 @@
    "port":6379,
    "site":"LaCima",
    "graph_db":25,
-   "redis_io_db":26
+   "redis_io_db":26,
+   "redis_file_db":24
 }

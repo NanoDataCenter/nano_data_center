@@ -9,7 +9,8 @@ import json
 import redis
 from .build_configuration_py3 import Build_Configuration
 from .construct_data_structures_py3 import Construct_Data_Structures
-from .construct_graph.construct_applications_py3 import Construct_Applications
+from .graph_modules_py3.construct_applications_py3 import Construct_Applications
+from .graph_modules_py3.construct_controller_py3 import Construct_Processes
 
 if __name__ == "__main__" :
 
@@ -20,7 +21,7 @@ if __name__ == "__main__" :
 
 
    bc = Build_Configuration(redis_site)
-   cd = Construct_Data_Structures(redis_site)
+   cd = Construct_Data_Structures(redis_site["site"],bc)
    
    #
    #
@@ -38,7 +39,9 @@ if __name__ == "__main__" :
  
    bc.add_header_node( "SITE","LaCima",  properties = {"address":"21005 Paseo Montana Murrieta, Ca 92562" } )
                                                   
-   
+
+   Construct_Applications(bc,cd)
+   Construct_Processes(bc,cd)
 
 
    bc.end_header_node("SITE")

@@ -18,10 +18,10 @@ from os import listdir
 from os.path import isfile, join
 import redis
 import json
-from redis_graph_py3 import farm_template_py3
 
-app_files = "/home/pi/new_python/app_data_files/"
-sys_files = "/home/pi/new_python/system_data_files/"
+
+app_files = "/home/pi/nano_data_center/code/app_data_files/"
+sys_files = "/home/pi/nano_data_center/code/system_data_files/"
 
 
 class BASIC_FILES( object ):
@@ -79,15 +79,12 @@ if __name__ == "__main__":
 
 
 
-   graph_management = farm_template_py3.Graph_Management(
-           "PI_1", "main_remote", "LaCima_DataStore")
-   data_store_nodes = graph_management.find_data_stores()
-   # find ip and port for redis data store
-   data_server_ip = data_store_nodes[0]["ip"]
-   data_server_port = data_store_nodes[0]["port"]
-   print(data_server_ip,data_server_port)
+   file_handle = open("system_data_files/redis_server.json",'r')
+   data = file_handle.read()
+   file_handle.close()
+   redis_site = json.loads(data)
 
-   redis_handle = redis.StrictRedis(data_server_ip, data_server_port, db=0, decode_responses=True)
+   redis_handle = redis.StrictRedis(redis_site["host"], redis_site["port"], db=redis_site["redis_file_db"], decode_responses=True)
 
 
    redis_handle.delete("APP_FILES")
@@ -151,49 +148,4 @@ if __name__ == "__main__":
         "CONTROL_VARIABLES",
             "ETO_RESOURCE_UPDATED") != "TRUE":
         redis_handle.hset("CONTROL_VARIABLES", "ETO_RESOURCE_UPDATED", "FALSE")
-   #
-   # delete process keys
-   #
-   keys = redis_handle.hkeys("WD_DIRECTORY")
-   for i in keys:
-        print("i", i)
-        redis_handle.hdel("WD_DIRECTORY", i)
-
-   redis_handle.hset(
-        "SYS_DICT",
-        "CONTROL_VARIABLES",
-        "system control and status variables")
-   redis_handle.hset(
-        "SYS_DICT",
-        "FILES:APP",
-        "dictionary of application files")
-   redis_handle.hset("SYS_DICT", "FILES:SYS", "dictionary of system files")
-   redis_handle.hset("SYS_DICT", "ETO_RESOURCE", "dictionary of eto resource")
-   redis_handle.hset(
-        "SYS_DICT",
-        "SCHEDULE_COMPLETED",
-        "markers to prevent multiple keying of sprinklers")
-   redis_handle.hset(
-        "SYS_DICT",
-        "OHM_MESS",
-        "ohm measurement for active measurements")
-   redis_handle.hset(
-        "QUEUES_DICT",
-        "QUEUES:SPRINKLER:PAST_ACTIONS",
-        "QUEUE OF RECENT IRRIGATION EVENTS AND THEIR STATUS")
-   redis_handle.hset(
-        "QUEUES_DICT",
-        "QUEUES:CLOUD_ALARM_QUEUE",
-        "QUEUE OF EVENTS AND ACTIONS TO THE CLOUD")
-   redis_handle.hset(
-        "QUEUES_DICT",
-        "QUEUES:SPRINKLER:FLOW:<schedule_name>",
-        "QUEUE OF PAST FLOW DATA")
-   redis_handle.hset(
-        "QUEUES_DICT",
-        "QUEUES:SPRINKLER:CURRENT:<schedule_name>",
-        "QUEUE OF PAST CURRENT DATA")
-   redis_handle.hset(
-        "QUEUES_DICT",
-        "QUEUES:SYSTEM:PAST_ACTIONS",
-        "QUEUE OF RECENT SYSTEM EVENTS AND THEIR STATUS")
+ 

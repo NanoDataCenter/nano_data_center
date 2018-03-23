@@ -411,9 +411,10 @@ class Redis_Package_Controller(object):
        redis_server_ip = redis_configuration["host"]
        port            = redis_configuration["port"]
        db              = redis_configuration["redis_io_db"]
+       site            = redis_configuration["site"]
        self.redis_handle  = redis.StrictRedis( host = redis_server_ip, port = port, db =db , decode_responses=True)
-  
-       self.package_ctr_name = "[PACK_CTRL:]"
+     
+       self.package_ctr_name = "[PACK_CTRL:"+site+"]"
   
        if self.redis_handle.exists(self.package_ctr_name) :
            if self.verify_package_controller() == True:
