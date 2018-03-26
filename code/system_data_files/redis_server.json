@@ -4,5 +4,10 @@
    "site":"LaCima",
    "graph_db":25,
    "redis_io_db":26,
-   "redis_file_db":24
+   "redis_file_db":24,
+   
+   "redis_password_db":28,
+   "redis_table_db":29,
+   "redis_backup_db":30
+   
 }

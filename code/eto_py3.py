@@ -17,11 +17,12 @@ ONE_DAY = 24 * 3600
 
 
 class Eto_Management(object):
-    def __init__(self,  eto_sources, package,site_data ):
+    def __init__(self,  eto_sources, package,site_data,eto_hash_table ):
 
         self.eto_sources = eto_sources
         self.package  = package
         self.site_data = site_data
+        self.eto_hash_table = eto_hash_table
        
         self.generate_redis_handlers()
         self.initialize_values()
@@ -90,7 +91,7 @@ class Eto_Management(object):
                 try:
                     source["calculator"].compute_previous_day()
                 except:
-                   raise
+                   
                    print("exception",source["name"])
                    self.ds_handlers["EXCEPTION_VALUES"].hset(source["name"],"EXCEPTION")
        
@@ -98,14 +99,21 @@ class Eto_Management(object):
 
     def update_eto_bins(self, *parameters):
         if int(self.ds_handlers["ETO_CONTROL"].hget("ETO_LOG_FLAG")) == 1:
-            return
+            return True
         self.ds_handlers["ETO_CONTROL"].hset("ETO_LOG_FLAG",1) 
         # find eto with lowest priority
         eto = self.find_eto()
+        if eto ==  None:
+           return False
         self.reference_eto = eto
         rain = self.find_rain()
         self.reference_rain = self.find_rain()
         print("reference_eto",eto)
+        for i in self.eto_hash_table.keys():
+           
+           new_value = float(self.eto_hash_table.hget(i)) + float(eto)
+           print("eto_update",i,new_value)
+           self.eto_hash_table.hset(i,new_value)
         
 
 
@@ -115,11 +123,11 @@ class Eto_Management(object):
        self.ds_handlers["ETO_CONTROL"].hset("ETO_UPDATE_FLAG",1) 
     
        eto_data = self.assemble_data("eto",self.ds_handlers["ETO_VALUES"])
-       eto_data["reference"] = self.reference_eto
+       
        
        self.ds_handlers["ETO_HISTORY"].add(data = eto_data) 
        rain_data = self.assemble_data("rain",self.ds_handlers["RAIN_VALUES"])
-       rain_data["reference"] = self.reference_rain
+       
        self.ds_handlers["RAIN_HISTORY"].add(data = rain_data) 
        exception_data = self.ds_handlers["EXCEPTION_VALUES"].hgetall()
        self.ds_handlers["EXCEPTION_LOG"].add(data=exception_data)
@@ -128,13 +136,16 @@ class Eto_Management(object):
        eto_data = self.ds_handlers["ETO_VALUES"].hgetall()
        
        ref_priority = 1000000 # large starting number
+       eto_value = None
        for i ,data in eto_data.items():
           
            if data["priority"] < ref_priority:
                ref_priority = int(data["priority"])
-               eto_data = float(data["eto"])
+               eto_value = float(data["eto"])
+               
+               
        
-       return eto_data
+       return eto_value
 
     def find_rain(self):
        rain_data = self.ds_handlers["RAIN_VALUES"].hgetall()
@@ -148,7 +159,7 @@ class Eto_Management(object):
        
        return rain_data       
        
-       
+ 
     def assemble_data(self,field_key,hash_handler):
        data = hash_handler.hgetall()
        return_value = {}
@@ -159,7 +170,7 @@ class Eto_Management(object):
        
        
 def replace_keys( redis_site_data,elements ):
-   redis_handle = redis.StrictRedis(redis_site["host"], redis_site["port"], db=redis_site["redis_file_db"], decode_responses=True)
+   redis_handle = redis.StrictRedis(redis_site["host"], redis_site["port"], db=redis_site["redis_password_db"], decode_responses=True)
    for i in elements:
       
        temp = i["access_key"]
@@ -169,7 +180,7 @@ def replace_keys( redis_site_data,elements ):
 
 
 
-def construct_eto_instance(qs, site_data ):
+def construct_eto_instance(qs, site_data,user_table ):
 
     #
     #
@@ -208,8 +219,9 @@ def construct_eto_instance(qs, site_data ):
     #
     #
     #
-
-    eto = Eto_Management(eto_sources, package_sources[0],site_data  )
+    eto_hash_table = user_table.eto_data.get_hash_table()
+    
+    eto = Eto_Management(eto_sources, package_sources[0],site_data ,eto_hash_table )
     
     
     
@@ -240,9 +252,9 @@ def add_eto_chains(eto, cf):
     cf.insert.reset()
 
     cf.define_chain("update_eto_bins", False)
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 2)
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 5)
     cf.insert.log("updating eto bins")
-    cf.insert.one_step( eto.update_eto_bins )
+    cf.insert.wait_function( eto.update_eto_bins )
     cf.insert.terminate()
     
     cf.define_chain("log_sprinkler_data", False)
@@ -254,10 +266,12 @@ def add_eto_chains(eto, cf):
     
     cf.define_chain("eto_make_measurements", False)
     cf.insert.log("starting make measurement")
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 10)
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 2)
     cf.insert.one_step( eto.make_measurement )
     
-    cf.insert.log("Receiving Ten minute tick")
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 8)
+    cf.insert.log("Receiving 8 minute tick")
+    
     cf.insert.reset()
 
     cf.define_chain("test_generator",False)
@@ -281,6 +295,7 @@ if __name__ == "__main__":
     #import load_files_py3
     from redis_support_py3.graph_query_support_py3 import  Query_Support
     import datetime
+    from redis_support_py3.user_data_tables_py3 import User_Data_Tables
 
     from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
 
@@ -297,10 +312,10 @@ if __name__ == "__main__":
     #
     # Setup handle
     # open data stores instance
-
+    user_table = User_Data_Tables(redis_site)
     qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
     
-    eto = construct_eto_instance(qs, redis_site )
+    eto = construct_eto_instance(qs, redis_site,user_table )
     #
     # Adding chains
     #

@@ -220,6 +220,17 @@ class Stream_Reader(Redis_Stream):
           i["data"] = return_item
        return data_json
 
+   def xrevrange(self,key, start_time_stamp, end_time_stamp , count=100):
+       data_json = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
+       
+       for i in data_json:
+          return_item = {}
+          for key, item in i["data"].items():
+              return_item[key] = json.loads(item)
+          i["data"] = return_item
+       return data_json
+   
+       
 
        
 class Generate_Handlers(object):
@@ -232,7 +243,8 @@ class Generate_Handlers(object):
        self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] , decode_responses=True)
        print("package",package)   
        
-    
+   def get_redis_handle(self):
+       return self.redis_handle   
 
    def construct_list(self,data):
          assert(data["type"] == "LIST")
