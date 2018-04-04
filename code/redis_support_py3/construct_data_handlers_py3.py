@@ -2,6 +2,7 @@
 import json
 import redis
 import time
+import base64
 
 from .redis_stream_utilities_py3 import Redis_Stream
 from .redis_rpc_client_py3 import Redis_Rpc_Client
@@ -79,7 +80,14 @@ class Job_Queue_Client( object ):
       self.redis_handle = redis_handle
       self.key = name
       self.depth = depth
+
+   def delete(self, index ):
+       if index < self.llen(self.key):
+           self.lset(self.key, index,"__#####__")
+           self.lrem(self.key, 1,"__#####__") 
       
+   def length(self):
+       return self.redis_handle.llen(self.key)   
       
    def push(self,data):
        json_data = json.dumps(data)
@@ -91,12 +99,27 @@ class Job_Queue_Server( object ):
  
    def __init__(self,redis_handle, name):
       self.redis_handle = redis_handle
-      self.key = name
-      
+      self.key = name   
       self.redis_handle.delete(self.key)
+ 
+   def length(self):
+       return self.redis_handle.llen(self.key)
+       
+   def delete(self, index ):
+       if index < self.llen(self.key):
+           self.lset(self.key, index,"__#####__")
+           self.lrem(self.key, 1,"__#####__") 
+
  
    def pop(self):
        json_data = self.redis_handle.rpop(self.key)
+       if json_data == None:
+          return False, None
+       else:
+          return True, json.loads(json_data)
+          
+   def last_get(self):
+       json_data = self.redis_handle.lindex(self.key, -1)
        if json_data == None:
           return False, None
        else:
@@ -189,12 +212,12 @@ class Stream_Writer(Redis_Stream):
           self.add_pad = "~"
    
       
-   def add(self,id="*", data={} ):
+   def add_json(self,id="*", data={} ):
        store_dictionary = {}
        if len(list(data.keys())) == 0:
            return
        for i , item in data.items():
-           store_dictionary[i] = json.dumps(item)
+           store_dictionary[i] = base64.b64encode(json.dumps(item).encode("ascii")).decode("ascii")
        print(self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=store_dictionary ))
        
    
@@ -215,18 +238,25 @@ class Stream_Reader(Redis_Stream):
        
        for i in data_json:
           return_item = {}
-          for key, item in i["data"].items():
-              return_item[key] = json.loads(item)
+          for key, item64 in i["data"].items():
+              item_json = base64.b64decode(item64.encode("ascii")).decode("ascii")
+              item = json.loads(item_json)
+      
+              return_item[key] = item
           i["data"] = return_item
        return data_json
 
-   def xrevrange(self,key, start_time_stamp, end_time_stamp , count=100):
+   def xrevrange_json(self,start_timestamp, end_timestamp , count=100):
        data_json = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
        
        for i in data_json:
           return_item = {}
-          for key, item in i["data"].items():
-              return_item[key] = json.loads(item)
+          for key, item64 in i["data"].items():
+                        
+              item_json = base64.b64decode(item64.encode("ascii")).decode("ascii")
+              item = json.loads(item_json)
+      
+              return_item[key] = item
           i["data"] = return_item
        return data_json
    
@@ -241,7 +271,7 @@ class Generate_Handlers(object):
        self.cloud_handler = cloud_handler
 
        self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] , decode_responses=True)
-       print("package",package)   
+      
        
    def get_redis_handle(self):
        return self.redis_handle   

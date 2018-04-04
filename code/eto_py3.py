@@ -95,12 +95,12 @@ class Eto_Management(object):
                    print("exception",source["name"])
                    self.ds_handlers["EXCEPTION_VALUES"].hset(source["name"],"EXCEPTION")
        
-               
+             
 
     def update_eto_bins(self, *parameters):
-        if int(self.ds_handlers["ETO_CONTROL"].hget("ETO_LOG_FLAG")) == 1:
+        if int(self.ds_handlers["ETO_CONTROL"].hget("ETO_UPDATE_FLAG")) == 1:
             return True
-        self.ds_handlers["ETO_CONTROL"].hset("ETO_LOG_FLAG",1) 
+        self.ds_handlers["ETO_CONTROL"].hset("ETO_UPDATE_FLAG",1) 
         # find eto with lowest priority
         eto = self.find_eto()
         if eto ==  None:
@@ -109,7 +109,7 @@ class Eto_Management(object):
         rain = self.find_rain()
         self.reference_rain = self.find_rain()
         print("reference_eto",eto)
-        for i in self.eto_hash_table.keys():
+        for i in self.eto_hash_table.hkeys():
            
            new_value = float(self.eto_hash_table.hget(i)) + float(eto)
            print("eto_update",i,new_value)
@@ -118,9 +118,9 @@ class Eto_Management(object):
 
 
     def log_sprinkler_data(self,*parameters):
-       if int(self.ds_handlers["ETO_CONTROL"].hget("ETO_UPDATE_FLAG")) == 1:
+       if int(self.ds_handlers["ETO_CONTROL"].hget("ETO_LOG_FLAG")) == 1:
             return
-       self.ds_handlers["ETO_CONTROL"].hset("ETO_UPDATE_FLAG",1) 
+       self.ds_handlers["ETO_CONTROL"].hset("ETO_LOG_FLAG",1) 
     
        eto_data = self.assemble_data("eto",self.ds_handlers["ETO_VALUES"])
        
@@ -203,14 +203,15 @@ def construct_eto_instance(qs, site_data,user_table ):
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
 
     query_list = qs.add_match_terminal( query_list, 
-                                        relationship = "PACKAGE" )
+                                        relationship = "PACKAGE", property_mask={"name":"WEATHER_STATION_DATA"} )
                                            
-    package_sets, package_sources = qs.match_list(query_list)   
+    package_sets, package_sources = qs.match_list(query_list)  
+     
     
 
     
     #
-    # Replace symbolic keys with actual keys
+    # Replace symbolic keys with actual api keys
     #
     replace_keys(site_data, eto_sources)
     

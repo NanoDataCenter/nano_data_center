@@ -61,10 +61,17 @@ class Irrigation_Streams(object):
         self.redis_handle = generate_handlers.get_redis_handle()
         
    def get_stream_keys(self):
-         self.redis_handle.keys("*:IRRIGATION]*")
-
+         return_value = self.redis_handle.keys("*:IRRIGATION]*")
+         if return_value == None:
+            return_value = []
+         temp = self.redis_handle.keys("*:IRRIGATION_TIME_SERIES]*")
+         if temp != None:
+             return_value.extend(temp)
+         return return_value
+         
+         
    def  parse_key(self,key):
-       result = key.split("[STREAM_LIST:")
+       result = key.split("[STREAM:")
        if len(result) == 2:
           schedule,step = result[1].split("|")
           return schedule,step
@@ -78,7 +85,13 @@ class Irrigation_Streams(object):
         
    def get_irrigation_stream_writer(self,schedule,step,dept =100):
        return self.generate_handlers.construct_stream_writer("IRRIGATION",str(schedule)+"|"+str(step),depth)
-       
+ 
+   def get_irrigation_time_series_stream_reader(self, schedule, step ):
+       return self.generate_handlers.construct_stream_reader("IRRIGATION_TIME_SERIES",str(schedule)+"|"+str(step))
+        
+        
+   def get_irrigation_stream_writer(self,schedule,step,dept =15):
+       return self.generate_handlers.construct_stream_writer("IRRIGATION_TIME_SERIES",str(schedule)+"|"+str(step),depth) 
     
 class ETO_Data(object):
 
@@ -97,7 +110,10 @@ class Valve_Resistance_Data(object):
        self.redis_handle = generate_handlers.get_redis_handle()
       
    def get_stream_keys(self):
-         self.redis_handle.keys("*:RESISTANCE]*")
+         return_value =self.redis_handle.keys("*:RESISTANCE]*")
+         if return_value == None:
+            return_value = []
+         return return_value
 
    def  parse_key(self,key):
        result = key.split("[STREAM_LIST:")
@@ -117,7 +133,24 @@ class Valve_Resistance_Data(object):
    def get_resistance_stream_writer(self,controller,pin,dept =100):
       return self.generate_handlers.construct_stream_writer("RESISTANCE",str(controller)+"|"+str(pin),depth)
   
- 
+class Irrigation_Scheduling(object):
+
+   def __init__(self,generate_handlers):
+        self.generate_handlers = generate_handlers
+        self.redis_handle = generate_handlers.get_redis_handle()
+
+   def get_hash_table(self):
+       return  self.generate_handlers.construct_hash("IRRIGATION_SCHEDULING","SCHEDULE_COMPLETED")
+
+class System_Scheduling(object):
+
+   def __init__(self,generate_handlers):
+        self.generate_handlers = generate_handlers
+        self.redis_handle = generate_handlers.get_redis_handle()
+
+   def get_hash_table(self):
+       return  self.generate_handlers.construct_hash("SYSTEM_SCHEDULING","SYSTEM_COMPLETED")
+       
   
 class User_Data_Tables(object):
 
@@ -129,6 +162,8 @@ class User_Data_Tables(object):
        self.table_handler = Generate_Table_Handlers( redis_site_data, cloud_handler )
        self.redis_handle = self.table_handler.get_redis_handle()
        self.valve_resistance_data = Valve_Resistance_Data(self.table_handler)
+       self.system_scheduling = System_Scheduling(self.table_handler)
+       self.irrigation_scheduling = Irrigation_Scheduling(self.table_handler)
        self.eto_data = ETO_Data( self.table_handler )
        self.irrigation_streams = Irrigation_Streams(self.table_handler)
    
@@ -196,8 +231,6 @@ class User_Data_Tables(object):
        #
        #
        ref_keys = self.valve_resistance_data.get_stream_keys()
-       if ref_keys == None:
-          ref_keys = []
        
        for i in ref_keys:
           controller,pin = self.valve_resistance.parse_key()
