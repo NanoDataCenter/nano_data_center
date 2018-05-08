@@ -125,12 +125,12 @@ class Eto_Management(object):
        eto_data = self.assemble_data("eto",self.ds_handlers["ETO_VALUES"])
        
        
-       self.ds_handlers["ETO_HISTORY"].add(data = eto_data) 
+       self.ds_handlers["ETO_HISTORY"].add_json(data = eto_data) 
        rain_data = self.assemble_data("rain",self.ds_handlers["RAIN_VALUES"])
        
-       self.ds_handlers["RAIN_HISTORY"].add(data = rain_data) 
+       self.ds_handlers["RAIN_HISTORY"].add_json(data = rain_data) 
        exception_data = self.ds_handlers["EXCEPTION_VALUES"].hgetall()
-       self.ds_handlers["EXCEPTION_LOG"].add(data=exception_data)
+       self.ds_handlers["EXCEPTION_LOG"].add_json(data=exception_data)
 
     def find_eto(self):
        eto_data = self.ds_handlers["ETO_VALUES"].hgetall()
@@ -215,11 +215,7 @@ def construct_eto_instance(qs, site_data,user_table ):
     #
     replace_keys(site_data, eto_sources)
     
-    #
-    #  do verifications of data package
-    #
-    #
-    #
+   
     eto_hash_table = user_table.eto_data.get_hash_table()
     
     eto = Eto_Management(eto_sources, package_sources[0],site_data ,eto_hash_table )

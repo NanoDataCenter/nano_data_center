@@ -74,7 +74,7 @@ class Redis_Stream(object):
 if __name__ == "__main__":
 
    redis_handle = redis.StrictRedis( host = "localhost", port = 6379, db =0, decode_responses=True)
-   redis_stream = Redis_Stream_Client(redis_handle)
+   redis_stream = Redis_Stream(redis_handle)
    key ="stream_1"
    data_dict = { "a":2,"b":3}
    for i in range(0,200):

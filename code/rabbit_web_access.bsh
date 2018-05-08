@@ -1,0 +1,11 @@
+while [ 1 ]
+do
+   for i in {1..60}
+   do
+      echo "executing rabbit_web_access $i"
+      /usr/bin/python3 rabbit_web_access_py3.py 2>  /tmp/rabbit_web_access_py3.err  
+      mv /tmp/rabbit_web_access_py3.err /tmp/rabbit_web_access_py3.errr
+      sleep 5
+   done
+   python3 cloud_event_queue_py3.py "reboot" "rabbit_web_access"
+done
