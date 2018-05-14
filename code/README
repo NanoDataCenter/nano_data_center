@@ -1,0 +1,17 @@
+Directory nano_data_center/code contains the code for the IOT gateway device.
+
+The file startup.bsh contains the startup script for the system.
+
+This script first does one time operations as shown in the lines below:
+
+python3 ~/passwords.py   # load passwords into redis db
+python3 -m redis_support_py3.load_files_py3  # load files into redis db
+python3 -m redis_support_py3.user_data_tables_py3 # load user data tables into redis db
+python3 -m redis_support_py3.construct_graph_py3  # construct system graph
+# start services like local web server
+./process_control.bsh  # start application processes
+
+passwords.template  is the template python password script.  The actual template
+should be placed outside of the git repository.
+
+  

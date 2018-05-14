@@ -1,6 +1,6 @@
 
 import redis
-import json
+import msgpack
 from .redis_stream_utilities_py3 import Redis_Stream
 
 
@@ -14,8 +14,8 @@ class Send_Object(object):
 
    def send(self,action, **kwargs):
        kwargs["ACTION"] = action
-       send_data = json.dumps(kwargs)
-       self.redis_handle.rpush(self.transport_queue, send_data )
+       send_data = msgpack.packb(kwargs)
+       self.redis_handle.lpush(self.transport_queue, send_data )
        self.redis_handle.ltrim(self.transport_queue, 0,self.queue_depth)
        
 

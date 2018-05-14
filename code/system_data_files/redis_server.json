@@ -1,13 +1,14 @@
+
 { 
    "host":"127.0.0.1",
    "port":6379,
    "site":"LaCima",
-   "graph_db":25,
-   "redis_io_db":26,
-   "redis_file_db":24,
+   "graph_db":3,
+   "redis_io_db":4,
+   "redis_file_db":4,
    
-   "redis_password_db":28,
-   "redis_table_db":29,
-   "redis_backup_db":30
+   "redis_password_db":5,
+   "redis_table_db":4,
+   "redis_backup_db":6
    
 }

@@ -18,15 +18,18 @@ from os import listdir
 from os.path import isfile, join
 import redis
 import json
-from redis_graph_py3 import farm_template_py3
+from cloud_handlers_py3 import Cloud_TX_Handler
 
-app_files = "/home/pi/new_python/app_data_files/"
-sys_files = "/home/pi/new_python/system_data_files/"
+app_files = "app_data_files/"
+sys_files = "system_data_files/"
 
 
 class BASIC_FILES( object ):
-    def __init__(self, redis_handle):
+    def __init__(self, redis_handle,site,label):
+        self.tx_handler = Cloud_TX_Handler()
         self.redis_handle = redis_handle
+        self.key = "[SITE:"+site+"][FILE:"+label+ "]"
+        
 
     def file_directory(self):
         return self.redis_handle.hkeys(self.key)
@@ -34,11 +37,14 @@ class BASIC_FILES( object ):
     def delete_file(self, name):
         self.redis_handle.hdel(self.key, name)
 
+    
+        
     def save_file(self, name, data):
         f = open(self.path + name, 'w')
         json_data = json.dumps(data)
         f.write(json_data)
         self.redis_handle.hset(self.key, name, json_data )
+    
 
     def load_file(self, name):
         
@@ -49,13 +55,13 @@ class BASIC_FILES( object ):
 
 
 class APP_FILES( BASIC_FILES ):
-   def __init__( self, redis_handle ):
+   def __init__( self, redis_handle,redis_site ):
        BASIC_FILES.__init__(self,redis_handle )
        self.path = app_files
        self.key = "FILES:APP"
 
 class SYS_FILES(BASIC_FILES):
-    def __init__(self, redis_handle):
+    def __init__(self, redis_handle,redis_site ):
         BASIC_FILES.__init__(self,redis_handle )
         self.path = sys_files
         self.key = "FILES:SYS"
@@ -76,18 +82,18 @@ if __name__ == "__main__":
                redis_handle.hset( redis_key, i , data)
 
 
+ 
+
+   file_handle = open("system_data_files/redis_server.json",'r')
+   data = file_handle.read()
+   file_handle.close()
+
+   redis_site = json.loads(data)
+
+   redis_handle = redis.StrictRedis(redis_site["host"], redis_site["port"], db=redis_site["redis_file_db"], decode_responses=True)
 
 
 
-   graph_management = farm_template_py3.Graph_Management(
-           "PI_1", "main_remote", "LaCima_DataStore")
-   data_store_nodes = graph_management.find_data_stores()
-   # find ip and port for redis data store
-   data_server_ip = data_store_nodes[0]["ip"]
-   data_server_port = data_store_nodes[0]["port"]
-   print(data_server_ip,data_server_port)
-
-   redis_handle = redis.StrictRedis(data_server_ip, data_server_port, db=0, decode_responses=True)
 
 
    redis_handle.delete("APP_FILES")
