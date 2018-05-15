@@ -18,24 +18,27 @@ from os import listdir
 from os.path import isfile, join
 import redis
 import json
-from cloud_handlers_py3 import Cloud_TX_Handler
-
+from redis_support_py3.cloud_handlers_py3 import Cloud_TX_Handler
+from redis_support_py3.cloud_handlers_py3 import 
 app_files = "app_data_files/"
 sys_files = "system_data_files/"
+limit_files = "limit_data_files/"
+Cloud_TX_Handler(object):
 
-
+   
 class BASIC_FILES( object ):
     def __init__(self, redis_handle,site,label):
-        self.tx_handler = Cloud_TX_Handler()
+        self.tx_handler = Cloud_TX_Handler(redis_handle)
+
         self.redis_handle = redis_handle
         self.key = "[SITE:"+site+"][FILE:"+label+ "]"
-        
+        self.hash_dictionary = Redis_Hash_Dictionary(self.redis_handler,self.key,None,self.cloud_handler)
 
     def file_directory(self):
-        return self.redis_handle.hkeys(self.key)
+        return self.hash_driver.hkeys()
 
     def delete_file(self, name):
-        self.redis_handle.hdel(self.key, name)
+        self.hash_driver.hdelete(name)
 
     
         
@@ -43,16 +46,11 @@ class BASIC_FILES( object ):
         f = open(self.path + name, 'w')
         json_data = json.dumps(data)
         f.write(json_data)
-        self.redis_handle.hset(self.key, name, json_data )
-    
+        self.hash_driver.hset( name,data)
 
     def load_file(self, name):
-        
-        json_data= self.redis_handle.hget(self.key, name)
-        
-        data = json.loads(json_data )
-        return data
-
+        return self.hash_driver.hget(name)
+ 
 
 class APP_FILES( BASIC_FILES ):
    def __init__( self, redis_handle,redis_site ):
@@ -66,7 +64,11 @@ class SYS_FILES(BASIC_FILES):
         self.path = sys_files
         self.key = "FILES:SYS"
         
-
+class LIMIT(BASIC_FILES):
+    def __init__(self, redis_handle,redis_site ):
+        BASIC_FILES.__init__(self,redis_handle )
+        self.path =limit_files
+        self.key = "FILES:LIMITS"
 
 
 if __name__ == "__main__":
@@ -96,21 +98,27 @@ if __name__ == "__main__":
 
 
 
-   redis_handle.delete("APP_FILES")
-   redis_handle.delete("SYS_FILES")
-
+   redis_handle.delete("FILES:APP")
+   redis_handle.delete("FILES:SYS")
+   redis_handle.delete("FILES:LIMITS")
 
    files = [f for f in listdir(app_files)]
 
+   # load app files
    load_file( files,app_files,"FILES:APP" )
 
-   # load app files
+  
 
    # load sys files
 
    files = [ f for f in listdir(sys_files)  ]
    load_file( files,sys_files, "FILES:SYS" )
-       
+
+   # load limit files
+
+   files = [ f for f in listdir(sys_files)  ]
+   load_file( files,limit_files, "FILES:LIMITS" )
+   
 
 
 
