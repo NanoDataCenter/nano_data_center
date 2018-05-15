@@ -19,20 +19,22 @@ from os.path import isfile, join
 import redis
 import json
 from redis_support_py3.cloud_handlers_py3 import Cloud_TX_Handler
-from redis_support_py3.cloud_handlers_py3 import 
+from redis_support_py3.construct_data_handlers_py3 import Redis_Hash_Dictionary
 app_files = "app_data_files/"
 sys_files = "system_data_files/"
 limit_files = "limit_data_files/"
-Cloud_TX_Handler(object):
+
 
    
 class BASIC_FILES( object ):
-    def __init__(self, redis_handle,site,label):
-        self.tx_handler = Cloud_TX_Handler(redis_handle)
+    def __init__(self, redis_handle,path, redis_site,label):
+        self.path = path
+        self.redis_site = redis_site
+        self.cloud_handler = Cloud_TX_Handler(redis_handle)
 
         self.redis_handle = redis_handle
-        self.key = "[SITE:"+site+"][FILE:"+label+ "]"
-        self.hash_dictionary = Redis_Hash_Dictionary(self.redis_handler,self.key,None,self.cloud_handler)
+        self.key = "[SITE:"+redis_site["site"]+"][FILE:"+label+ "]"
+        self.hash_driver = Redis_Hash_Dictionary(self.redis_handle,self.key,None,self.cloud_handler)
 
     def file_directory(self):
         return self.hash_driver.hkeys()
@@ -54,21 +56,17 @@ class BASIC_FILES( object ):
 
 class APP_FILES( BASIC_FILES ):
    def __init__( self, redis_handle,redis_site ):
-       BASIC_FILES.__init__(self,redis_handle )
-       self.path = app_files
-       self.key = "FILES:APP"
+       BASIC_FILES.__init__(self,redis_handle,app_files, redis_site,"APP" )
+       
 
 class SYS_FILES(BASIC_FILES):
     def __init__(self, redis_handle,redis_site ):
-        BASIC_FILES.__init__(self,redis_handle )
-        self.path = sys_files
-        self.key = "FILES:SYS"
+        BASIC_FILES.__init__(self,redis_handle,sys_files,redis_site,"SYS" )
+    
         
 class LIMIT(BASIC_FILES):
     def __init__(self, redis_handle,redis_site ):
-        BASIC_FILES.__init__(self,redis_handle )
-        self.path =limit_files
-        self.key = "FILES:LIMITS"
+        BASIC_FILES.__init__(self,redis_handle,limit_files,redis_site,"LIMITS" )
 
 
 if __name__ == "__main__":
@@ -97,29 +95,42 @@ if __name__ == "__main__":
 
 
 
-
-   redis_handle.delete("FILES:APP")
-   redis_handle.delete("FILES:SYS")
-   redis_handle.delete("FILES:LIMITS")
+   key = "[SITE:"+redis_site["site"]+"][FILE:"
+   redis_handle.delete(key+"APP]")
+   redis_handle.delete(key+"SYS]")
+   redis_handle.delete(key+"LIMITS]")
 
    files = [f for f in listdir(app_files)]
 
    # load app files
-   load_file( files,app_files,"FILES:APP" )
+   load_file( files,app_files,key+"APP]" )
 
   
 
    # load sys files
 
    files = [ f for f in listdir(sys_files)  ]
-   load_file( files,sys_files, "FILES:SYS" )
+   load_file( files,sys_files, key+"SYS]" )
 
    # load limit files
 
-   files = [ f for f in listdir(sys_files)  ]
-   load_file( files,limit_files, "FILES:LIMITS" )
+   files = [ f for f in listdir(limit_files)  ]
+   load_file( files,limit_files,key+"LIMITS]" )
    
 
+else:
+   pass
+
+
+__TEST__= False   
+if __TEST__ == True:
+   app_file_handler = APP_FILES( redis_handle,redis_site )
+   sys_file_handler = SYS_FILES( redis_handle,redis_site)
+   print(app_file_handler.file_directory())
+   directory_list = app_file_handler.file_directory()
+   print(app_file_handler.load_file(directory_list[0]))
+   
+'''
 
 
    #
@@ -167,7 +178,7 @@ if __name__ == "__main__":
         redis_handle.hset("CONTROL_VARIABLES", "ETO_RESOURCE_UPDATED", "FALSE")
    #
    # delete process keys
-   #
+
    keys = redis_handle.hkeys("WD_DIRECTORY")
    for i in keys:
         print("i", i)
@@ -211,3 +222,4 @@ if __name__ == "__main__":
         "QUEUES_DICT",
         "QUEUES:SYSTEM:PAST_ACTIONS",
         "QUEUE OF RECENT SYSTEM EVENTS AND THEIR STATUS")
+'''
