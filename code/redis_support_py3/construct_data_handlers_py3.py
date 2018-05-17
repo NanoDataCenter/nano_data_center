@@ -3,6 +3,7 @@ import json
 import redis
 import time
 import base64
+import msgpack
 
 from .redis_stream_utilities_py3 import Redis_Stream
 from .cloud_handlers_py3 import Cloud_TX_Handler
@@ -67,6 +68,12 @@ class Redis_Hash_Dictionary( object ):
       self.data = data
       self.cloud_handler = cloud_handler
 
+      
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       self.cloud_handler.delete(self.key)     
+      
+      
    def hset( self, field, data ):
       json_data = json.dumps(data)
       self.redis_handle.hset(self.key,field,json_data)
@@ -110,6 +117,11 @@ class Job_Queue_Client( object ):
       self.depth =  data["depth"]
       self.cloud_handler = cloud_handler
 
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       self.cloud_handler.delete(self.key)     
+      
+      
    def delete(self, index ):
        if index < self.llen(self.key):
            self.redis_handle.lset(self.key, index,"__#####__")
@@ -133,7 +145,11 @@ class Job_Queue_Server( object ):
       self.redis_handle = redis_handle
       self.key = key 
       self.cloud_handler = cloud_handler
-      
+ 
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       self.cloud_handler.delete(self.key)     
+ 
  
    def length(self):
        return self.redis_handle.llen(self.key)
@@ -173,13 +189,17 @@ class Stream_List_Writer(object):
       self.cloud_handler = cloud_handler
       self.key = key
       self.depth = data["depth"]
+
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       self.cloud_handler.delete(self.key)     
       
       
    def push(self,data):
-       json_data = json.dumps(data)
-       self.redis_handle.lpush(self.key,json_data)
+       compress_data = msgpack.compress(data)
+       self.redis_handle.lpush(self.key,compress_data)
        self.redis_handle.ltrim(self.key,0,self.depth-1)
-       self.cloud_handler.stream_list_write(self.depth, self.key, json_data )
+       self.cloud_handler.stream_list_write(self.depth, self.key, data )
 
        
 class Stream_List_Reader(object):
@@ -189,13 +209,16 @@ class Stream_List_Reader(object):
       self.redis_handle = redis_handle
       self.key = redis_key
      
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       self.cloud_handler.delete(self.key)     
       
       
    def range(self,start,end):
        return_value = []
-       data_json_list = self.redis_handle.lrange(self.key, start, end)
-       for data_json in data_json_list:
-          data = json.loads(data_json)
+       compress_list = self.redis_handle.lrange(self.key, start, end)
+       for data_compressed in compress_list:
+          data = msgpack.unpackb(data_compressed)
           return_value.append(data)
        return return_value
 
@@ -208,6 +231,11 @@ class Stream_Writer(Redis_Stream):
       self.key = redis_key
       self.depth = data["depth"]
       self.add_pad = "~"
+
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       self.cloud_handler.delete(self.key)     
+
       
    def change_add_flag(self, state):
       if state == True:
@@ -216,14 +244,14 @@ class Stream_Writer(Redis_Stream):
           self.add_pad = "~"
    
       
-   def add_json(self,id="*", data={} ):
+   def add_compress(self,id="*", data={} ):
        store_dictionary = {}
        if len(list(data.keys())) == 0:
            return
        print("stream write",self.key,data)
        for i , item in data.items():
       
-           store_dictionary[i] = base64.b64encode(json.dumps(item).encode("ascii")).decode("ascii")
+           store_dictionary[i] = msgpack.packb(item)
        self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=store_dictionary )
        self.cloud_handler.stream_write(id, self.depth, self.key, store_dictionary ) 
        
@@ -237,35 +265,38 @@ class Stream_Reader(Redis_Stream):
       self.redis_handle = redis_handle
       self.key = redis_key
 
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       self.cloud_handler.delete(self.key)     
       
       
-   def xrange_json(self,start_timestamp, end_timestamp , count=100):
-       return_value = []
-       data_json = self.xrange(self.key,start_timestamp,end_timestamp, count)
+   def xrange_compress(self,start_timestamp, end_timestamp , count=100):
+       data_list = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
        
-       for i in data_json:
+       for i in data_list:
           return_item = {}
-          for key, item64 in i["data"].items():
-              item_json = base64.b64decode(item64.encode("ascii")).decode("ascii")
-              item = json.loads(item_json)
-      
-              return_item[key] = item
-          i["data"] = return_item
-       return data_json
-
-   def xrevrange_json(self,start_timestamp, end_timestamp , count=100):
-       data_json = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
-       
-       for i in data_json:
-          return_item = {}
-          for key, item64 in i["data"].items():
+          for key, item in i["data"].items():
                         
-              item_json = base64.b64decode(item64.encode("ascii")).decode("ascii")
-              item = json.loads(item_json)
+              
+              item = msgpack.unpackb(item)
       
               return_item[key] = item
           i["data"] = return_item
-       return data_json
+       return data_list
+
+   def xrevrange_compress(self,start_timestamp, end_timestamp , count=100):
+       data_list = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
+       
+       for i in data_list:
+          return_item = {}
+          for key, item in i["data"].items():
+                        
+              
+              item = msgpack.unpackb(item)
+      
+              return_item[key] = item
+          i["data"] = return_item
+       return data_list
    
        
 

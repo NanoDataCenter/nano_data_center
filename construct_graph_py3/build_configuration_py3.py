@@ -3,7 +3,12 @@
 import redis
 
 import copy
+import pickle
+import redis
+import gzip
 import json
+
+
 
 
 def basic_init(self):
@@ -117,4 +122,32 @@ class Build_Configuration(object):
 
    def delete_all(self): #tested
        self.redis_handle.flushdb()
+       
+   def extract_db(self):
+       keys = self.redis_handle.keys("*")
+       self.extract = {}
+       print("len",len(keys))
+       for i in keys:
+           self.extract[i] = self.redis_handle.dump(i)
+           
+   def save_extraction(self,filename):
+        file = gzip.GzipFile(filename, 'wb')
+        file.write(pickle.dumps(self.extract, pickle.DEFAULT_PROTOCOL))
+        file.close()
+
+   def restore_extraction(self,filename):
+        file = gzip.GzipFile(filename, 'rb')
+        buffer = b""
+        while True:
+                data = file.read()
+                if data == b"":
+                        break
+                buffer += data
+        extract = pickle.loads(buffer)
+        file.close()
+        keys = extract.keys()
+        print("len",len(keys))
+        for i,item in extract.items():
+           self.redis_handle.restore(name = i,ttl=0, value = item, replace = True)
+        
 

@@ -157,10 +157,12 @@ class User_Data_Tables(object):
    def __init__(self, redis_site_data ):
        self.backup_db     = redis_site_data["redis_backup_db"]
        self.redis_site_data = redis_site_data
-       self.app_file_handle = APP_FILES( redis_site_data )
-       self.sys_filie_handle = SYS_FILES(redis_site_data,self.app_file_handle.get_redis_handle())
        self.table_handler = Generate_Table_Handlers( redis_site_data )
        self.redis_handle = self.table_handler.get_redis_handle()
+
+       self.app_file_handle = APP_FILES( self.redis_handle,self.redis_site_data )
+       self.sys_filie_handle = SYS_FILES( self.redis_handle,self.redis_site_data)
+       
        self.valve_resistance_data = Valve_Resistance_Data(self.table_handler)
        self.system_scheduling = System_Scheduling(self.table_handler)
        self.irrigation_scheduling = Irrigation_Scheduling(self.table_handler)
@@ -190,7 +192,7 @@ class User_Data_Tables(object):
        # populate from redis hash table
        #
        #
-       eto_redis_hash_table.delete()
+       eto_redis_hash_table.delete_all()
        for i in new_data.keys():
            data = new_data[i]
            if i in eto_redis_hash_data:
@@ -200,7 +202,7 @@ class User_Data_Tables(object):
    def initialize_valve_resistance_streams(self):
    
        valve_map = self.valve_resistance_data.get_valve_map()
-       valve_map.delete()
+       valve_map.delete_all()
        
        
        
