@@ -55,6 +55,7 @@ if __name__ == "__main__" :
    bc.save_extraction("extraction_file.pickle")
    bc.delete_all()
    bc.restore_extraction("extraction_file.pickle")
+   bc.delete_all()
 
 
  
