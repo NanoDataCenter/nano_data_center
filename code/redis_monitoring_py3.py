@@ -13,15 +13,15 @@ class Redis_Monitor(object):
        
        redis_data = self.redis_handle.info("Keyspace")     
 
-       self.redis_monitoring_streams["KEYS"].add_json(data=redis_data)      
+       self.redis_monitoring_streams["KEYS"].add_compress(data=redis_data)      
        redis_data = self.redis_handle.info("Clients") 
-       print("redis_data",redis_data)       
-       self.redis_monitoring_streams["CLIENTS"].add_json(data=redis_data)      
+             
+       self.redis_monitoring_streams["CLIENTS"].add_compress(data=redis_data)      
        redis_data = self.redis_handle.info("Memory")      
-       print("redis_data")
-       self.redis_monitoring_streams["MEMORY"].add_json(data=redis_data)      
-       print(self.redis_monitoring_streams["KEYS_READER"].xrange_json("-","+"))
-       print(self.redis_monitoring_streams["KEYS_READER"].xrevrange_json("+","-"))
+      
+       self.redis_monitoring_streams["MEMORY"].add_compress(data=redis_data)      
+       #print(self.redis_monitoring_streams["KEYS_READER"].xrange_compress("-","+"))
+       #print(self.redis_monitoring_streams["KEYS_READER"].xrevrange_compress("+","-"))
 
 
 
@@ -72,7 +72,7 @@ def add_chains(redis_monitor, cf):
     cf.define_chain("make_measurements", True)
     cf.insert.log("logging_redis_data")
     cf.insert.one_step(redis_monitor.log_data)
-    cf.insert.wait_event_count( event = "HOUR_TICK",count = 1)
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
     cf.insert.reset()
 
  

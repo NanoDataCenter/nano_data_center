@@ -168,7 +168,9 @@ class User_Data_Tables(object):
        self.irrigation_scheduling = Irrigation_Scheduling(self.table_handler)
        self.eto_data = ETO_Data( self.table_handler )
        self.irrigation_streams = Irrigation_Streams(self.table_handler)
-   
+
+   def get_redis_handle(self):
+      return self.redis_handle   
        
    def initialize(self):
        self.initialize_eto_tables()
@@ -176,27 +178,41 @@ class User_Data_Tables(object):
        self.initialize_valve_resistance_streams()
       
    def initialize_eto_tables(self):
+       # the eto_site table may have changed
+       # need to merge old table values into the new table
+       # there may be insertions as well as deletions
        eto_file_data = self.app_file_handle.load_file("eto_site_setup.json")
+
+
        eto_redis_hash_table = self.eto_data.get_hash_table()
+       
        eto_redis_hash_data = eto_redis_hash_table.hgetall()
-       if eto_redis_hash_data == None:
-          eto_redis_hash_data = {}
+       
+
+
+       
        new_data = {}
        
        #
-       # Step 1  Populate file
+       # Step 1  Populate file dummy initial values
        #
        for j in eto_file_data:
+          
            new_data[ j["controller"] + "|" + str(j["pin"])] = 0
        #
        # populate from redis hash table
        #
        #
        eto_redis_hash_table.delete_all()
+       
+       #
+       # merge old values and possible new values into new table.
+       #
+       
        for i in new_data.keys():
            data = new_data[i]
            if i in eto_redis_hash_data:
-              data = eto_redis_hash_data[i]
+              data = eto_redis_hash_data[i]   # key old values
            eto_redis_hash_table.hset(i,data )  
            
    def initialize_valve_resistance_streams(self):

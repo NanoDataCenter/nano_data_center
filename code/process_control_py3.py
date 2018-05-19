@@ -6,7 +6,10 @@ from subprocess import Popen, check_output
 import shlex
 import os
 from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
-from redis_graph_py3 import farm_template_py3
+from redis_support_py3.graph_query_support_py3 import  Query_Support
+from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
+import msgpack
+import pickle
 
 class Process_Control(object ):
 
@@ -38,6 +41,7 @@ class Process_Control(object ):
    
    def monitor_process(self, process_handle):
        returncode = process_handle.poll()
+     
        if returncode == None:
           return [ True, 0]
        else:
@@ -91,22 +95,26 @@ class Manage_A_Python_Process(Process_Control):
                self.error = True
            else:
               self.error = False
+          
        
 
     
    def monitor(self):
+       self.rollover_flag = False
        if self.enabled == True:
           if self.active == True:
              return_value = self.monitor_process(self.handle)
+             
              if return_value[0] == True:
-                  return True
-            
-          self.active = False
-          self.rollover()
-           
-          if self.restart_flag == True:
-               self.launch()
-          return False
+                  self.error = False
+             else:     
+                 self.error = True
+                 self.active = False
+                 self.rollover()
+                 self.rollover_flag = True
+                 if self.restart_flag == True:
+                        self.launch()
+        
 
 
    def rollover(self):
@@ -125,32 +133,30 @@ class Manage_A_Python_Process(Process_Control):
  
 
 class System_Control(object):
-   def __init__(self,
-               redis_handle,
-               error_queue_key,
-               web_command_queue_key,
-               web_process_data_key,
-               web_display_list_key,
-               command_string_list ):
+   def __init__(self,processor_node, package_node, generate_handlers):
+            
                
-       self.redis_handle = redis_handle
-       self.error_queue_key = error_queue_key
-       self.web_command_queue_key = web_command_queue_key
-       self.web_process_data_key = web_process_data_key
-       self.web_display_list_key = web_display_list_key
-       self.command_string_list = command_string_list
-        
+       self.command_list = processor_node["command_list"]
+       data_structures = package_node["data_structures"]
+       
+       self.ds_handlers = {}
+       self.ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
+       self.ds_handlers["WEB_COMMAND_QUEUE"]   = generate_handlers.construct_job_queue_server(data_structures["WEB_COMMAND_QUEUE"])
+       
+       self.ds_handlers["WEB_DISPLAY_DICTIONARY"]   =  generate_handlers.construct_hash(data_structures["WEB_DISPLAY_DICTIONARY"])
+ 
        self.startup_list = []
        self.process_hash = {}
-       self.process_state = {}
-       for command_string in command_string_list:
-          temp_class = Manage_A_Python_Process( command_string )
+      
+       for command in self.command_list:
+          temp_class = Manage_A_Python_Process( command_string = command["file"], restart_flag = command["restart"] )
           python_script = temp_class.get_script()
           self.startup_list.append(python_script)
           self.process_hash[python_script] = temp_class
-          
-       self.redis_handle.set(self.web_display_list_key,json.dumps(self.startup_list))
+
+
        self.update_web_display()
+       
       
        
     
@@ -162,31 +168,33 @@ class System_Control(object):
            temp = self.process_hash[script]
            temp.launch()
            if temp.error == True:
-               return_data = json.dumps({ "script": script, "error_file" : temp.temp.error_file_rollover})
-               self.redis_handle.publish(self.error_queue_key,return_data)
+               
+               self.self.ds_handlers["ERROR_STREAM"].add_compress( { "script": script, "error_file" : temp.temp.error_file_rollover} )
                temp.error = False
 
    
    def monitor( self, *unused ):
      
        for script in self.startup_list:
+           
            temp = self.process_hash[script]
            temp.monitor()
-           if temp.error == True:
-               return_data = json.dumps({ "script": script, "error_file" : temp.temp.error_file_rollover})
-               self.redis_handle.publish(self.error_queue_key,return_data)
-               temp.error = False
+          
+           if temp.rollover_flag == True:
+               print("process has died",script)
+               with open(temp.error_file_rollover, 'r') as myfile:
+                     data=myfile.read()
+              
+               self.ds_handlers["ERROR_STREAM"].add_compress( data = { "script": script, "error_output" : data })
+               temp.rollover_flag = False
       
        self.update_web_display()
            
    def process_web_queue( self, *unused ):
-     
-       if self.redis_handle.llen(self.web_command_queue_key) > 0 :
-           data_json = redis_handle.lpop(self.web_command_queue_key)
-           self.redis_handle.ltrim(self.web_command_queue_key,0,-1) # empty redis queue
-           data = json.loads(data_json)
-           print("made it here")
-           for script,item in data.items():
+       data = self.ds_handlers["WEB_COMMAND_QUEUE"].pop()
+       
+       if data[0] == True :
+           for script,item in data[1].items():
                temp = self.process_hash[script]
                try:
                    if item["enabled"] == True:
@@ -202,8 +210,6 @@ class System_Control(object):
                           temp.kill()
                except:
                    pass
-               print(self.process_hash[script].active)
-               print(self.process_hash[script].enabled)
           
            self.update_web_display()    
                       
@@ -211,11 +217,10 @@ class System_Control(object):
                 
    def update_web_display(self):
      
-       process_state = {}
+       self.ds_handlers["WEB_DISPLAY_DICTIONARY"].delete_all()
        for script in self.startup_list:
            temp = self.process_hash[script]
-           process_state[script] = {"name":script,"enabled":temp.enabled,"active":temp.active,"error":temp.error}
-       self.redis_handle.set(self.web_process_data_key,json.dumps(process_state))
+           self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hset(script,{"name":script,"enabled":temp.enabled,"active":temp.active,"error":temp.error})
       
       
  
@@ -228,8 +233,10 @@ class System_Control(object):
    def add_chains(self,cf):
 
        cf.define_chain("initialization",True)
+       
        cf.insert.one_step(self.launch_processes)
        cf.insert.enable_chains( ["monitor_web_command_queue","monitor_active_processes"] )
+       
        cf.insert.terminate()
    
    
@@ -241,36 +248,56 @@ class System_Control(object):
        cf.define_chain("monitor_active_processes",False)
        cf.insert.wait_event_count( event = "TIME_TICK",count = 10)
        cf.insert.one_step(self.monitor)
+       
        cf.insert.reset()
 
 
 
+
+ 
+  
+
 if __name__ == "__main__":
    
    cf = CF_Base_Interpreter()
-   gm = farm_template_py3.Graph_Management(
-        "PI_1", "main_remote", "LaCima_DataStore")
-        
-        
-   process_data = gm.match_terminal_relationship("PROCESS_CONTROL")[0]
-  
-   redis_data = process_data["redis"]
-   redis_handle = redis.StrictRedis(
-        host=redis_data["ip"], port=redis_data["port"], db=redis_data["db"], decode_responses=True)
-   web_command_queue_key =process_data['web_command_key'] 
-   error_queue_key = process_data['error_queue_key']
-   command_string_list  = process_data["command_string_list"]
-   web_process_data_key = process_data["web_process_data"]
-   web_display_list_key = process_data["web_display_list"]
-   print(web_process_data_key,web_display_list_key)
-   system_control = System_Control(   redis_handle    = redis_handle,
-                                      error_queue_key = error_queue_key,
-                                      web_command_queue_key = web_command_queue_key,
-                                      web_process_data_key = web_process_data_key,
-                                      web_display_list_key = web_display_list_key,
-                                      command_string_list = command_string_list )
+    #
+    #
+    # Read Boot File
+    # expand json file
+    # 
+   file_handle = open("system_data_files/redis_server.json",'r')
+   data = file_handle.read()
+   file_handle.close()
+   site_data = json.loads(data)
 
+   qs = Query_Support( redis_server_ip = site_data["host"], redis_server_port=site_data["port"], db = site_data["graph_db"] )
+   query_list = []
+   query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
+   query_list = qs.add_match_terminal( query_list,relationship="PROCESSOR",label=site_data["local_node"] )
+
+   processor_sets, processor_nodes = qs.match_list(query_list)
+    
+   query_list = []
+   query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
+   query_list = qs.add_match_relationship( query_list,relationship="PROCESSOR",label=site_data["local_node"] )
+   query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", label = "DATA_STRUCTURES" )
+                                        
+                                        
+                                           
+   package_sets, package_nodes = qs.match_list(query_list)  
+   
+
+   generate_handlers = Generate_Handlers(package_nodes[0],site_data)
+   system_control = System_Control(processor_nodes[0],package_nodes[0],generate_handlers)
+   cf = CF_Base_Interpreter()
    system_control.add_chains(cf)
-
+   #
+   # Executing chains
+   #
+    
    cf.execute()
- 
+else:
+   pass
+
+

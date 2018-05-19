@@ -24,7 +24,7 @@ class Construct_Data_Structures(object):
         self.bc.add_info_node("PACKAGE",self.name,self.properties)
         
         
-   def add_list(self,name,length,number=1,forward=False):
+   def add_list(self,name,length,number=1,forward=True):
        assert(name not in self.properties )
        properties = {}
        properties["type"]  = "LIST"
@@ -33,7 +33,7 @@ class Construct_Data_Structures(object):
        properties["forward"] =forward
        self.properties["data_structures"][name] = properties 
       
-   def add_hash(self,name,forward=False):
+   def add_hash(self,name,forward=True):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name
@@ -42,7 +42,7 @@ class Construct_Data_Structures(object):
        self.properties["data_structures"][name] = properties 
         
       
-   def add_stream(self,name,depth,forward=False):
+   def add_stream(self,name,depth,forward=True):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name
@@ -51,7 +51,7 @@ class Construct_Data_Structures(object):
        properties["forward"] =forward
        self.properties["data_structures"][name] = properties 
        
-   def add_stream_list(self,name,depth,forward=False):
+   def add_stream_list(self,name,depth,forward=True):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name
@@ -60,7 +60,7 @@ class Construct_Data_Structures(object):
        properties["forward"] =forward
        self.properties["data_structures"][name] = properties 
        
-   def add_job_queue(self,name,depth):
+   def add_job_queue(self,name,depth,forward=True):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name

@@ -9,6 +9,8 @@
    
    "redis_password_db":5,
    "redis_table_db":4,
-   "redis_backup_db":6
+   "redis_backup_db":6,
+
+   "local_node":"nano_data_center"
    
 }

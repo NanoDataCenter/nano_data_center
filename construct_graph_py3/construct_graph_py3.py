@@ -52,10 +52,10 @@ if __name__ == "__main__" :
    bc.check_namespace()
    bc.store_keys()
    bc.extract_db()
-   bc.save_extraction("extraction_file.pickle")
+   bc.save_extraction("../code/system_data_files/extraction_file.pickle")
    bc.delete_all()
-   bc.restore_extraction("extraction_file.pickle")
-   bc.delete_all()
+   #bc.restore_extraction("extraction_file.pickle")
+   #bc.delete_all()
 
 
  

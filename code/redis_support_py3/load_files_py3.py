@@ -18,11 +18,13 @@ from os import listdir
 from os.path import isfile, join
 import redis
 import json
+import msgpack
 from redis_support_py3.cloud_handlers_py3 import Cloud_TX_Handler
 from redis_support_py3.construct_data_handlers_py3 import Redis_Hash_Dictionary
 app_files = "app_data_files/"
 sys_files = "system_data_files/"
 limit_files = "limit_data_files/"
+import base64
 
 
    
@@ -78,8 +80,10 @@ if __name__ == "__main__":
            if fileExtension == ".json":
                f = open(path+i, 'r')
                data = f.read()
-               temp = json.dumps(data) # test to ensure data has json format
-               redis_handle.hset( redis_key, i , data)
+               temp = json.loads(data) # test to ensure data has json format
+               pack_data = msgpack.packb(temp)
+               pack_data = base64.b64encode(pack_data)
+               redis_handle.hset( redis_key, i , pack_data)
 
 
  

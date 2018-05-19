@@ -5,7 +5,7 @@ import redis
 class Query_Support(object):
 
    
-   def __init__( self , redis_server_ip , redis_server_port=6379, db = 25 ):
+   def __init__( self , redis_server_ip , redis_server_port=6379, db = 3 ):
       self.redis_handle  = redis.StrictRedis( host = redis_server_ip, port = redis_server_port, db =db , decode_responses=True)
       self.sep       = "["
       self.rel_sep   = ":"

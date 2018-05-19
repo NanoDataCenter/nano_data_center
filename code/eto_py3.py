@@ -75,7 +75,7 @@ class Eto_Management(object):
        
 
     def new_day_rollover( self, *parameters ):
-         self.ds_handlers["EXCEPTION_VALUES"]
+         
          self.ds_handlers["EXCEPTION_VALUES"].delete()
          self.ds_handlers["ETO_VALUES"].delete()
          self.ds_handlers["RAIN_VALUES"].delete()

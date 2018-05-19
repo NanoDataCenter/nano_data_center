@@ -1,0 +1,11 @@
+
+while [ 1 ]
+do
+   echo "executing process_control interface"
+   python3 process_control_py3.py 2>  /tmp/process_control_py3.err 
+   python3 cloud_event_queue_py3.py "reboot" process_control_py3
+   sleep 10
+   echo "dumping error file"
+   mv /tmp/process_control_py3.err  /tmp/process_control_py3.errr
+
+done

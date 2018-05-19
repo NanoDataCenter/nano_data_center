@@ -270,9 +270,11 @@ if __name__ == "__main__":
    redis_site = json.loads(data)
 
    
-   app_files = APP_FILES(redis_site)
+   
  
    user_table = User_Data_Tables(redis_site)
+   redis_handle = user_table.get_redis_handle()
+   app_files = APP_FILES(redis_handle,redis_site)
    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
    
    

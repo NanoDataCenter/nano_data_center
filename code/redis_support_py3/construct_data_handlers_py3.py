@@ -1,5 +1,5 @@
 
-import json
+
 import redis
 import time
 import base64
@@ -40,7 +40,7 @@ class RPC_Server(object):
                     if self.timeout_function != None:
                         self.timeout_function()
                else:
-                   input = json.loads(input[1])  # 0 parameter is the queue
+                   input = msgpack.unpackb(input[1])  # 0 parameter is the queue
                    self.process_message(  input )
                        
             except:
@@ -53,7 +53,7 @@ class RPC_Server(object):
         params  = input["params"]
         response = self.handler[method](params)
        
-        self.redis_handle.lpush( id, json.dumps(response))        
+        self.redis_handle.lpush( id, msgpack.packb(response))        
         self.redis_handle.expire(id, 30)
 
       
@@ -75,23 +75,27 @@ class Redis_Hash_Dictionary( object ):
       
       
    def hset( self, field, data ):
-      json_data = json.dumps(data)
-      self.redis_handle.hset(self.key,field,json_data)
-      self.cloud_handler.hset(self.key,field,json_data)     
+      pack_data = msgpack.packb(data)
+      pack_data = base64.b64encode(pack_data).decode()
+      self.redis_handle.hset(self.key,field,pack_data)
+      self.cloud_handler.hset(self.key,field,pack_data)     
 
    def hget( self, field):
-      data = self.redis_handle.hget(self.key,field)
-      if data == None:
+      pack_data = self.redis_handle.hget(self.key,field)
+      if pack_data == None:
          return None
-      return json.loads(self.redis_handle.hget(self.key,field))
+      pack_data = base64.b64decode(pack_data)
+      return  msgpack.unpackb(pack_data,encoding='utf-8')
+      
 
    def hgetall( self ):
       return_value = {}
-      data = self.redis_handle.hgetall(self.key)
-      if data == None:
-         return None
-      for key, item in data.items():
-         return_value[key] = json.loads(item)
+      keys = self.redis_handle.hkeys(self.key)
+      
+      for field in keys:
+        
+         return_value[field] = self.hget(field)
+     
       return return_value
       
    def hkeys(self):
@@ -132,18 +136,20 @@ class Job_Queue_Client( object ):
        return self.redis_handle.llen(self.key)   
       
    def push(self,data):
-       json_data = json.dumps(data)
-       self.redis_handle.lpush(self.key,json_data)
+       pack_data = msgpack.packb(data)
+       pack_data = base64.b64encode(pack_data).decode()
+       self.redis_handle.lpush(self.key,pack_data)
        self.redis_handle.ltrim(self.key,0,self.depth)
-       self.cloud_handler.lpush(self.depth,self.key,json_data)
+       self.cloud_handler.lpush(self.depth,self.key,pack_data)
          
 
  
 class Job_Queue_Server( object ):
  
-   def __init__(self,redis_handle, key,cloud_handler):
+   def __init__(self,redis_handle, key,data,cloud_handler):
       self.redis_handle = redis_handle
       self.key = key 
+      self.data = data
       self.cloud_handler = cloud_handler
  
    def delete_all( self ):
@@ -163,20 +169,22 @@ class Job_Queue_Server( object ):
 
  
    def pop(self):
-       json_data = self.redis_handle.rpop(self.key)
+       pack_data = self.redis_handle.rpop(self.key)
        self.cloud_handler.rpop(self.key)
 
-       if json_data == None:
+       if pack_data == None:
           return False, None
        else:
-          return True, json.loads(json_data)
+          pack_data = base64.b64decode(pack_data)
+          return True, msgpack.unpackb(pack_data ,encoding='utf-8')
           
    def last_get(self):
-       json_data = self.redis_handle.lindex(self.key, -1)
-       if json_data == None:
+       pack_data = self.redis_handle.lindex(self.key, -1)
+       if pack_data == None:
           return False, None
        else:
-          return True, json.loads(json_data)
+          pack_data = base64.b64decode(pack_data)
+          return True, msgpack.unpackb(pack_data ,encoding='utf-8')
 
 
    
@@ -196,8 +204,9 @@ class Stream_List_Writer(object):
       
       
    def push(self,data):
-       compress_data = msgpack.compress(data)
-       self.redis_handle.lpush(self.key,compress_data)
+       pack_data = msgpack.packb(data)
+       pack_data = base64.b64decode(pack_data).decode()
+       self.redis_handle.lpush(self.key,pack_data)
        self.redis_handle.ltrim(self.key,0,self.depth-1)
        self.cloud_handler.stream_list_write(self.depth, self.key, data )
 
@@ -216,9 +225,10 @@ class Stream_List_Reader(object):
       
    def range(self,start,end):
        return_value = []
-       compress_list = self.redis_handle.lrange(self.key, start, end)
-       for data_compressed in compress_list:
-          data = msgpack.unpackb(data_compressed)
+       pack_list = self.redis_handle.lrange(self.key, start, end)
+       for pack_data in pack_list:
+          pack_data = base64.b64decode(pack_data)
+          data = msgpack.unpackb(data_compressed ,encoding='utf-8')
           return_value.append(data)
        return return_value
 
@@ -248,10 +258,10 @@ class Stream_Writer(Redis_Stream):
        store_dictionary = {}
        if len(list(data.keys())) == 0:
            return
-       print("stream write",self.key,data)
+       
        for i , item in data.items():
-      
-           store_dictionary[i] = msgpack.packb(item)
+           
+           store_dictionary[i] = base64.b64encode(msgpack.packb(item)).decode()
        self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=store_dictionary )
        self.cloud_handler.stream_write(id, self.depth, self.key, store_dictionary ) 
        
@@ -271,14 +281,14 @@ class Stream_Reader(Redis_Stream):
       
       
    def xrange_compress(self,start_timestamp, end_timestamp , count=100):
-       data_list = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
+       data_list = self.xrange(self.key,start_timestamp,end_timestamp, count)
        
        for i in data_list:
           return_item = {}
           for key, item in i["data"].items():
-                        
-              
-              item = msgpack.unpackb(item)
+                             
+              item = base64.b64decode(item)
+              item = msgpack.unpackb(item ,encoding='utf-8')
       
               return_item[key] = item
           i["data"] = return_item
@@ -290,9 +300,9 @@ class Stream_Reader(Redis_Stream):
        for i in data_list:
           return_item = {}
           for key, item in i["data"].items():
-                        
-              
-              item = msgpack.unpackb(item)
+               
+              item = base64.b64decode(item)
+              item = msgpack.unpackb(item ,encoding='utf-8')
       
               return_item[key] = item
           i["data"] = return_item
