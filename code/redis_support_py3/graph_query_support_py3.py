@@ -88,9 +88,13 @@ class Query_Support(object):
               
        
        else:
+          
           if self.redis_handle.sismember( "@RELATIONSHIPS", relationship) == True:
-               if self.redis_handle.exists("$"+relationship+self.rel_sep+label) == True:
+               
+               if self.redis_handle.exists("#"+relationship+self.rel_sep+label) == True:
+                   
                    return_value = self.redis_handle.smembers("#"+relationship+self.rel_sep+label)
+                   
                    return_value = return_value.intersection(starting_set)
        return return_value
 

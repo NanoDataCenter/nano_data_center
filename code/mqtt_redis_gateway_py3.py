@@ -47,6 +47,7 @@ if __name__ == "__main__":
    import time
    from threading import Thread
    from redis_support_py3.mqtt_client_py3 import MQTT_CLIENT
+   from redis_support_py3.mqtt_to_redis_py3 import MQTT_TO_REDIS_BRIDGE_RETRIEVE
    def test_driver(redis_site_data):
        
        MQTT_Redis_Bridge(redis_site_data)
@@ -63,6 +64,34 @@ if __name__ == "__main__":
    mqtt_client = MQTT_CLIENT(redis_site_data)
    print("client connected",mqtt_client.connect())
    print("starting to publish")
-   print("message published",mqtt_client.publish("REMOTES/SLAVE:1/TEMPERATURE:Case",72))
-   while True:
-      pass
+   print("message published",mqtt_client.publish("REMOTES/SLAVE:Node_1/TEMPERATURE:Case",72))
+   print("made it here")
+   mqtt_retreive = MQTT_TO_REDIS_BRIDGE_RETRIEVE(redis_site_data)
+   print("instanciated class")
+   time.sleep(1) # let message be published
+   query_list = []
+   mqtt_retreive.add_mqtt_match_relationship(  query_list,"SLAVE" )
+   print("Match on SLAVE",mqtt_retreive.match_mqtt_list( query_list ))
+ 
+   query_list = []
+   mqtt_retreive.add_mqtt_match_relationship(  query_list,"SLAVE",label= "Node_1" )
+   print("Match on SLAVE:Node_1",mqtt_retreive.match_mqtt_list( query_list ))
+
+   query_list = []
+   mqtt_retreive.add_mqtt_match_relationship(  query_list,"TEMPERATURE",label= "Case" )
+   print("Match on TEMPERATURE:Case",mqtt_retreive.match_mqtt_list( query_list ))
+
+   query_list = []
+   mqtt_retreive.add_mqtt_match_terminal(  query_list,"TEMPERATURE" )
+   print("Match on TEMPERATURE",mqtt_retreive.match_mqtt_list( query_list ))
+ 
+   query_list = []
+   mqtt_retreive.add_mqtt_match_terminal(  query_list,"TEMPERATURE",label= "Case" )
+   nodes = mqtt_retreive.match_mqtt_list( query_list) 
+   print("Match on TEMPERATURE:Case",nodes)
+   
+   nodes = list(nodes)
+   print(mqtt_retreive.xrevrange_namespace_list( nodes, "+", "-" , count=100))
+   print(mqtt_retreive.xrange_namespace_list( nodes, "-", "+" , count=100))
+   print(mqtt_retreive.mqtt_xrevrange_topic( "REMOTES/SLAVE:Node_1/TEMPERATURE:Case", "+", "-" , count=100))
+   print(mqtt_retreive.xrange_topic( "REMOTES/SLAVE:Node_1/TEMPERATURE:Case", "-", "+" , count=100))
