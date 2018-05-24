@@ -171,9 +171,9 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Redis_Stream,Construct_Namespace,Query_Suppo
        return return_list
       
    def xrevrange_namespace(self,namespace, start_timestamp, end_timestamp , count=100):
-       print("made it here 1")
+       
        if self.redis_handle.sismember("@NAMESPACE",namespace) == True:
-           print("made it here 2")
+           
            return self.xrevrange(namespace, start_timestamp, end_timestamp , count)
        else:
            return None
