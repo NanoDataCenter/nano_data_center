@@ -34,7 +34,7 @@ class Query_Support(object):
 
        
 
-   def match_list( self,  match_list, starting_set = None ):
+   def match_list( self,  match_list, starting_set = None  ):
        if starting_set == None:
            starting_set = self.redis_handle.smembers("@GRAPH_KEYS")
        

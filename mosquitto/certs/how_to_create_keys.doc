@@ -1,0 +1,119 @@
+Creating SSL Certificates for Secure MQTT communication
+By Ranjith Kumar Diraviyam|April 12th, 2017
+
+TLS/SSL mode of data transfer can be enabled for secure MQTT Communication. SSL Certificates play a major role enabling the security.
+
+SSL certificates are files that has digital data of encryption key to encrypt data for security. The certificates are used to make sure the data In the tunnel is encrypted and cannot be tampered. The key is needed for decoding the data at the other end.
+
+This blog provides a detailed and a quick guide to create a self signed certificate using the openssl installed in ubuntu.
+
+Create Root Certificate
+The following command creates the private key file.
+
+openssl genrsa -out root.key 2048
+
+To create a password protected key by adding -des3.
+
+openssl genrsa -des3 -out root.key 2048
+
+The above command will create a root.key In the current folder. our next step is to generate Certificate signing request file using above generated RSA private Key. It contains encrypted personal details of the Host ie. country, state, organization, common Name, email address, and public key.
+
+openssl req -new -key root.key -out root.csr
+
+The above command will prompt for the following details.
+
+Country Name :
+State or Province Name :
+Locality Name :
+Organization Name :
+Organizational Unit Name :
+Common Name (e.g. server FQDN or YOUR name):
+Email Address :
+A challenge password :(optional)
+An optional company name :(optional)
+
+The above two files can be used to sign the certificate.
+
+openssl x509 -req -days 365 -sha1 -extensions v3_ca -signkey root.key -in root.csr -out root.crt
+
+The above command creates the X509 based root certificate which is considered as CA Root Certificate The above command generated a root certificate root.crt which is valid for 365 days.
+
+Creating a MQTT Server certificate
+The server key file needs to be created first. the following command will do that.
+
+openssl genrsa -out server.key 2048
+
+url
+https://www.bevywise.com/blog/creating-ssl-certificate-secure-mqtt-communication/
+
+
+
+Creating SSL Certificates for Secure MQTT communication
+By Ranjith Kumar Diraviyam|April 12th, 2017
+
+TLS/SSL mode of data transfer can be enabled for secure MQTT Communication. SSL Certificates play a major role enabling the security.
+
+SSL certificates are files that has digital data of encryption key to encrypt data for security. The certificates are used to make sure the data In the tunnel is encrypted and cannot be tampered. The key is needed for decoding the data at the other end.
+
+This blog provides a detailed and a quick guide to create a self signed certificate using the openssl installed in ubuntu.
+
+Create Root Certificate
+The following command creates the private key file.
+
+openssl genrsa -out root.key 2048
+
+To create a password protected key by adding -des3.
+
+openssl genrsa -des3 -out root.key 2048
+
+The above command will create a root.key In the current folder. our next step is to generate Certificate signing request file using above generated RSA private Key. It contains encrypted personal details of the Host ie. country, state, organization, common Name, email address, and public key.
+
+openssl req -new -key root.key -out root.csr
+
+The above command will prompt for the following details.
+
+Country Name :
+State or Province Name :
+Locality Name :
+Organization Name :
+Organizational Unit Name :
+Common Name (e.g. server FQDN or YOUR name):
+Email Address :
+A challenge password :(optional)
+An optional company name :(optional)
+
+The above two files can be used to sign the certificate.
+
+openssl x509 -req -days 365 -sha1 -extensions v3_ca -signkey root.key -in root.csr -out root.crt
+
+The above command creates the X509 based root certificate which is considered as CA Root Certificate The above command generated a root certificate root.crt which is valid for 365 days.
+
+Creating a MQTT Server certificate
+The server key file needs to be created first. the following command will do that.
+
+openssl genrsa -out server.key 2048
+
+Create a Server csr file that holds the complete server details of the host. The following command will prompt for the company details.
+
+openssl req -new -key server.key -out server.csr
+
+The Server certificate can be created using the following command. The root certificate will be used for creating the server certificate.
+
+openssl x509 -req -days 365 -sha1 -extensions v3_req -CA root.crt -CAkey root.key -CAcreateserial -in server.csr -out server.crt
+
+Creating MQTT Client certificate
+The above procedure followed for the server certificate can be used to create the client certificates. Please use appropriate name for the files.
+
+The above certificates are also valid for 365 days. Same Certificate Authority is used for generating both the client and Server certificate.
+
+Secure MQTT Communication in MQTTRoute
+The root certificate, server certificate and server private key needs to be placed on the server side and the root certificate, client certificate and the client private key needs to be placed in the client side.
+
+We can either have a common client certificate or individual certificate for each client. You can issue a certificate to client using your own root.key and root.crt. MqttRoute / MQTT Server verify the common name and the client IP during the connection process.  If both are same then only broker allows the client to connect otherwise reject the clients connection request.
+
+Follow the steps to run the MQTT Broker and the MQTT client in the MQTTRoute.
+
+Broker certificate and Key file MUST be present in ./Certificate/server folder.
+Client certificate and Key file MUST be present in ./Certificate/client folder.
+CA Certificate MUST present in ./Certificate/root folder.
+Broker and Client certificates MUST be signed by same CA.

@@ -11,6 +11,12 @@
    "redis_table_db":4,
    "redis_backup_db":6,
 
-   "local_node":"nano_data_center"
+   "local_node":"nano_data_center",
+   
+   "mqtt_server":"nano_data_center_demo",
+   "mqtt_port":8883,
+   "mqtt_db" : 7,
+   "mqtt_topic":"REMOTES/#",
+   "redis_mqtt_queue":{"db":4,"queue":"__REDIS_MQTT_QUEUE"}
    
 }

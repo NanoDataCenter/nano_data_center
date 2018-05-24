@@ -12,6 +12,8 @@ class Construct_Controllers(object):
       
        properties["command_list"].append( { "file":"eto_py3.py","restart":True })
        properties["command_list"].append( { "file":"utilities_py3.py","restart":True })
+       properties["command_list"].append( { "file":"redis_monitoring_py3.py","restart":True })
+       properties["command_list"].append( { "file":"pi_monitoring_py3.py","restart":True })
        bc.add_header_node("PROCESSOR","nano_data_center",properties=properties)
        
 
@@ -22,9 +24,15 @@ class Construct_Controllers(object):
        cd.add_hash("WEB_DISPLAY_DICTIONARY")
        cd.close_package_contruction()
 
+
        cd.construct_package("SYSTEM_MONITORING")
-       cd.add_stream("SYSTEM_STATE",depth=ONE_MONTH) # one month of data
-       cd.add_stream("PROCESS_VSS",depth=ONE_MONTH)
+       cd.add_stream("FREE_CPU",depth=ONE_MONTH) # one month of data
+       cd.add_stream("RAM",depth=ONE_MONTH)
+       cd.add_stream("DISK_SPACE",depth=ONE_MONTH) # one month of data
+       cd.add_stream("TEMPERATURE",depth=ONE_MONTH)
+       cd.add_stream("PROCESS_VSZ",depth=ONE_MONTH)
+       cd.add_stream("PROCESS_RSS",depth=ONE_MONTH)
+       cd.add_stream("PROCESS_STATE",depth=ONE_MONTH)
        cd.close_package_contruction()
        
        cd.construct_package("NETWORK_MONITORING")

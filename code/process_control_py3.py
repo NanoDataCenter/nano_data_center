@@ -169,7 +169,7 @@ class System_Control(object):
            temp.launch()
            if temp.error == True:
                
-               self.self.ds_handlers["ERROR_STREAM"].add_compress( { "script": script, "error_file" : temp.temp.error_file_rollover} )
+               self.self.ds_handlers["ERROR_STREAM"].add_compress( data = { "script": script, "error_file" : temp.temp.error_file_rollover} )
                temp.error = False
 
    

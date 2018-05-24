@@ -14,15 +14,17 @@ import math
 import redis
 import base64
 import json
-from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
-
+import msgpack
 import os
 import copy
-import load_files_py3
+
+from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
+from redis_support_py3.graph_query_support_py3 import  Query_Support
+from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
+
+
+
 #import rabbit_cloud_status_publish_py3
-from   io_control_py3 import io_controller_py3
-from   io_control_py3 import construct_classes_py3
-from   io_control_py3 import new_instrument_py3
 
 #
 #
@@ -30,20 +32,23 @@ from   io_control_py3 import new_instrument_py3
 # Monitors status of raspberry pi
 #
 #
-#add cat /proc/meminfo
 
-from data_acquisition_py3 import data_scheduling_py3
-from data_acquisition_py3.data_scheduling_py3 import Data_Acquisition
-from data_acquisition_py3.data_scheduling_py3 import add_chains
-from data_acquisition_py3.data_scheduling_py3 import construct_class
 
-import os
-class PI_Status( object ):
+class PI_MONITOR( object ):
 
-   def __init__( self, redis_handle ):
-       self.redis_handle = redis_handle
+   def __init__( self, package_node,generate_handlers ):
+       data_structures = package_node["data_structures"]
+       self.ds_handlers = {}
+       self.ds_handlers["FREE_CPU"]           = generate_handlers.construct_stream_writer(data_structures["FREE_CPU"])
+       self.ds_handlers["RAM"]                = generate_handlers.construct_stream_writer(data_structures["RAM"])
+       self.ds_handlers["DISK_SPACE"]         = generate_handlers.construct_stream_writer(data_structures["DISK_SPACE"])
+       self.ds_handlers["TEMPERATURE"]        = generate_handlers.construct_stream_writer(data_structures["TEMPERATURE"])
+       self.ds_handlers["PROCESS_VSZ"]        = generate_handlers.construct_stream_writer(data_structures["PROCESS_VSZ"])
+       self.ds_handlers["PROCESS_RSS"]        = generate_handlers.construct_stream_writer(data_structures["PROCESS_RSS"])
+       self.ds_handlers["PROCESS_STATE"]        = generate_handlers.construct_stream_writer(data_structures["PROCESS_STATE"])       
+       self.construct_chains()
 
-   def measure_temperature( self, tag, value, parameters ):
+   def measure_temperature( self, *args ):
       temp = os.popen("vcgencmd measure_temp").readline()
       temp = temp.replace("temp=","").replace("'C\n","")
       temp = float(temp)
@@ -52,13 +57,13 @@ class PI_Status( object ):
       return temp
 
 
-   def measure_disk_space( self, tag, value, parameters  ):
+   def measure_disk_space( self, *args ):
        f = os.popen("df")
        data = f.read()
        f.close()
        lines = data.split("\n")
        
-       return_value = []
+       return_value = {}
        for i in range(0,len(lines)):
            if i == 0:
                continue
@@ -67,26 +72,24 @@ class PI_Status( object ):
            if len(fields) > 3:
               percent = float( fields[2] )/float( fields[1] )
               temp_value =  "disk "+str(fields[0])+ "   used % : "+str(percent)   
-              return_value.append( temp_value )
+              return_value[str(fields[0])] = percent
        return return_value
 
-   def measure_processor_ram( self ,tag, value, parameters ):
+   def measure_processor_ram( self , *args ):
        f = os.popen("free -l")
        data = f.readlines()
        f.close()
        return data
 
-   def measure_processor_load( self ,tag, value, parameters  ):
+   def measure_processor_load( self , *args  ):
        headers = [ "USER","PID","%CPU","%MEM","VSZ","RSS","TTY","STAT","START","TIME","COMMAND", "PARAMETER1", "PARAMETER2" ]
        f = os.popen("ps -aux | grep python")
        data = f.read()
        f.close()
        lines = data.split("\n")
-       return_value = []
+       
        for i in range(0,len(lines)):
 
-           if i == 0:
-               continue
            fields = lines[i].split()
            temp_value = {}
            if len(fields) <= len(headers):
@@ -94,140 +97,171 @@ class PI_Status( object ):
                    temp_value[headers[i]] = fields[i]
                
                if "PARAMETER1" in temp_value:
-                 
-                 temp_dict = {}
-                 temp_dict["python_process"] = temp_value["PARAMETER1"]
-                 temp_dict["pid"]            = temp_value["PID"]
-                 temp_dict["RSS"]            = temp_value["RSS"]
-                 temp_dict["VSZ"]            = temp_value["VSZ"]
-                 temp_dict["%CPU"]           = temp_value["%CPU"]
-                 return_value.append( json.dumps(temp_dict, sort_keys = True, indent = 5) )
+                 if temp_value["COMMAND"] == "python3":
+                    temp_dict = {}
+                    temp_dict["python_process"] = temp_value["PARAMETER1"]
+                    temp_dict["pid"]            = temp_value["PID"]
+                    temp_dict["RSS"]            = temp_value["RSS"]
+                    temp_dict["VSZ"]            = temp_value["VSZ"]
+                    temp_dict["%CPU"]           = temp_value["%CPU"]
+                   
+                    self.ds_handlers["PROCESS_STATE"].add_compress(data = temp_dict)
+
+       
+
+   def vsz_handler( self , *args  ):
+       headers = [ "USER","PID","%CPU","%MEM","VSZ","RSS","TTY","STAT","START","TIME","COMMAND", "PARAMETER1", "PARAMETER2" ]
+       f = os.popen("ps -aux | grep python")
+       data = f.read()
+       f.close()
+       lines = data.split("\n")
+       return_value = {}
+       for i in range(0,len(lines)):
+
+           fields = lines[i].split()
+           temp_value = {}
+           if len(fields) <= len(headers):
+               for i in range(0,len(fields)):
+                   temp_value[headers[i]] = fields[i]
+               
+               if "PARAMETER1" in temp_value:
+                   if temp_value["COMMAND"] == "python3":
+                       key = temp_value["PARAMETER1"]
+                       return_value[key] = temp_value["VSZ"]
+
+       return return_value
+       
+   def rss_handler( self , *args  ):
+       headers = [ "USER","PID","%CPU","%MEM","VSZ","RSS","TTY","STAT","START","TIME","COMMAND", "PARAMETER1", "PARAMETER2" ]
+       f = os.popen("ps -aux | grep python3")
+       data = f.read()
+       f.close()
+       lines = data.split("\n")
+       return_value = {}
+       for i in range(0,len(lines)):
+     
+           
+           fields = lines[i].split()
+           temp_value = {}
+           if len(fields) <= len(headers):
+               for i in range(0,len(fields)):
+                   temp_value[headers[i]] = fields[i]
+               
+               if "PARAMETER1" in temp_value:
+                   if temp_value["COMMAND"] == "python3":
+                       key = temp_value["PARAMETER1"]
+                       return_value[key] = temp_value["RSS"]
 
        return return_value
 
-   def log_redis_info( self, tag,value,parameters):
-        data = self.redis_handle.info()
-        print("data",data)
-        return_value= []
-        try:
-           return_value.append("used_memory_human "+ str(data["used_memory_human"]))
-           return_value.append("uptime_in_seconds "+ str(data["uptime_in_seconds"]))
-           return_value.append("total_connections_received "+ str(data["total_connections_received"]))
-           return_value.append("config_file "+ str(data["config_file"]))
-           return_value.append("aof_last_write_status "+ str(data["aof_last_write_status"]))
-           return_value.append("total_commands_processed "+ str(data["total_commands_processed"]))
-           return_value.append("used_memory_rss_human "+ str(data["used_memory_rss_human"]))
-           return_value.append("db0:keys "+ json.dumps(data["db0"]))
-           return_value.append("db1:keys "+ json.dumps(data["db1"]))
-           return_value.append("db2:keys "+ json.dumps(data["db2"]))
-           return_value.append("db3:keys "+ json.dumps(data["db3"]))
-           return_value.append("db11:keys "+ json.dumps(data["db11"]))
-           return_value.append("db12:keys "+ json.dumps(data["db12"]))
-           return_value.append("db14:keys "+ json.dumps(data["db14"]))
-           return_value.append("db15:keys "+ json.dumps(data["db15"]))
-        except:
-            pass
-        return return_value
-
-   def measure_free_cpu( self, tag, value, parameters):
+   def measure_free_cpu( self,*args):
        headers = [ "Time","cpu","%user" , "%nice", "%system", "%iowait" ,"%steal" ,"%idle" ]
-       return_value = []
-       f = os.popen("sar -u 360 1 ")
+       return_value = {}
+       f = os.popen("sar -u 60 1 ")
        data = f.readlines()
        fields = data[-1].split()
-       print(data)
-       print(fields)
-       for i in range(0,len(fields)):
-           return_value.append(headers[i]+"    "+str(fields[i]))
+       for i in range(2,len(fields)):
+           return_value[headers[i]] = float(fields[i])
        return return_value
 
-   def proc_memory( self, tag, value, parameters):
+   def proc_memory( self, *args ):
        f = os.popen("cat /proc/meminfo ")
-       data = f.readlines()
-       return data
+       
+       data_list = f.readlines()
+       return_value = {}
+       for i in data_list:
+          items = i.split(":")
+          key = items[0].strip()
+          values = items[1].split("kB")
+          return_value[key] = values[0].strip()
+       return return_value
+       
+  
+   def assemble_free_cpu( self, *args ):
+       data = self.measure_free_cpu()
+       self.ds_handlers["FREE_CPU"].add_compress(data = data)
+       return "DISABLE"
+ 
+   def assemble_ram( self, *args ):
+       memory_dict = self.proc_memory()
+       self.ds_handlers["RAM"].add_compress( data = memory_dict)
+       return "DISABLE"
+       
+       
+   def assemble_temperature( self, *args):
+       temp_f = self.measure_temperature()
+       self.ds_handlers["TEMPERATURE"].add_compress(data = {"TEMP_F":temp_f})
+       return "DISABLE"
 
-def construct_linux_acquisition_class( redis_handle, gm, io_server,io_server_port ):
-   pi_stat = PI_Status( redis_handle )
-   gm.add_cb_handler("pi_temperature",       pi_stat.measure_temperature )  
-   gm.add_cb_handler("python_processes",    pi_stat.measure_processor_load )
-   gm.add_cb_handler("linux_disk",     pi_stat.measure_disk_space )
-   gm.add_cb_handler("linux_redis",    pi_stat.log_redis_info )
-   gm.add_cb_handler("linux_memory",   pi_stat.measure_processor_ram)
-   gm.add_cb_handler("free_cpu",   pi_stat.measure_free_cpu)
-   gm.add_cb_handler("proc_mem",   pi_stat.proc_memory)
-   instrument = new_instrument_py3.Modbus_Instrument()
+       
+   def assemble_vsz(self,*args):
+       data = self.vsz_handler()
+       self.ds_handlers["PROCESS_VSZ"].add_compress( data =  data )
+       return "DISABLE"
+       
+   def assemble_rss(self,*args):
+       data = self.rss_handler()
+       self.ds_handlers["PROCESS_RSS"].add_compress( data = data )
+       return "DISABLE"
+       
+   def assemble_process_state(self,*args):
+       self.measure_processor_load()
+       return "DISABLE"
+      
+   def assemble_disk_space(self,*args):
+      data = self.measure_disk_space()     
+      self.ds_handlers["DISK_SPACE"].add_compress(data = data)
+      return "DISABLE" 
+      
+   def construct_chains(self,*args):
 
-   
-   remote_classes = construct_classes_py3.Construct_Access_Classes(io_server,io_server_port)
-   fifteen_store   =  []
-   minute_store    =  []
-   hour_store      =  list(gm.match_terminal_relationship(  "LINUX_HOUR_ACQUISTION"))[0]
-   daily_store     =  []
-   fifteen_list   =  []
-   minute_list     =  []     
-   hour_list       =  list(gm.match_terminal_relationship( "LINUX_HOUR_ELEMENT" ))
-   daily_list      =  []
-
-   return  construct_class( redis_handle,
-                     gm,instrument,
-                     remote_classes,
-                     fifteen_store,
-                     minute_store,
-                     hour_store,
-                     daily_store,
-                     fifteen_list,
-                     minute_list,
-                     hour_list,
-                     daily_list )
-                     
+       cf = CF_Base_Interpreter()
+       cf.define_chain("pi_monitor", True)
+       cf.insert.log("starting processor measurements")
+       cf.insert.one_step(self.assemble_free_cpu)
+       cf.insert.one_step(self.assemble_ram)
+       cf.insert.one_step(self.assemble_temperature)
+       cf.insert.one_step(self.assemble_vsz)
+       cf.insert.one_step(self.assemble_rss)
+       cf.insert.one_step(self.assemble_process_state)
+       cf.insert.one_step(self.assemble_disk_space)
+       cf.insert.log("ending processor measurements")
+       cf.insert.wait_event_count( event = "MINUTE_TICK",count = 15)
+       cf.insert.reset()
+       cf.execute()
+        
     
 if __name__ == "__main__":
-
-   import time
-   from redis_graph_py3.farm_template_py3 import Graph_Management 
-
-
-
-   gm =Graph_Management("PI_1","main_remote","LaCima_DataStore")
-  
-   data_store_nodes = gm.find_data_stores()
-   io_server_nodes  = gm.find_io_servers()
-  
-   # find ip and port for redis data store
-   data_server_ip   = data_store_nodes[0]["ip"]
-   data_server_port = data_store_nodes[0]["port"]
-   redis_handle = redis.StrictRedis( host = data_server_ip, port=data_server_port, db = 12 , decode_responses=True)
-
-
-
-   io_server_ip     = io_server_nodes[0]["ip"]
-   io_server_port   = io_server_nodes[0]["port"]
-   # find ip and port for ip server
-   status_server =  gm.match_terminal_relationship("RABBITMQ_STATUS_QUEUE")[0]
-   queue_name     = status_server[ "queue"]
-
-   #status_queue_class = rabbit_cloud_status_publish_py3.Status_Queue(redis_handle, queue_name ) 
    
-   construct_linux_acquisition_class= construct_linux_acquisition_class( redis_handle, gm, io_server_ip, io_server_port )
-
    
+    #
+    #
+    # Read Boot File
+    # expand json file
+    # 
+   file_handle = open("system_data_files/redis_server.json",'r')
+   data = file_handle.read()
+   file_handle.close()
+   site_data = json.loads(data)
 
-   #
-   # Adding chains
-   #
-   cf = CF_Base_Interpreter()
-   cf.define_chain("test",False)
-   cf.insert.log( "test chain start")
-   cf.insert.send_event("MINUTE_TICK",1 )
-   cf.insert.wait_event_count( event = "TIME_TICK", count = 1 )
-   cf.insert.send_event( "HOUR_TICK",1  )
-   cf.insert.wait_event_count( event = "TIME_TICK", count = 1 )
-   cf.insert.send_event("DAY_TICK", 1 )
-   cf.insert.terminate()
+  
+   qs = Query_Support( redis_server_ip = site_data["host"], redis_server_port=site_data["port"], db = site_data["graph_db"] ) 
+   query_list = []
+   query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
+   query_list = qs.add_match_relationship( query_list,relationship="PROCESSOR",label=site_data["local_node"] )
+   query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", label = "SYSTEM_MONITORING" )
+                                        
+                                        
+                                           
+   package_sets, package_nodes = qs.match_list(query_list)  
+  
 
-   add_chains(cf, construct_linux_acquisition_class)
+   generate_handlers = Generate_Handlers(package_nodes[0],site_data)
+   pi_monitor = PI_MONITOR(package_nodes[0],generate_handlers)
+   
+   
+else:
+   pass
 
-   print( "starting chain flow" )
-
-   cf.execute()
 
