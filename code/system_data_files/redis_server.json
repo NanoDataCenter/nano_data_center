@@ -16,7 +16,12 @@
    "mqtt_server":"nano_data_center_demo",
    "mqtt_port":8883,
    "mqtt_db" : 7,
-   "mqtt_topic":"REMOTES/#",
-   "redis_mqtt_queue":{"db":4,"queue":"__REDIS_MQTT_QUEUE"}
+   "mqtt_topic":"REMOTES/LaCima/#",
+   
+ 
+   "mqtt_cloud_server":"lacimaRanch.cloudapp.net",
+   "mqtt_cloud_port":8883,
+   "mqtt_cloud_db" : 4,
+   "mqtt_cloud_topic":"DOWNLOAD/LaCima/#"
    
 }

@@ -3,7 +3,6 @@ import redis
 import msgpack
 from .redis_stream_utilities_py3 import Redis_Stream
 
-
 class Send_Object(object):
    def __init__(self, redis_handle, transport_queue, queue_depth ):
        self.redis_handle = redis_handle
@@ -19,6 +18,7 @@ class Send_Object(object):
        self.redis_handle.ltrim(self.transport_queue, 0,self.queue_depth)
        
 
+       
 
 class Cloud_TX_Handler(object):
 
@@ -28,7 +28,10 @@ class Cloud_TX_Handler(object):
 
    def delete(self,key):
        self.send_object.send("DEL",key=key)
-       
+ 
+   def hset_all(self,key,data):
+       self.send_object.send("HSET_ALL",key=key,data = data )
+ 
    def hset(self,key,field,data):
        self.send_object.send("HSET",key=key,field=field,data = data )
        
@@ -53,10 +56,11 @@ class Cloud_TX_Handler(object):
        
 class Cloud_RX_Handler(object):
 
-   def __init__(self,redis_handle):
+   def __init__(self,redis_handle,redis_site_data):
       self.redis_handle = redis_handle
       self.data_handlers = {}
-      self.data_handler["DEL"] = self.delete 
+      self.data_handlers["DEL"] = self.delete
+      self.data_handlers["HSET_ALL"] = self.hset_all      
       self.data_handlers["HSET"] = self.hset
       self.data_handlers["HDEL"] = self.hdel
       self.data_handlers["LPUSH"] = self.lpush
@@ -65,11 +69,15 @@ class Cloud_RX_Handler(object):
       self.data_handlers["STREAM_WRITE"] = self.stream_write
       self.data_handlers["STREAM_LIST_WRITE"] = self.stream_list_write
       self.redis_stream =  Redis_Stream(redis_handle, exact_flag = False)
-  
+      self.file_path = {}
+      self.file_path["APP_FILES"] =  "app_data_files/"
+      self.file_path["SYS_FILES"] =  "system_data_files/"
+      self.file_path["LIMIT"]  = "limit_data_files/"
+ 
       
-   def unpack_remote_data( self, list_data ):
-      
-      for i_json in list_data:
+   def unpack_remote_data( self, list_data_msg_pack ):
+      list_data = msgpack.unpackb(list_data_msg_pack)
+      for i_msg_pack in list_data:
           i = msgpack.unpackb(i_json)
           action = i["ACTION"]
           print("ACTION",action)
@@ -78,8 +86,39 @@ class Cloud_RX_Handler(object):
           else:
               raise ValueError("Bad Action ID")
 
+ 
+   def check_for_file(self,key):
+       self.file_type = None
+       fields = key.split("[FILE:")
+       if len(fields) > 1:
+          self.file_type = fields[1].split("]")[0]
+          return True
+       else:
+          return False
+
+   def delete(self,key):
+       self.redis_handle.delete(key)
+ 
+   def hset_all(self,update_packet):
+       key = update_packet["key"]
+       data = update_packet["data"]
+       self.redis_handle.delete(key)
+       for field, item in data.items():
+          self.redis_handle.hset(key,field)
+
+   def save_raw_file(self,path,name,data): 
+       f = open(self.path + name, 'w')
+       f.write(data)
+          
+              
    def hset(self,data):
        self.redis_handle.hset(data["key"],data["field"],data["data"])
+       if self.check_for_file(key) == True:
+   
+          if self.file_type in self.file_path:
+               path = self.file_path[self.file_type]
+               file = data["field"]
+               self.save_raw_file(file_path,file,data["data"])
        
    def hdel(self,data):
        self.redis_handle.hdel(data["key"],data["field"] )

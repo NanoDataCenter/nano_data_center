@@ -19,8 +19,8 @@ from os.path import isfile, join
 import redis
 import json
 import msgpack
-from redis_support_py3.cloud_handlers_py3 import Cloud_TX_Handler
-from redis_support_py3.construct_data_handlers_py3 import Redis_Hash_Dictionary
+from  .cloud_handlers_py3 import Cloud_TX_Handler
+from  .construct_data_handlers_py3 import Redis_Hash_Dictionary
 app_files = "app_data_files/"
 sys_files = "system_data_files/"
 limit_files = "limit_data_files/"
@@ -44,7 +44,6 @@ class BASIC_FILES( object ):
     def delete_file(self, name):
         self.hash_driver.hdelete(name)
 
-    
         
     def save_file(self, name, data):
         f = open(self.path + name, 'w')
