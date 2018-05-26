@@ -1,6 +1,7 @@
-
+import base64
 import redis
 import msgpack
+import json
 from .redis_stream_utilities_py3 import Redis_Stream
 
 class Send_Object(object):
@@ -9,54 +10,71 @@ class Send_Object(object):
        self.transport_queue = transport_queue
        self.queue_depth = queue_depth
        
+       
 
 
    def send(self,action, **kwargs):
        kwargs["ACTION"] = action
-       send_data = msgpack.packb(kwargs)
-       self.redis_handle.lpush(self.transport_queue, send_data )
+       
+       json_data = json.dumps(kwargs)
+       self.redis_handle.lpush(self.transport_queue, json_data )
        self.redis_handle.ltrim(self.transport_queue, 0,self.queue_depth)
        
-
+   def length(self):
+       return self.redis_handle.llen(self.transport_queue)
+       
+   def extract(self,maxlength = 20):
+       length = self.redis_handle.llen(self.transport_queue)
+       if length > maxlength:
+         length = maxlength
+       return_list = []
+       for i in range(0,length):
+           return_list.append(self.redis_handle.rpop(self.transport_queue))
+       return_value = json.dumps(return_list)
+       return return_value
+         
+       
        
 
-class Cloud_TX_Handler(object):
+class Cloud_TX_Handler(Send_Object):
 
    def __init__(self, redis_handle, transport_queue = "_TRANSPORT_QUEUE_" , transport_depth = 128 ):
+       Send_Object.__init__(self,redis_handle,transport_queue,transport_depth)
        self.redis_handle = redis_handle
-       self.send_object = Send_Object( redis_handle,transport_queue,transport_depth)
+
 
    def delete(self,key):
-       self.send_object.send("DEL",key=key)
+       self.send("DEL",key=key)
  
-   def hset_all(self,key,data):
-       self.send_object.send("HSET_ALL",key=key,data = data )
+
  
    def hset(self,key,field,data):
-       self.send_object.send("HSET",key=key,field=field,data = data )
+       self.send("HSET",key=key,field=field,data = data )
        
    def hdel(self,key,field):
-       self.send_object.send("HDEL",key=key,field=field)
+       self.send("HDEL",key=key,field=field)
        
    def lpush(self, depth, key, data):
-       self.send_object.send("LPUSH",key=key,depth=depth,data = data)
+       self.send("LPUSH",key=key,depth=depth,data = data)
        
    def list_delete(self, key,index):
-       self.send_object.send("LIST_DELETE",key=key,index = index)
+       self.send("LIST_DELETE",key=key,index = index)
        
    def rpop(self,key):
-       self.send_object.send("RPOP",key=key)
+       self.send("RPOP",key=key)
        
-   def stream_write(self,depth, id, key,  store_dictionary ):
-       self.send_object.send("STREAM_WRITE",id=id,key=key,depth=depth , store_dictionary = store_dictionary )
+   def stream_write(self,depth, id, key,  store_dictionary_pack ):
+   
+       self.send("STREAM_WRITE",id=id,key=key,depth=depth , store_dictionary = store_dictionay_pack )
        
    def stream_list_write(self, depth, key,data ):
-       self.send_object.send("STREAM_LIST_WRITE", key=key,depth =depth,data = data)
+       self.send("STREAM_LIST_WRITE", key=key,depth =depth,data = data)
        
        
 class Cloud_RX_Handler(object):
 
-   def __init__(self,redis_handle,redis_site_data):
+   def __init__(self,redis_handle,*args):
+     
       self.redis_handle = redis_handle
       self.data_handlers = {}
       self.data_handlers["DEL"] = self.delete
@@ -75,12 +93,14 @@ class Cloud_RX_Handler(object):
       self.file_path["LIMIT"]  = "limit_data_files/"
  
       
-   def unpack_remote_data( self, list_data_msg_pack ):
-      list_data = msgpack.unpackb(list_data_msg_pack)
-      for i_msg_pack in list_data:
-          i = msgpack.unpackb(i_json)
+   def unpack_remote_data( self, list_data ):
+     
+      for i_json in list_data:
+          
+          i = json.loads(i_json)
+          
           action = i["ACTION"]
-          print("ACTION",action)
+         
           if action in self.data_handlers:
               self.data_handlers[action](i)
           else:
@@ -99,12 +119,6 @@ class Cloud_RX_Handler(object):
    def delete(self,key):
        self.redis_handle.delete(key)
  
-   def hset_all(self,update_packet):
-       key = update_packet["key"]
-       data = update_packet["data"]
-       self.redis_handle.delete(key)
-       for field, item in data.items():
-          self.redis_handle.hset(key,field)
 
    def save_raw_file(self,path,name,data): 
        f = open(self.path + name, 'w')
@@ -113,15 +127,15 @@ class Cloud_RX_Handler(object):
               
    def hset(self,data):
        self.redis_handle.hset(data["key"],data["field"],data["data"])
-       if self.check_for_file(key) == True:
+       if self.check_for_file(data["key"]) == True:
    
           if self.file_type in self.file_path:
                path = self.file_path[self.file_type]
                file = data["field"]
-               self.save_raw_file(file_path,file,data["data"])
+               self.save_raw_file(file_path,file,json.dumps(data["data"]))
        
    def hdel(self,data):
-       self.redis_handle.hdel(data["key"],data["field"] )
+      self.redis_handle.hdel(data["key"],data["field"] )
        
    def lpush(self, data):
        self.redis_handle.lpush(data["key"],data["data"])
@@ -129,8 +143,9 @@ class Cloud_RX_Handler(object):
 
        
    def list_delete(self,data):
-       self.redis_handle.lset(data["key"], data["index"],"__#####__")
-       self.redis_handle.lrem(data["key"], 1,"__#####__") 
+       if self.redis_handle.exists(data["key"]) == True:
+           self.redis_handle.lset(data["key"], data["index"],"__#####__")
+           self.redis_handle.lrem(data["key"], 1,"__#####__") 
 
        
    def rpop(self,data):
@@ -146,16 +161,17 @@ class Cloud_RX_Handler(object):
     
 
 if __name__ == "__main__":
-    redis_handle = redis.StrictRedis(  db=3 , decode_responses=True)
+    redis_handle = redis.StrictRedis(  db=10 , decode_responses=True)
+    redis_handle.flushdb()
     cloud_rx =  Cloud_RX_Handler(redis_handle)
     cloud_tx = Cloud_TX_Handler(redis_handle)
     
-    data_1 = msgpack.packb({"data":1})   
-    data_2 = msgpack.packb({"data":2})
-    data_3 = msgpack.packb({"data":3})
-    data_4 = msgpack.packb({"data":41})
-    data_5 = msgpack.packb({"data":5})
-    data_6 = msgpack.packb({"data":6})
+    data_1 = json.dumps({"data":1})   
+    data_2 = json.dumps({"data":2})
+    data_3 = json.dumps({"data":3})
+    data_4 = json.dumps({"data":41})
+    data_5 = json.dumps({"data":5})
+    data_6 = json.dumps({"data":6})
     
     dict_1 = {"data":7}
     
@@ -178,8 +194,8 @@ if __name__ == "__main__":
         remote_list.append(redis_handle.lpop("_TRANSPORT_QUEUE_"))
         
   
-    print("len",len(remote_list))
-    json_list_data = msgpack.packb(remote_list)
+    
+    remote_list.reverse()
  
-    cloud_rx.unpack_remote_data(json_list_data)    
+    cloud_rx.unpack_remote_data(remote_list)    
   

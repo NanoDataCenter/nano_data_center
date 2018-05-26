@@ -44,6 +44,16 @@ class MQTT_Redis_Bridge(object):
 
 
 if __name__ == "__main__":
+   file_handle = open("system_data_files/redis_server.json",'r')
+   data = file_handle.read()
+   file_handle.close()
+      
+   redis_site_data = json.loads(data)
+   MQTT_Redis_Bridge(redis_site_data)
+
+   
+   '''
+   #test code
    import time
    from threading import Thread
    from redis_support_py3.mqtt_client_py3 import MQTT_CLIENT
@@ -95,3 +105,4 @@ if __name__ == "__main__":
    print(mqtt_retreive.xrange_namespace_list( nodes, "-", "+" , count=100))
    print(mqtt_retreive.mqtt_xrevrange_topic( "REMOTES/SLAVE:Node_1/TEMPERATURE:Case", "+", "-" , count=100))
    print(mqtt_retreive.xrange_topic( "REMOTES/SLAVE:Node_1/TEMPERATURE:Case", "-", "+" , count=100))
+   '''

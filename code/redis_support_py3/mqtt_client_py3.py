@@ -28,7 +28,7 @@ class MQTT_CLIENT(object):
            time.sleep(.1)
            if self.rc == 0:
               return True
-       return False
+       return False 
            
           
 
@@ -45,18 +45,27 @@ class MQTT_CLIENT(object):
        #self.client.loop_stop()
        
    def on_publish(self, client, userdata, mid):
+       self.callback_flag = True
        self.mid_server = mid
-       
+
+   def disconnect(self):
+       self.client.disconnect()
+       self.client.loop_stop()   
 
    def publish(self,topic,payload=None,qos=0,retain=False):
-       
+       self.callback_flag = False
        self.mid_server = -1
        self.client_result ,self.mid_client = self.client.publish(topic, payload, qos, retain)
+       if self.client_result != 0:
+          return False,-1
        self.client.loop(5)
        for i in range(0,50):
-           if (self.client_result == 0 ) and (self.mid_server == self.mid_client):
-              return True
-       return False
+           if self.callback_flag == True:
+               if (self.mid_server == self.mid_client):
+                   return True
+           else:
+              return False , -2
+       return False,-3
         
        
        

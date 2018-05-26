@@ -136,8 +136,7 @@ class Job_Queue_Client( object ):
        return self.redis_handle.llen(self.key)   
       
    def push(self,data):
-       pack_data = msgpack.packb(data)
-       pack_data = base64.b64encode(pack_data).decode()
+       pack_data = json.dumps(data)
        self.redis_handle.lpush(self.key,pack_data)
        self.redis_handle.ltrim(self.key,0,self.depth)
        self.cloud_handler.lpush(self.depth,self.key,pack_data)
@@ -175,16 +174,16 @@ class Job_Queue_Server( object ):
        if pack_data == None:
           return False, None
        else:
-          pack_data = base64.b64decode(pack_data)
-          return True, msgpack.unpackb(pack_data ,encoding='utf-8')
+         
+          return True,json.loads(pack_data)
           
    def last_get(self):
        pack_data = self.redis_handle.lindex(self.key, -1)
        if pack_data == None:
           return False, None
        else:
-          pack_data = base64.b64decode(pack_data)
-          return True, msgpack.unpackb(pack_data ,encoding='utf-8')
+          
+          return True, json.loads(pack_data)
 
 
    
@@ -204,8 +203,8 @@ class Stream_List_Writer(object):
       
       
    def push(self,data):
-       pack_data = msgpack.packb(data)
-       pack_data = base64.b64decode(pack_data).decode()
+       pack_data = json.dumps(data)
+
        self.redis_handle.lpush(self.key,pack_data)
        self.redis_handle.ltrim(self.key,0,self.depth-1)
        self.cloud_handler.stream_list_write(self.depth, self.key, data )
@@ -227,8 +226,8 @@ class Stream_List_Reader(object):
        return_value = []
        pack_list = self.redis_handle.lrange(self.key, start, end)
        for pack_data in pack_list:
-          pack_data = base64.b64decode(pack_data)
-          data = msgpack.unpackb(data_compressed ,encoding='utf-8')
+          
+          data = json.loads(pack_data)
           return_value.append(data)
        return return_value
 
@@ -261,7 +260,7 @@ class Stream_Writer(Redis_Stream):
        
        for i , item in data.items():
            
-           store_dictionary[i] = base64.b64encode(msgpack.packb(item)).decode()
+           store_dictionary[i] = base64.b64encode(json.dumps(item)).decode()
        self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=store_dictionary )
        self.cloud_handler.stream_write(id, self.depth, self.key, store_dictionary ) 
        
