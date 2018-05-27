@@ -15,7 +15,8 @@ class FIELD_TYPE_ERROR(Exception):
    pass
 
 class RPC_Server(object):
-    def __init__( self, redis_handle ,key,data ):
+    def __init__( self, redis_handle ,data, key ):
+       self.data = data
        self.redis_handle = redis_handle
        self.redis_rpc_queue = redis_rpc_queue
        self.handler = {}
@@ -57,34 +58,41 @@ class RPC_Server(object):
         self.redis_handle.expire(id, 30)
 
       
-
       
  
 class Redis_Hash_Dictionary( object ):
  
-   def __init__(self,redis_handle, key,data,cloud_handler):
+   def __init__(self,redis_handle,data, key,cloud_handler):
+      self.data = data
       self.redis_handle = redis_handle
       self.key = key
-      self.data = data
       self.cloud_handler = cloud_handler
 
       
-   def delete_all( self ):
+   def delete( self ):
        self.redis_handle.delete(self.key)
-       self.cloud_handler.delete(self.key)     
+       if self.cloud_handler != None:
+           self.cloud_handler.delete(self.data,self.key)     
       
       
    def hset( self, field, data ):
-      pack_data = msgpack.packb(data)
-      pack_data = base64.b64encode(pack_data).decode()
+   
+      pack_data = msgpack.packb(data,use_bin_type = True )
       self.redis_handle.hset(self.key,field,pack_data)
-      self.cloud_handler.hset(self.key,field,pack_data)     
+      if self.cloud_handler != None:
+         self.cloud_handler.hset(self.data,self.key,field,pack_data)     
 
+   def hmset(self,dictionary_table):
+       for i,items in dictionary_table.items():
+          self.hset(i,items)
+       
+         
+         
    def hget( self, field):
       pack_data = self.redis_handle.hget(self.key,field)
       if pack_data == None:
          return None
-      pack_data = base64.b64decode(pack_data)
+      
       return  msgpack.unpackb(pack_data,encoding='utf-8')
       
 
@@ -107,7 +115,8 @@ class Redis_Hash_Dictionary( object ):
 
    def hdelete(self,field):
        self.redis_handle.hdel(self.key,field)
-       self.cloud_handler.hdel(self.key,field)
+       if self.cloud_handler != None:
+           self.cloud_handler.hdel(self.data,self.key,field)
           
        
 
@@ -115,126 +124,164 @@ class Redis_Hash_Dictionary( object ):
        
 class Job_Queue_Client( object ):
  
-   def __init__(self,redis_handle, key, data, cloud_handler):
+   def __init__(self,redis_handle,data, key, depth, cloud_handler):
+      self.data = data
       self.redis_handle = redis_handle
       self.key = key
-      self.depth =  data["depth"]
+      self.depth =  depth
       self.cloud_handler = cloud_handler
 
    def delete_all( self ):
        self.redis_handle.delete(self.key)
-       self.cloud_handler.delete(self.key)     
+       if self.cloud_handler != None:
+          self.cloud_handler.delete(self.data, self.key)     
       
       
    def delete(self, index ):
-       if index < self.llen(self.key):
+       if index < self.redis_handle.llen(self.key):
            self.redis_handle.lset(self.key, index,"__#####__")
            self.redis_handle.lrem(self.key, 1,"__#####__") 
-           self.cloud_handler.list_delete(self,self.key,self.index)
+           if self.cloud_handler != None:
+               self.cloud_handler.list_delete(self.data,self,self.key,self.index)
       
    def length(self):
        return self.redis_handle.llen(self.key)   
       
    def push(self,data):
-       pack_data = json.dumps(data)
+       pack_data =  msgpack.packb(data,use_bin_type = True )
        self.redis_handle.lpush(self.key,pack_data)
        self.redis_handle.ltrim(self.key,0,self.depth)
-       self.cloud_handler.lpush(self.depth,self.key,pack_data)
+       if self.cloud_handler != None:
+           self.cloud_handler.lpush(self.data, self.depth,self.key,pack_data)
          
 
  
 class Job_Queue_Server( object ):
  
-   def __init__(self,redis_handle, key,data,cloud_handler):
+   def __init__(self,redis_handle,data, key,cloud_handler):
+      self.data = data
       self.redis_handle = redis_handle
       self.key = key 
-      self.data = data
+      
       self.cloud_handler = cloud_handler
  
    def delete_all( self ):
        self.redis_handle.delete(self.key)
-       self.cloud_handler.delete(self.key)     
+       if self.cloud_handler != None:
+          self.cloud_handler.delete(self.data,self.key)     
  
  
    def length(self):
        return self.redis_handle.llen(self.key)
        
    def delete(self, index ):
-       if index < self.llen(self.key):
+       if index < self.redis_handle.llen(self.key):
            self.redis_handle.lset(self.key, index,"__#####__")
            self.redis_handle.lrem(self.key, 1,"__#####__") 
-           self.cloud_handler.list_delete(self,self.key,self.index)
+           if self.cloud_handler != None:
+               self.cloud_handler.list_delete(self.data,self.key,self.index)
                 
 
  
    def pop(self):
        pack_data = self.redis_handle.rpop(self.key)
-       self.cloud_handler.rpop(self.key)
+       if self.cloud_handler != None:
+          self.cloud_handler.rpop(self.data ,self.key)
 
        if pack_data == None:
           return False, None
        else:
          
-          return True,json.loads(pack_data)
+          return True,msgpack.unpackb(pack_data,encoding='utf-8')
           
-   def last_get(self):
+   def show_next_job(self):
        pack_data = self.redis_handle.lindex(self.key, -1)
        if pack_data == None:
           return False, None
        else:
           
-          return True, json.loads(pack_data)
+          return True, msgpack.unpackb(pack_data,encoding='utf-8')
 
 
    
 class Stream_List_Writer(object):
        
   
-   def __init__(self,redis_handle, key, data,cloud_handler):
-     
+   def __init__(self,redis_handle, data, depth, key, cloud_handler):
+      self.data = data
       self.redis_handle = redis_handle
       self.cloud_handler = cloud_handler
       self.key = key
-      self.depth = data["depth"]
+      self.depth = depth
 
    def delete_all( self ):
        self.redis_handle.delete(self.key)
-       self.cloud_handler.delete(self.key)     
+       if self.cloud_handler != None:
+           self.cloud_handler.delete(self.data, self.key)     
       
       
    def push(self,data):
-       pack_data = json.dumps(data)
+       assert(type(data)== type(dict()) )
+       if "timestamp" not in data:
+          data["timestamp"] = time.time()
+       pack_data =  msgpack.packb(data,use_bin_type = True )
 
        self.redis_handle.lpush(self.key,pack_data)
        self.redis_handle.ltrim(self.key,0,self.depth-1)
-       self.cloud_handler.stream_list_write(self.depth, self.key, data )
+       if self.cloud_handler != None:
+           self.cloud_handler.stream_list_write(self.data, self.depth, self.key, data )
 
        
 class Stream_List_Reader(object):
        
-   def __init__(self,redis_handle, redis_key):
-      
+   def __init__(self,redis_handle,data, key,cloud_handler):
+      self.cloud_handler = cloud_handler
+      self.data = data
       self.redis_handle = redis_handle
-      self.key = redis_key
+      self.key = key
      
    def delete_all( self ):
        self.redis_handle.delete(self.key)
-       self.cloud_handler.delete(self.key)     
-      
+       if self.cloud_handler != None:
+           self.cloud_handler.delete(self.data, self.key)     
+   
+   def length(self):
+       return self.redis_handle.llen(self.key)
       
    def range(self,start,end):
        return_value = []
-       pack_list = self.redis_handle.lrange(self.key, start, end)
+       pack_list = self.redis_handle.lrange(self.key, start,end)  #read most recent first
+       
        for pack_data in pack_list:
           
-          data = json.loads(pack_data)
+          data = msgpack.unpackb(pack_data,encoding='utf-8')
           return_value.append(data)
        return return_value
 
+   def t_range(self,recent_time_stamp,early_time_stamp, count,start_range, end_range ):
+       test_count =  0
+       if count == None:
+          count = self.redis_handle.llen(self.key)
+       trial_data = self.range(start_range,end_range)
+       return_value = []
+       for i in trial_data:
+          ts = i["timestamp"]
+          if ts > recent_time_stamp:
+             continue
+          if ts < early_time_stamp:
+              break
+          return_value.append(i)
+          test_count +=1
+          if test_count == count:
+             break
+       return return_value
+       
+'''
 class Stream_Writer(Redis_Stream):
        
-   def __init__(self,redis_handle,  redis_key, data,cloud_handler,):
+   def __init__(self,redis_handle, data,  redis_key,cloud_handler,):
       super().__init__(redis_handle)
+      self.data = data
       self.redis_handle = redis_handle
       self.cloud_handler = cloud_handler
       self.key = redis_key
@@ -243,7 +290,8 @@ class Stream_Writer(Redis_Stream):
 
    def delete_all( self ):
        self.redis_handle.delete(self.key)
-       self.cloud_handler.delete(self.key)     
+       if self.cloud_handler != None:
+          self.cloud_handler.delete(self.data,self.key)     
 
       
    def change_add_flag(self, state):
@@ -262,21 +310,24 @@ class Stream_Writer(Redis_Stream):
            
            store_dictionary[i] = base64.b64encode(json.dumps(item)).decode()
        self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=store_dictionary )
-       self.cloud_handler.stream_write(id, self.depth, self.key, store_dictionary ) 
+       if self.cloud_handler != None:
+           self.cloud_handler.stream_write(self.data,id, self.depth, self.key, store_dictionary ) 
        
    
       
 
 class Stream_Reader(Redis_Stream):
        
-   def __init__(self,redis_handle, redis_key):
+   def __init__(self,redis_handle,data, redis_key):
       super().__init__(redis_handle)
+      self.data = data
       self.redis_handle = redis_handle
       self.key = redis_key
 
    def delete_all( self ):
        self.redis_handle.delete(self.key)
-       self.cloud_handler.delete(self.key)     
+       if self.cloud_handler != None:
+           self.cloud_handler.delete(self.data, self.key)     
       
       
    def xrange_compress(self,start_timestamp, end_timestamp , count=100):
@@ -308,7 +359,7 @@ class Stream_Reader(Redis_Stream):
        return data_list
    
        
-
+'''
        
 class Generate_Handlers(object):
    
@@ -328,9 +379,10 @@ class Generate_Handlers(object):
    def construct_hash(self,data):
          assert(data["type"] == "HASH")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return  Redis_Hash_Dictionary( self.redis_handle,key,data,self.cloud_handler )
+         return  Redis_Hash_Dictionary( self.redis_handle,data,key,self.cloud_handler )
 
-
+   '''
+   # Taking these structures off line
    def construct_stream_writer(self,data):
          assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
@@ -339,15 +391,15 @@ class Generate_Handlers(object):
    def construct_stream_reader(self,data):
          assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_Reader(self.redis_handle,key)
-
-   def construct_stream_list_writer(self,data):
+         return Stream_Reader(self.redis_handle,data,key)
+   '''
+   def construct_stream_writer(self,data):
          assert(data["type"] == "STREAM_LIST")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_List_Writer(self.redis_handle,key,data,self.cloud_handler)
 
 
-   def construct_stream_list_reader(self,data):
+   def construct_stream_reader(self,data):
          assert(data["type"] == "STREAM_LIST")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_List_Reader(self.redis_handle,key,data)
@@ -355,7 +407,7 @@ class Generate_Handlers(object):
    def construct_job_queue_client(self,data):
          assert(data["type"] == "JOB_QUEUE")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Job_Queue_Client(self.redis_handle,key, data,self.cloud_handler )
+         return Job_Queue_Client(self.redis_handle,key,data, data["depth"],self.cloud_handler )
 
    def construct_job_queue_server(self,data):
          assert(data["type"] == "JOB_QUEUE")
@@ -372,5 +424,88 @@ class Generate_Handlers(object):
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return RPC_Server(self.redis_handle,key,data )
     
-if "__name__" == "__main__":
-       redis_handle = redis.StrictRedis( host = "localhost", port = 6379, db =0, decode_responses=True)
+if __name__== "__main__":
+       redis_handle = redis.StrictRedis( host = "localhost", port = 6379, db =10, decode_responses=True) # test_db
+       print("starting hash test ************************************************")
+       hash_handler = Redis_Hash_Dictionary( redis_handle,data = {}, key = "__TEST__HASH__" , cloud_handler = None )
+       dict_table = {"a":235,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+       print("hash input",dict_table)
+       hash_handler.hmset(dict_table)
+       print("hash_output", hash_handler.hgetall())
+       print("hash_keys",hash_handler.hkeys())
+       print("hash_hexists(a)",hash_handler.hexists("a"))
+       print("hash_hexists(z)",hash_handler.hexists("z"))
+       print("hash_hdelete(a)",hash_handler.hdelete("a"))
+       print("hash_keys",hash_handler.hkeys())
+       print("hash_delete",hash_handler.delete())
+       print("key exists",redis_handle.exists(hash_handler.key))
+       print("hash test done**********************************************")
+       
+       print("staring job client test********************************************************")
+       job_queue_client = Job_Queue_Client(  redis_handle,data = {},key = "__TEST__JOB__" , depth= 16, cloud_handler = None )
+       job_queue_client.push(dict_table)
+       job_queue_client.push(dict_table)
+       job_queue_client.push(dict_table)
+       print(job_queue_client.length())
+       job_queue_client.delete(1)
+       print(job_queue_client.length())
+       job_queue_client.delete_all()
+       print(redis_handle.exists(job_queue_client.key)) # should be false
+       print("ending job client test********************************************************")
+       print("starting job_queue server test ***********************************************")
+       job_queue_server =Job_Queue_Server(  redis_handle,data = {}, key = "__TEST__JOB__",cloud_handler = None)
+       dict_table_1 = {"a":1,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+       dict_table_2 = {"a":2,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+       dict_table_3 = {"a":3,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+       dict_table_4 = {"a":4,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+       job_queue_client.push(dict_table_1) #0 first in job queue
+       job_queue_client.push(dict_table_1) #1 
+       job_queue_client.push(dict_table_2) # 2
+       job_queue_client.push(dict_table_2) #3
+       job_queue_client.push(dict_table_3) # 4
+       job_queue_client.push(dict_table_3) # 5
+       job_queue_client.push(dict_table_4) # 6
+       job_queue_client.push(dict_table_4) # 7
+       print(job_queue_server.length())
+       print("show next job",job_queue_server.show_next_job())
+       while True:
+         return_values = job_queue_server.pop()
+         print("poping job queue", return_values)
+         if return_values[0] == False:
+            break
+            
+       print("job queue length",job_queue_server.length())
+       job_queue_client.push(dict_table_1) #0 first in job queue
+       job_queue_client.push(dict_table_2) #1 
+       job_queue_server.delete(-1)
+       print("pop value",job_queue_server.pop())
+       print("job queue length",job_queue_server.length())       
+       print(job_queue_server.delete_all())  
+       print("Done testing job sever *****************************************************************************")  
+       print("Testing Stream Writer *******************************************************************************")
+       stream_writer = Stream_List_Writer( redis_handle, {},depth = 64, key ="__STREAM__TEST__",cloud_handler = None )
+       stream_writer.push(dict_table_1)
+       stream_writer.delete_all()
+       for i in range(0,16):
+          stream_writer.push(dict_table_1)
+          stream_writer.push(dict_table_2)
+          stream_writer.push(dict_table_3)
+          stream_writer.push(dict_table_4)
+          
+       print("******** ending stream writer test")
+       print("******** starting stream reader list")
+       print("testing stream reader test ")
+       stream_reader = Stream_List_Reader( redis_handle,{},key = "__STREAM__TEST__",cloud_handler = None )
+       print("stream length",stream_reader.length())
+       print("stream_read 0 -- 64",stream_reader.range(0,stream_reader.length()))
+       print("\n\n\n\n doing t_range \n\n\n\n")
+       print("t_read", stream_reader.t_range(time.time(),time.time()-.25,count = 10,start_range = 0 , end_range = 50 ))
+       stream_writer.push(dict_table_4)
+       print("testing for stream limit should be 64", stream_reader.length())
+       print("******* ending stream reader list")
+       
+       
+
+
+   
+ 

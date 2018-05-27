@@ -42,33 +42,45 @@ class Cloud_TX_Handler(Send_Object):
        Send_Object.__init__(self,redis_handle,transport_queue,transport_depth)
        self.redis_handle = redis_handle
 
+   def check_forwarding(self, data):  # do not forward data structures unless specified in the "forward" field
+       if  "forward" in data:
+           if data["forward"] == True:
+              return True
+       return False
 
-   def delete(self,key):
-       self.send("DEL",key=key)
+   def delete(selfdata,self,key):
+       if self.check_forwarding(data):
+           self.send("DEL",key=key)
  
 
  
    def hset(self,key,field,data):
-       self.send("HSET",key=key,field=field,data = data )
+       if self.check_forwarding(data):
+           self.send("HSET",key=key,field=field,data = data )
        
    def hdel(self,key,field):
-       self.send("HDEL",key=key,field=field)
+       if self.check_forwarding(data):
+           self.send("HDEL",key=key,field=field)
        
    def lpush(self, depth, key, data):
-       self.send("LPUSH",key=key,depth=depth,data = data)
+       if self.check_forwarding(data):
+           self.send("LPUSH",key=key,depth=depth,data = data)
        
    def list_delete(self, key,index):
-       self.send("LIST_DELETE",key=key,index = index)
+       if self.check_forwarding(data):
+           self.send("LIST_DELETE",key=key,index = index)
        
    def rpop(self,key):
-       self.send("RPOP",key=key)
+       if self.check_forwarding(data):
+           self.send("RPOP",key=key)
        
    def stream_write(self,depth, id, key,  store_dictionary_pack ):
-   
-       self.send("STREAM_WRITE",id=id,key=key,depth=depth , store_dictionary = store_dictionay_pack )
+       if self.check_forwarding(data):
+           self.send("STREAM_WRITE",id=id,key=key,depth=depth , store_dictionary = store_dictionay_pack )
        
    def stream_list_write(self, depth, key,data ):
-       self.send("STREAM_LIST_WRITE", key=key,depth =depth,data = data)
+       if self.check_forwarding(data):
+           self.send("STREAM_LIST_WRITE", key=key,depth =depth,data = data)
        
        
 class Cloud_RX_Handler(object):
