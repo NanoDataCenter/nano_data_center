@@ -16,8 +16,8 @@ class Send_Object(object):
    def send(self,action, **kwargs):
        kwargs["ACTION"] = action
        
-       json_data = json.dumps(kwargs)
-       self.redis_handle.lpush(self.transport_queue, json_data )
+       
+       self.redis_handle.lpush(self.transport_queue,kwargs )
        self.redis_handle.ltrim(self.transport_queue, 0,self.queue_depth)
        
    def length(self):
@@ -48,38 +48,38 @@ class Cloud_TX_Handler(Send_Object):
               return True
        return False
 
-   def delete(selfdata,self,key):
-       if self.check_forwarding(data):
+   def delete(self,forward_data,key):
+       if self.check_forwarding(forward_data):
            self.send("DEL",key=key)
  
 
  
-   def hset(self,key,field,data):
-       if self.check_forwarding(data):
+   def hset(self,forward_data,key,field,data):
+       if self.check_forwarding(forward_data):
            self.send("HSET",key=key,field=field,data = data )
        
-   def hdel(self,key,field):
-       if self.check_forwarding(data):
+   def hdel(self,forward_dat,key,field):
+       if self.check_forwarding(forward_dat):
            self.send("HDEL",key=key,field=field)
        
-   def lpush(self, depth, key, data):
-       if self.check_forwarding(data):
+   def lpush(self,forward_data,depth, key, data):
+       if self.check_forwarding(forward_data):
            self.send("LPUSH",key=key,depth=depth,data = data)
        
-   def list_delete(self, key,index):
-       if self.check_forwarding(data):
+   def list_delete(self, forward_dat,key,index):
+       if self.check_forwarding(forward_dat):
            self.send("LIST_DELETE",key=key,index = index)
        
-   def rpop(self,key):
-       if self.check_forwarding(data):
+   def rpop(self,forward_dat,key):
+       if self.check_forwarding(forward_dat):
            self.send("RPOP",key=key)
        
-   def stream_write(self,depth, id, key,  store_dictionary_pack ):
-       if self.check_forwarding(data):
+   def stream_write(self,forward_dat,depth, id, key,  store_dictionary_pack ):
+       if self.check_forwarding(forward_dat):
            self.send("STREAM_WRITE",id=id,key=key,depth=depth , store_dictionary = store_dictionay_pack )
        
-   def stream_list_write(self, depth, key,data ):
-       if self.check_forwarding(data):
+   def stream_list_write(self, forward_dat,depth, key,data ):
+       if self.check_forwarding(forward_dat):
            self.send("STREAM_LIST_WRITE", key=key,depth =depth,data = data)
        
        

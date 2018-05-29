@@ -18,7 +18,7 @@
 #
 #
 
-
+import msgpack
 
 class Delete_Cimis_Email():
 
@@ -186,14 +186,21 @@ class Schedule_Monitoring(Monitoring_Base):
         self.rain_field  = "RAIN_FLAG"
    
    def rain_check(self):
+       print("rain_check")
        try:
+          self.irrigation_control.hset(self.rain_field,0  )
           rain_day = self.irrigation_control.hget(self.rain_field)
-          print("try rain_day",rain_day)
+         
+         
           rain_day = int( rain_day )
        except:
+          
+          rain_day = int(0)
+          self.irrigation_control.hset(self.rain_field,0  )
+          
           print("exception")
-          rain_day = 0
-       print("rain_day",rain_day)
+       
+
        if rain_day == 0:
           return True
        else:

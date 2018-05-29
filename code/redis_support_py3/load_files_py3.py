@@ -33,10 +33,12 @@ class BASIC_FILES( object ):
         self.path = path
         self.redis_site = redis_site
         self.cloud_handler = Cloud_TX_Handler(redis_handle)
-
+        data = {}
+        data["forward"] = True
+  
         self.redis_handle = redis_handle
         self.key = "[SITE:"+redis_site["site"]+"][FILE:"+label+ "]"
-        self.hash_driver = Redis_Hash_Dictionary(self.redis_handle,self.key,None,self.cloud_handler)
+        self.hash_driver = Redis_Hash_Dictionary(self.redis_handle,data,self.key,self.cloud_handler)
 
     def file_directory(self):
         return self.hash_driver.hkeys()
@@ -80,8 +82,8 @@ if __name__ == "__main__":
                f = open(path+i, 'r')
                data = f.read()
                temp = json.loads(data) # test to ensure data has json format
-               pack_data = msgpack.packb(temp)
-               pack_data = base64.b64encode(pack_data)
+              
+               pack_data = msgpack.packb(temp,use_bin_type = True )
                redis_handle.hset( redis_key, i , pack_data)
 
 

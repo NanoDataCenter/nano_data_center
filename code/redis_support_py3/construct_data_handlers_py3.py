@@ -69,7 +69,7 @@ class Redis_Hash_Dictionary( object ):
       self.cloud_handler = cloud_handler
 
       
-   def delete( self ):
+   def delete_all( self ):
        self.redis_handle.delete(self.key)
        if self.cloud_handler != None:
            self.cloud_handler.delete(self.data,self.key)     
@@ -78,6 +78,7 @@ class Redis_Hash_Dictionary( object ):
    def hset( self, field, data ):
    
       pack_data = msgpack.packb(data,use_bin_type = True )
+      
       self.redis_handle.hset(self.key,field,pack_data)
       if self.cloud_handler != None:
          self.cloud_handler.hset(self.data,self.key,field,pack_data)     
@@ -89,7 +90,9 @@ class Redis_Hash_Dictionary( object ):
          
          
    def hget( self, field):
+      
       pack_data = self.redis_handle.hget(self.key,field)
+      
       if pack_data == None:
          return None
       
@@ -366,7 +369,7 @@ class Generate_Handlers(object):
    def __init__(self,package,site_data  ):
        self.site_data = site_data
        self.package = package
-       self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] , decode_responses=True)
+       self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] ) #, decode_responses=True)
        self.cloud_handler = Cloud_TX_Handler(self.redis_handle) 
        
    def get_redis_handle(self):
@@ -394,15 +397,15 @@ class Generate_Handlers(object):
          return Stream_Reader(self.redis_handle,data,key)
    '''
    def construct_stream_writer(self,data):
-         assert(data["type"] == "STREAM_LIST")
+         assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_List_Writer(self.redis_handle,key,data,self.cloud_handler)
+         return Stream_List_Writer(self.redis_handle,data,key,self.cloud_handler,data["depth"])
 
 
    def construct_stream_reader(self,data):
-         assert(data["type"] == "STREAM_LIST")
+         assert(data["type"] == "STREAM_")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_List_Reader(self.redis_handle,key,data)
+         return Stream_List_Reader(self.redis_handle,data,key,self.cloud_handler)
 
    def construct_job_queue_client(self,data):
          assert(data["type"] == "JOB_QUEUE")

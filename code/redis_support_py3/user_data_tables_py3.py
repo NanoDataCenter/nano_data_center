@@ -2,8 +2,8 @@
 
 
 
-from .construct_data_handlers_py3 import Stream_Writer
-from .construct_data_handlers_py3 import Stream_Reader
+#from .construct_data_handlers_py3 import Stream_Writer
+#from .construct_data_handlers_py3 import Stream_Reader
 from .construct_data_handlers_py3 import Stream_List_Reader
 from .construct_data_handlers_py3 import Stream_List_Writer
 from .construct_data_handlers_py3 import Redis_Hash_Dictionary
@@ -28,32 +28,39 @@ class Generate_Table_Handlers(object):
 
 
          
-   def construct_hash(self,table_name,hash_name):
+   def construct_hash(self,table_name,hash_name,forward = True):
          data = {}
+         data["forward"] = forward
          key = self.prefix + table_name+"][HASH:"+hash_name+"]"
-         return  Redis_Hash_Dictionary( self.redis_handle,key,data,self.cloud_handler )
+         return  Redis_Hash_Dictionary( self.redis_handle,data,key,self.cloud_handler )
 
-
-   def construct_stream_writer(self,table_name,stream_name,depth):
+   '''
+   #for now redis streams are disabled for now
+   def construct_stream_writer(self,table_name,stream_name,depth,forward=True):
          data = { "depth":depth}
+         data["forward"] = True
          key = self.prefix + table_name+"][STREAM:"+stream_name+"]"
-         return Stream_Writer(self.redis_handle,key,data,self.cloud_handler)
+         return Stream_Writer(self.redis_handle,data,key,self.cloud_handler)
          
    def construct_stream_reader(self,table_name,stream_name):
-         
+         data = {}
+         data["forward"] = True
          key = self.prefix + table_name+"][STREAM:"+stream_name+"]"
-         return Stream_Reader(self.redis_handle,key)
-
-   def construct_stream_list_writer(self,table_name,stream_name,depth):
+         return Stream_Reader(self.redis_handle,data,key)
+   '''
+   def construct_stream_writer(self,table_name,stream_name,depth,forward = True):
          data = { "depth":depth}
+         data["forward"] = True
          key = self.prefix + table_name+"][STREAM_LIST:"+stream_name+"]"
-         return Stream_List_Writer(self.redis_handle,key,data,self.cloud_handler)
+         return Stream_List_Writer(self.redis_handle,data,key,self.cloud_handler)
 
 
-   def construct_stream_list_reader(self,table_name,stream_name):
+   def construct_stream_reader(self,table_name,stream_name,forward = True):
+        data = {}
+        data["forward"] = True
       
         key = self.prefix + table_name+"][STREAM_LIST:"+stream_name+"]"
-        return Stream_List_Reader(self.redis_handle,key)
+        return Stream_List_Reader(self.redis_handle,data,key)
   
 
 class Irrigation_Streams(object):
@@ -182,6 +189,7 @@ class User_Data_Tables(object):
        # need to merge old table values into the new table
        # there may be insertions as well as deletions
        eto_file_data = self.app_file_handle.load_file("eto_site_setup.json")
+       
 
 
        eto_redis_hash_table = self.eto_data.get_hash_table()
@@ -197,7 +205,7 @@ class User_Data_Tables(object):
        # Step 1  Populate file dummy initial values
        #
        for j in eto_file_data:
-          
+           
            new_data[ j["controller"] + "|" + str(j["pin"])] = 0
        #
        # populate from redis hash table

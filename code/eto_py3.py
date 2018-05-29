@@ -209,7 +209,7 @@ def construct_eto_instance(qs, site_data,user_table ):
      
     
 
-    
+    print(package_sets)
     #
     # Replace symbolic keys with actual api keys
     #
