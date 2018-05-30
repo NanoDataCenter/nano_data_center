@@ -16,12 +16,13 @@
    "mqtt_server":"nano_data_center_demo",
    "mqtt_port":8883,
    "mqtt_db" : 7,
-   "mqtt_topic":"REMOTES/LaCima/#",
+   "mqtt_topic":"REMOTES/#",
    
- 
+  
    "mqtt_cloud_server":"lacimaRanch.cloudapp.net",
    "mqtt_cloud_port":8883,
    "mqtt_cloud_db" : 4,
-   "mqtt_cloud_topic":"DOWNLOAD/LaCima/#"
+   "mqtt_download_topic":"CLOUD/DOWNLOAD/LaCima",
+   "mqtt_upload_topic":"REMOTES/UPLOAD/LaCima"
    
 }

@@ -19,7 +19,7 @@ class Generate_Table_Handlers(object):
    def __init__(self,site_data):
        self.site_data = site_data   
       
-       self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_table_db"] , decode_responses=True)
+       self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_table_db"] )
        self.prefix = "[SITE:"+site_data["site"]+"][TABLE_DATA:"
        self.cloud_handler = Cloud_TX_Handler(self.redis_handle) 
        
@@ -76,10 +76,15 @@ class Irrigation_Streams(object):
          temp = self.redis_handle.keys("*:IRRIGATION_TIME_SERIES]*")
          if temp != None:
              return_value.extend(temp)
+         temp_list = return_value
+         return_value = []
+         for i in temp_list:
+            return_value.append(i.decode())
          return return_value
          
          
    def  parse_key(self,key):
+       
        result = key.split("[STREAM:")
        if len(result) == 2:
           schedule,step = result[1].split("|")
@@ -287,12 +292,13 @@ class User_Data_Tables(object):
        #
        #
        #
-       
+       return
+       #### work on this later
        ref_keys = self.irrigation_streams.get_stream_keys()
        if ref_keys == None:
           ref_keys = []
        for i in ref_keys:
-          schedule,step = self.irrigation_streams.parse_key()
+          schedule,step = self.irrigation_streams.parse_key(i)
           if (schedule==None) or (step==None):
              self.redis_handle.move(i,self.backup_db)
           if schedule not in schedule_dictionary:

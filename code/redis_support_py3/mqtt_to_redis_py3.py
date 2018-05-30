@@ -8,8 +8,9 @@ import redis
 import gzip
 import json
 import sys
+import msgpack
 
-from .redis_stream_utilities_py3 import Redis_Stream
+
 from .graph_query_support_py3 import Query_Support
 
 class Construct_Namespace(object):
@@ -46,17 +47,17 @@ class Construct_Namespace(object):
         
         
 
-class MQTT_TO_REDIS_BRIDGE_STORE(Redis_Stream,Construct_Namespace):
+class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace):
 
    def __init__(self,redis_site,depth=100):
 
        self.depth = depth
        self.redis_handle = redis.StrictRedis( host = redis_site["host"] , 
                                              port=redis_site["port"], 
-                                             db=redis_site["mqtt_db"] , 
-                                             decode_responses=True)
+                                             db=redis_site["mqtt_db"] )
+                                             
                                                           
-       Redis_Stream.__init__(self,self.redis_handle,exact_flag = False)
+      
        Construct_Namespace.__init__(self)
        
      
@@ -67,8 +68,8 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Redis_Stream,Construct_Namespace):
    def get_topics(self):
        return self.redis_handle.smembers("@TOPICS")
                                              
-   def store_mqtt_data(self,topic,data):
-        
+   def store_mqtt_data(self,topic,mqtt_data):
+      
        namespace,namespace_list = self.construct_name_space(topic)
        self.redis_handle.sadd("@GRAPH_KEYS",namespace)
        self.redis_handle.sadd("@NAMESPACE",namespace)
@@ -78,10 +79,18 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Redis_Stream,Construct_Namespace):
 
        self.construct_relations(namespace,namespace_list)
        try:
-          self.xadd(key = namespace , max_len=self.depth,id="*",data_dict={"data":data} )
+          data = {}
+          data["data"] = msgpack.unpackb(mqtt_data,encoding='utf-8')
+          
+          data["timestamp"] = time.time()
+          pack_data =  msgpack.packb(data,use_bin_type = True )
+
+          self.redis_handle.lpush(namespace,pack_data)
+          self.redis_handle.ltrim(namespace,0,self.depth)
+  
        except: 
-         pass
-         #raise
+         
+         raise
          
        
 
@@ -101,13 +110,13 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Redis_Stream,Construct_Namespace):
        
        
 
-class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Redis_Stream,Construct_Namespace,Query_Support):
+class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Query_Support):
 
    def __init__(self,redis_site_data):
        self.redis_handle = redis.StrictRedis( host = redis_site_data["host"] , 
                                              port=redis_site_data["port"], 
-                                             db=redis_site_data["mqtt_db"] , 
-                                             decode_responses=True)
+                                             db=redis_site_data["mqtt_db"] )
+                                            
                     
        self.sep       = "["
        self.rel_sep   = ":"
@@ -156,35 +165,15 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Redis_Stream,Construct_Namespace,Query_Suppo
        return starting_set
           
        
-   def mqtt_xrevrange_topic(self, topic, start_timestamp, end_timestamp , count=100):
+   def xrange_topic(self, topic, start_timestamp, end_timestamp , count=100):
        if self.redis_handle.sismember("@TOPICS",topic) == True:
            namespace,name_space_list = self.construct_name_space(topic)
-           return self.xrevrange_namespace(namespace, start_timestamp, end_timestamp , count)
-       else:
-           return None
-
-   def xrevrange_namespace_list(self,namespace_list, start_timestamp, end_timestamp , count=100):
-       return_list = []
-       for i in namespace_list:
-           
-           return_list.append(self.xrevrange_namespace( i, start_timestamp, end_timestamp , count ))
-       return return_list
-      
-   def xrevrange_namespace(self,namespace, start_timestamp, end_timestamp , count=100):
-       
-       if self.redis_handle.sismember("@NAMESPACE",namespace) == True:
-           
-           return self.xrevrange(namespace, start_timestamp, end_timestamp , count)
-       else:
-           return None
-
-   def xrange_topic(self, topic, start_timestamp, end_timestamp , count=100):
-        if self.redis_handle.sismember("@TOPICS",topic) == True:
-           namespace,namespace_list = self.construct_name_space(topic)
-           
            return self.xrange_namespace(namespace, start_timestamp, end_timestamp , count)
-        else:
+       else:
            return None
+
+    
+
           
    def xrange_namespace_list(self,namespace_list, start_timestamp, end_timestamp , count=100):
       return_list = []
@@ -194,8 +183,42 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Redis_Stream,Construct_Namespace,Query_Suppo
 
    def xrange_namespace(self,namespace, start_timestamp, end_timestamp , count=100):
        if self.redis_handle.sismember("@NAMESPACE",namespace) == True:
-          return self.xrange(namespace,start_timestamp,end_timestamp, count)
+          return self.t_range(namespace,start_timestamp,end_timestamp, count)
        else:
           return None 
-   
+          
+   def t_range(self,namespace,recent_time_stamp,early_time_stamp, count ):
+       if recent_time_stamp == "+":
+          recent_time_stamp = time.time()
+       if early_time_stamp == "-":
+          early_time_stamp = 0
+       start_range = 0
+       end_range = self.redis_handle.llen(namespace)
+       test_count =  0
+       if count == None:
+          count = self.redis_handle.llen(namespace)
+       trial_data = self.range(namespace,start_range,end_range)
+       return_value = []
+       for i in trial_data:
+          
+          ts = i["timestamp"]
+          if ts > recent_time_stamp:
+             continue
+          if ts < early_time_stamp:
+              break
+          return_value.append(i)
+          test_count +=1
+          if test_count == count:
+             break
+       return return_value  
+
+   def range(self,namespace,start,end):
+       return_value = []
+       pack_list = self.redis_handle.lrange(namespace, start,end)  #read most recent first
+       
+       for pack_data in pack_list:
+          
+          data = msgpack.unpackb(pack_data,encoding='utf-8')
+          return_value.append(data)
+       return return_value
 

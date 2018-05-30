@@ -110,7 +110,11 @@ class Redis_Hash_Dictionary( object ):
       return return_value
       
    def hkeys(self):
-       return self.redis_handle.hkeys(self.key)
+       binary_list = self.redis_handle.hkeys(self.key)
+       return_list = []
+       for i in binary_list:
+          return_list.append(i.decode())
+       return return_list
    
    def hexists(self,field):
      return self.redis_handle.hexists(self.key,field)
@@ -127,11 +131,11 @@ class Redis_Hash_Dictionary( object ):
        
 class Job_Queue_Client( object ):
  
-   def __init__(self,redis_handle,data, key, depth, cloud_handler):
+   def __init__(self,redis_handle,data, key,  cloud_handler):
       self.data = data
       self.redis_handle = redis_handle
       self.key = key
-      self.depth =  depth
+      self.depth =  data["depth"]
       self.cloud_handler = cloud_handler
 
    def delete_all( self ):
@@ -210,12 +214,13 @@ class Job_Queue_Server( object ):
 class Stream_List_Writer(object):
        
   
-   def __init__(self,redis_handle, data, depth, key, cloud_handler):
+   def __init__(self,redis_handle, data, key, cloud_handler):
       self.data = data
       self.redis_handle = redis_handle
       self.cloud_handler = cloud_handler
       self.key = key
-      self.depth = depth
+      self.depth = data["depth"]
+
 
    def delete_all( self ):
        self.redis_handle.delete(self.key)
@@ -230,7 +235,7 @@ class Stream_List_Writer(object):
        pack_data =  msgpack.packb(data,use_bin_type = True )
 
        self.redis_handle.lpush(self.key,pack_data)
-       self.redis_handle.ltrim(self.key,0,self.depth-1)
+       self.redis_handle.ltrim(self.key,0,self.depth)
        if self.cloud_handler != None:
            self.cloud_handler.stream_list_write(self.data, self.depth, self.key, data )
 
@@ -399,33 +404,33 @@ class Generate_Handlers(object):
    def construct_stream_writer(self,data):
          assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_List_Writer(self.redis_handle,data,key,self.cloud_handler,data["depth"])
+         return Stream_List_Writer(self.redis_handle,data,key,self.cloud_handler)
 
 
    def construct_stream_reader(self,data):
-         assert(data["type"] == "STREAM_")
+         assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_List_Reader(self.redis_handle,data,key,self.cloud_handler)
 
    def construct_job_queue_client(self,data):
          assert(data["type"] == "JOB_QUEUE")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Job_Queue_Client(self.redis_handle,key,data, data["depth"],self.cloud_handler )
+         return Job_Queue_Client(self.redis_handle,data,key,self.cloud_handler )
 
    def construct_job_queue_server(self,data):
          assert(data["type"] == "JOB_QUEUE")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Job_Queue_Server(self.redis_handle,key,data,self.cloud_handler)
+         return Job_Queue_Server(self.redis_handle,data,key,self.cloud_handler)
 
    def construct_rpc_client(self,data):
          assert(data["type"] ==  "RPC")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Redis_Rpc_Client(self.redis_handle,key,data)
+         return Redis_Rpc_Client(self.redis_handle,data,key)
 
    def construct_rpc_sever(self,data):
          assert(data["type"] ==  "RPC")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return RPC_Server(self.redis_handle,key,data )
+         return RPC_Server(self.redis_handle,data,key )
     
 if __name__== "__main__":
        redis_handle = redis.StrictRedis( host = "localhost", port = 6379, db =10, decode_responses=True) # test_db

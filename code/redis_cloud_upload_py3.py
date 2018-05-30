@@ -6,6 +6,9 @@ import msgpack
 import base64
 import redis
 import time
+import copy
+import zlib
+
 
 
 import paho.mqtt.client as mqtt
@@ -14,20 +17,20 @@ import ssl
 from redis_support_py3.cloud_handlers_py3 import Cloud_TX_Handler
 from redis_support_py3.mqtt_client_py3 import MQTT_CLIENT
 
-   
+
 
 class Redis_Cloud_Upload(object):
 
    def __init__(self,redis_site_data):
-       self.mqtt_client = MQTT_CLIENT(redis_site_data)
+       self.redis_site_data = redis_site_data
+       self.mqtt_client = MQTT_CLIENT(redis_site_data,redis_site_data["mqtt_cloud_server"],redis_site_data["mqtt_cloud_port"],"remote","mosquitto_cloud")
        self.redis_handle = redis.StrictRedis(redis_site_data["host"], 
                                             redis_site_data["port"], 
-                                            db=redis_site_data["redis_io_db"], 
-                                            decode_responses=True)
+                                            db=redis_site_data["redis_io_db"] )
        self.state = "CONNECT"
        self.cloud_tx_handler = Cloud_TX_Handler(self.redis_handle)
-       self.packet_list = None
-       self.topic = redis_site_data["mqtt_cloud_topic"]
+       self.packet_data = None
+       self.topic = redis_site_data["mqtt_upload_topic"]
        self.do_start()
        
    def do_connect(self):
@@ -39,21 +42,32 @@ class Redis_Cloud_Upload(object):
          self.state == "CONNECT"
       
    def do_monitor(self):
-       print("monitor_state")
-       if self.packet_list == None:
+       print("monitor state")
+       if self.packet_data == None:
            length = self.cloud_tx_handler.length()
-           print("length",length)
+          
            if length > 0:
                self.packet_data = self.cloud_tx_handler.extract()
+               self.packet_data = zlib.compress(self.packet_data)
            else:
-               return
-       return_value = self.mqtt_client.publish(self.topic,payload=self.packet_list,qos=2)
+              self.packet_data = None
+              return
+         
+      
+       payload = copy.deepcopy(self.packet_data)
+       
+       return_value = self.mqtt_client.publish(self.topic,payload=payload,qos=2)
+       print("sending packet len ",len(self.packet_data),self.packet_data)
        if return_value[0] == True:
            self.packet_data = None
            return
        else:
          self.mqtt_client.disconnect()
-         self.state = "CONNECT"         
+         time.sleep(5)
+         self.mqtt_client = MQTT_CLIENT(self.redis_site_data)
+         self.state = "CONNECT"  
+
+         return # error lets try to reconnect         
        
       
    def do_start(self):

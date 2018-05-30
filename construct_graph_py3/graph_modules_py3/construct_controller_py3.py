@@ -12,8 +12,10 @@ class Construct_Controllers(object):
       
        properties["command_list"].append( { "file":"eto_py3.py","restart":True })
        properties["command_list"].append( { "file":"utilities_py3.py","restart":True })
-       properties["command_list"].append( { "file":"redis_monitoring_py3.py","restart":True })
-       properties["command_list"].append( { "file":"pi_monitoring_py3.py","restart":True })
+       #properties["command_list"].append( { "file":"redis_monitoring_py3.py","restart":True })
+       #properties["command_list"].append( { "file":"pi_monitoring_py3.py","restart":True })
+       #properties["command_list"].append( { "file":"redis_cloud_upload_py3.py","restart":True })
+       #properties["command_list"].append( { "file":"mqtt_redis_gateway_py3.py","restart":True })
        bc.add_header_node("PROCESSOR","nano_data_center",properties=properties)
        
 

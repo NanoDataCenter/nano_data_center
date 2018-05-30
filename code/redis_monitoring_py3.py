@@ -13,13 +13,13 @@ class Redis_Monitor(object):
        
        redis_data = self.redis_handle.info("Keyspace")     
 
-       self.redis_monitoring_streams["KEYS"].add_compress(data=redis_data)      
+       self.redis_monitoring_streams["KEYS"].push(data=redis_data)      
        redis_data = self.redis_handle.info("Clients") 
              
-       self.redis_monitoring_streams["CLIENTS"].add_compress(data=redis_data)      
+       self.redis_monitoring_streams["CLIENTS"].push(data=redis_data)      
        redis_data = self.redis_handle.info("Memory")      
       
-       self.redis_monitoring_streams["MEMORY"].add_compress(data=redis_data)      
+       self.redis_monitoring_streams["MEMORY"].push(data=redis_data)      
        #print(self.redis_monitoring_streams["KEYS_READER"].xrange_compress("-","+"))
        #print(self.redis_monitoring_streams["KEYS_READER"].xrevrange_compress("+","-"))
 

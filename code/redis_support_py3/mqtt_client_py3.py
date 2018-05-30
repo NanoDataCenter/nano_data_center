@@ -5,7 +5,9 @@ import redis
 import time
 class MQTT_CLIENT(object):
 
-   def __init__(self,redis_site_data):
+   def __init__(self,redis_site_data,server,port,user_name,password_key):
+       self.server = server
+       self.port   = port
        self.redis_site_data = redis_site_data
        self.client = mqtt.Client(client_id="", clean_session=True, userdata=None,  transport="tcp")
        self.client.tls_set(certfile= "/home/pi/mosquitto/certs/client.crt", keyfile= "/home/pi/mosquitto/certs/client.key", cert_reqs=ssl.CERT_NONE )
@@ -15,14 +17,14 @@ class MQTT_CLIENT(object):
                                            db=redis_site_data["redis_password_db"], 
                                            decode_responses=True)
                                           
-       self.client.username_pw_set("pi", redis_handle_pw.hget("mosquitto_local","pi"))
+       self.client.username_pw_set(user_name, redis_handle_pw.hget(password_key,user_name))
        
        self.client.on_connect = self.on_connect
        self.client.on_publish = self.on_publish
        
    def connect(self):
        self.rc = -1 
-       self.client.connect(self.redis_site_data["mqtt_server"],self.redis_site_data["mqtt_port"], 60)
+       self.client.connect(self.server,  self.port,  60)
        self.client.loop_start()
        for i in range(0,50):
            time.sleep(.1)
@@ -38,13 +40,14 @@ class MQTT_CLIENT(object):
        self.client.loop(time)   
        
    def on_connect(self,client, userdata, flags, rc):
-       
+       print("on connect",flags,rc)
        
        self.rc = rc
-       print("on connect rc",self.rc)
+      
        #self.client.loop_stop()
        
    def on_publish(self, client, userdata, mid):
+       
        self.callback_flag = True
        self.mid_server = mid
 
@@ -60,11 +63,12 @@ class MQTT_CLIENT(object):
           return False,-1
        self.client.loop(5)
        for i in range(0,50):
+           time.sleep(.1)
            if self.callback_flag == True:
                if (self.mid_server == self.mid_client):
-                   return True
-           else:
-              return False , -2
+                   return True ,0
+               else:
+                  return False , -2
        return False,-3
         
        

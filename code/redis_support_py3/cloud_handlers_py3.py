@@ -30,7 +30,7 @@ class Send_Object(object):
        return_list = []
        for i in range(0,length):
            return_list.append(self.redis_handle.rpop(self.transport_queue))
-       return_value = json.dumps(return_list)
+       return_value = msgpack.packb(return_list, use_bin_type = True)
        return return_value
          
        
@@ -90,7 +90,7 @@ class Cloud_RX_Handler(object):
       self.redis_handle = redis_handle
       self.data_handlers = {}
       self.data_handlers["DEL"] = self.delete
-      self.data_handlers["HSET_ALL"] = self.hset_all      
+    
       self.data_handlers["HSET"] = self.hset
       self.data_handlers["HDEL"] = self.hdel
       self.data_handlers["LPUSH"] = self.lpush
@@ -135,7 +135,8 @@ class Cloud_RX_Handler(object):
    def save_raw_file(self,path,name,data): 
        f = open(self.path + name, 'w')
        f.write(data)
-          
+ 
+ 
               
    def hset(self,data):
        self.redis_handle.hset(data["key"],data["field"],data["data"])

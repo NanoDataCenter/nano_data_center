@@ -105,7 +105,7 @@ class PI_MONITOR( object ):
                     temp_dict["VSZ"]            = temp_value["VSZ"]
                     temp_dict["%CPU"]           = temp_value["%CPU"]
                    
-                    self.ds_handlers["PROCESS_STATE"].add_compress(data = temp_dict)
+                    self.ds_handlers["PROCESS_STATE"].push(data = temp_dict)
 
        
 
@@ -179,29 +179,29 @@ class PI_MONITOR( object ):
   
    def assemble_free_cpu( self, *args ):
        data = self.measure_free_cpu()
-       self.ds_handlers["FREE_CPU"].add_compress(data = data)
+       self.ds_handlers["FREE_CPU"].push(data = data)
        return "DISABLE"
  
    def assemble_ram( self, *args ):
        memory_dict = self.proc_memory()
-       self.ds_handlers["RAM"].add_compress( data = memory_dict)
+       self.ds_handlers["RAM"].push( data = memory_dict)
        return "DISABLE"
        
        
    def assemble_temperature( self, *args):
        temp_f = self.measure_temperature()
-       self.ds_handlers["TEMPERATURE"].add_compress(data = {"TEMP_F":temp_f})
+       self.ds_handlers["TEMPERATURE"].push(data = {"TEMP_F":temp_f})
        return "DISABLE"
 
        
    def assemble_vsz(self,*args):
        data = self.vsz_handler()
-       self.ds_handlers["PROCESS_VSZ"].add_compress( data =  data )
+       self.ds_handlers["PROCESS_VSZ"].push( data =  data )
        return "DISABLE"
        
    def assemble_rss(self,*args):
        data = self.rss_handler()
-       self.ds_handlers["PROCESS_RSS"].add_compress( data = data )
+       self.ds_handlers["PROCESS_RSS"].push( data = data )
        return "DISABLE"
        
    def assemble_process_state(self,*args):
@@ -210,7 +210,7 @@ class PI_MONITOR( object ):
       
    def assemble_disk_space(self,*args):
       data = self.measure_disk_space()     
-      self.ds_handlers["DISK_SPACE"].add_compress(data = data)
+      self.ds_handlers["DISK_SPACE"].push(data = data)
       return "DISABLE" 
       
    def construct_chains(self,*args):

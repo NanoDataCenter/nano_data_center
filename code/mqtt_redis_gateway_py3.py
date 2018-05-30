@@ -42,46 +42,47 @@ class MQTT_Redis_Bridge(object):
        print(msg.topic+" "+str(msg.payload))
        self.mqtt_bridge.store_mqtt_data(msg.topic,msg.payload)
 
-
+__test__ = False
 if __name__ == "__main__":
    file_handle = open("system_data_files/redis_server.json",'r')
    data = file_handle.read()
    file_handle.close()
-      
+  
    redis_site_data = json.loads(data)
-   MQTT_Redis_Bridge(redis_site_data)
+   if __test__== False:
+      MQTT_Redis_Bridge(redis_site_data)
 
    
-   '''
-   #test code
-   import time
-   from threading import Thread
-   from redis_support_py3.mqtt_client_py3 import MQTT_CLIENT
-   from redis_support_py3.mqtt_to_redis_py3 import MQTT_TO_REDIS_BRIDGE_RETRIEVE
-   def test_driver(redis_site_data):
+   else:
+       #test code
+       import time
+       from threading import Thread
+       from redis_support_py3.mqtt_client_py3 import MQTT_CLIENT
+       from redis_support_py3.mqtt_to_redis_py3 import MQTT_TO_REDIS_BRIDGE_RETRIEVE
+       def test_driver(redis_site_data):
        
-       MQTT_Redis_Bridge(redis_site_data)
+           MQTT_Redis_Bridge(redis_site_data)
    
-   file_handle = open("system_data_files/redis_server.json",'r')
-   data = file_handle.read()
-   file_handle.close()
+       file_handle = open("system_data_files/redis_server.json",'r')
+       data = file_handle.read()
+       file_handle.close()
       
-   redis_site_data = json.loads(data)
+       redis_site_data = json.loads(data)
    
-   server = Thread(target=test_driver,args=(redis_site_data,))
-   server.start()
+       server = Thread(target=test_driver,args=(redis_site_data,))
+       server.start()
    
-   mqtt_client = MQTT_CLIENT(redis_site_data)
-   print("client connected",mqtt_client.connect())
-   print("starting to publish")
-   print("message published",mqtt_client.publish("REMOTES/SLAVE:Node_1/TEMPERATURE:Case",72))
-   print("made it here")
-   mqtt_retreive = MQTT_TO_REDIS_BRIDGE_RETRIEVE(redis_site_data)
-   print("instanciated class")
-   time.sleep(1) # let message be published
-   query_list = []
-   mqtt_retreive.add_mqtt_match_relationship(  query_list,"SLAVE" )
-   print("Match on SLAVE",mqtt_retreive.match_mqtt_list( query_list ))
+       mqtt_client = MQTT_CLIENT(redis_site_data,redis_site_data["mqtt_server"],redis_site_data["mqtt_port"],"pi","mosquitto_local")
+       print("client connected",mqtt_client.connect())
+       print("starting to publish")
+       print("message published",mqtt_client.publish("REMOTES/SLAVE:Node_1/TEMPERATURE:Case",msgpack.packb(72,use_bin_type = True )))
+       print("made it here")
+       mqtt_retreive = MQTT_TO_REDIS_BRIDGE_RETRIEVE(redis_site_data)
+       print("instantiated class")
+       time.sleep(1) # let message be published
+       query_list = []
+       mqtt_retreive.add_mqtt_match_relationship(  query_list,"SLAVE" )
+       print("Match on SLAVE",mqtt_retreive.match_mqtt_list( query_list ))
  
    query_list = []
    mqtt_retreive.add_mqtt_match_relationship(  query_list,"SLAVE",label= "Node_1" )
@@ -101,8 +102,5 @@ if __name__ == "__main__":
    print("Match on TEMPERATURE:Case",nodes)
    
    nodes = list(nodes)
-   print(mqtt_retreive.xrevrange_namespace_list( nodes, "+", "-" , count=100))
-   print(mqtt_retreive.xrange_namespace_list( nodes, "-", "+" , count=100))
-   print(mqtt_retreive.mqtt_xrevrange_topic( "REMOTES/SLAVE:Node_1/TEMPERATURE:Case", "+", "-" , count=100))
-   print(mqtt_retreive.xrange_topic( "REMOTES/SLAVE:Node_1/TEMPERATURE:Case", "-", "+" , count=100))
-   '''
+   print(mqtt_retreive.xrange_namespace_list( nodes, "+", "-" , count=100))
+   
