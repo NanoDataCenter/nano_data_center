@@ -74,7 +74,9 @@ class Monitoring_Base(object):
            name = j["name"]
            if self.determine_start_time( j["start_time"],j["end_time"]) == False: 
                temp_1 = json.dumps( [0,-1] )
-               self.completion_dictionary.hset(name,temp_1)
+               temp_check = self.completion_dictionary.hget(name)
+               if temp_1 != temp_check:
+                  self.completion_dictionary.hset(name,temp_1)
     
 
 
@@ -188,9 +190,9 @@ class Schedule_Monitoring(Monitoring_Base):
    def rain_check(self):
        print("rain_check")
        try:
-          self.irrigation_control.hset(self.rain_field,0  )
+          
           rain_day = self.irrigation_control.hget(self.rain_field)
-         
+          
          
           rain_day = int( rain_day )
        except:

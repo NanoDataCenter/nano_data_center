@@ -8,6 +8,7 @@ import redis
 import time
 import copy
 import zlib
+#import hashlib
 
 
 
@@ -34,7 +35,7 @@ class Redis_Cloud_Upload(object):
        self.do_start()
        
    def do_connect(self):
-      print("connect state")
+      print("***************************connect state******************************************************")
       status = self.mqtt_client.connect()
       if status == True:
          self.state = "MONITOR"
@@ -42,7 +43,7 @@ class Redis_Cloud_Upload(object):
          self.state == "CONNECT"
       
    def do_monitor(self):
-       print("monitor state")
+       #print("*******************************monitor state*************")
        if self.packet_data == None:
            length = self.cloud_tx_handler.length()
           
@@ -57,14 +58,16 @@ class Redis_Cloud_Upload(object):
        payload = copy.deepcopy(self.packet_data)
        
        return_value = self.mqtt_client.publish(self.topic,payload=payload,qos=2)
-       print("sending packet len ",len(self.packet_data),self.packet_data)
+      
+       print("sending packet len ",len(self.packet_data),zlib.crc32(self.packet_data))
        if return_value[0] == True:
            self.packet_data = None
            return
        else:
+         print("*********************************** bad publish **************")
          self.mqtt_client.disconnect()
          time.sleep(5)
-         self.mqtt_client = MQTT_CLIENT(self.redis_site_data)
+         self.mqtt_client = MQTT_CLIENT(self.redis_site_data,redis_site_data["mqtt_cloud_server"],redis_site_data["mqtt_cloud_port"],"remote","mosquitto_cloud")
          self.state = "CONNECT"  
 
          return # error lets try to reconnect         
@@ -76,7 +79,7 @@ class Redis_Cloud_Upload(object):
            self.do_connect()
         else:
            self.do_monitor()
-        time.sleep(1)
+        time.sleep(2)
         
 if __name__ == "__main__":
    file_handle = open("system_data_files/redis_server.json",'r')

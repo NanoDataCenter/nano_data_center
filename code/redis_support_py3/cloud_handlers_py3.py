@@ -16,7 +16,7 @@ class Send_Object(object):
    def send(self,action, **kwargs):
        kwargs["ACTION"] = action
        
-       
+       print("Cloud TX -- action",kwargs)
        self.redis_handle.lpush(self.transport_queue,kwargs )
        self.redis_handle.ltrim(self.transport_queue, 0,self.queue_depth)
        

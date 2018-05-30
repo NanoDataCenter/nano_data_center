@@ -1,6 +1,10 @@
 python3 ~/passwords.py
+echo "password done"
 python3 -m redis_support_py3.load_files_py3
+echo "load files"
 python3 -m redis_support_py3.user_data_tables_py3
+echo "user data tables"
 python3 -m redis_support_py3.construct_graph_py3
+echo "construct graph"
 #./process_control_py3.bsh&
 
