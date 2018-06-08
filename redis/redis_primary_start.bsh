@@ -1,0 +1,10 @@
+
+while [ 1 ]
+do
+   
+   /home/pi/nano_data_center/redis/redis-server  /home/pi/nano_data_center/redis/redis.conf    2>  /tmp/redis_primary.err 
+   
+  
+   mv /tmp/redis_primary.err /tmp/redis_primary.errr
+
+done
