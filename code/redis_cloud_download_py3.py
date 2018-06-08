@@ -6,6 +6,7 @@ import redis
 from redis_support_py3.cloud_handlers_py3 import Cloud_RX_Handler
 import paho.mqtt.client as mqtt
 import ssl
+import zlib
 
 class REDIS_CLOUD_SYNC(object):
    
@@ -38,13 +39,15 @@ class REDIS_CLOUD_SYNC(object):
        self.client.loop_forever()
 
    def on_connect(self,client, userdata, flags, rc):
-       print("Connected with result code "+str(rc),self.redis_site_data["mqtt_topic"])
-       self.client.subscribe(self.redis_site_data["mqtt_cloud_topic"])
+       print("Connected with result code "+str(rc),self.redis_site_data["mqtt_download_topic"])
+       self.client.subscribe(self.redis_site_data["mqtt_download_topic"])
 
 
    def on_message(self, client, userdata, msg):
-       print(msg.topic+" "+str(msg.payload))
-       cloud_rx_handler.unpack_remote_data(msg.payload)
+       #print(msg.topic+" "+str(msg.payload))
+       payload = zlib.decompress(msg.payload)
+       self.cloud_rx_handler.unpack_remote_data(payload)
+       print("success")
        
      
 

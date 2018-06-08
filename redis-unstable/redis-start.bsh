@@ -1,3 +1,0 @@
-/sbin/sysctl vm.overcommit_memory=1
-./redis_primary_start.bsh&  
-#./redis_slave_start.bsh&

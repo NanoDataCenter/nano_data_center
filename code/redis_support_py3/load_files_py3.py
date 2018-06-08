@@ -19,7 +19,7 @@ from os.path import isfile, join
 import redis
 import json
 import msgpack
-from  .cloud_handlers_py3 import Cloud_TX_Handler
+
 from  .construct_data_handlers_py3 import Redis_Hash_Dictionary
 from  .cloud_handlers_py3 import Cloud_TX_Handler
 app_files = "app_data_files/"
@@ -53,10 +53,10 @@ class BASIC_FILES( object ):
         f = open(self.path + name, 'w')
         json_data = json.dumps(data)
         f.write(json_data)
-        self.hash_driver.hset( name,data)
+        self.hash_driver.hset( name,json_data)
 
     def load_file(self, name):
-        return self.hash_driver.hget(name)
+        return json.loads(self.hash_driver.hget(name))
  
 
 class APP_FILES( BASIC_FILES ):
@@ -78,19 +78,32 @@ if __name__ == "__main__":
 
 
    def load_file( file_list,path, redis_key,cloud_handler_tx):
-       for i in files:
-           fileName, fileExtension = os.path.splitext(i)
-           forward = {"forward":True}
-           if fileExtension == ".json":
-               f = open(path+i, 'r')
-               data = f.read()
-               temp = json.loads(data) # test to ensure data has json format
-              
-               pack_data = msgpack.packb(temp,use_bin_type = True )
-               redis_handle.hset( redis_key, i , pack_data)
-               cloud_handler_tx.hset(forward,redis_key,i,pack_data)
+       old_fields = set(redis_handle.hkeys(redis_key))
+       for i in file_list:
+           try:
+               fileName, fileExtension = os.path.splitext(i)
+           
+               forward = {"forward":True}
+               if fileExtension == ".json":
+                   f = open(path+i, 'r')
+                   data = f.read()
 
- 
+                   temp = json.loads(data) # test to ensure data has json format
+              
+                   pack_data = msgpack.packb(data,use_bin_type = True )
+                   if redis_handle.hget(redis_key,i) != pack_data:
+                       print("file miss match",i)
+                       redis_handle.hset( redis_key, i , pack_data)
+                       cloud_handler_tx.hset(forward,redis_key,i,pack_data)
+           except:
+              pass # add log
+       new_fields = set(redis_handle.hkeys(redis_key))
+       # remove old keys
+       keys_to_delete = list(old_fields.difference(new_fields))
+       for i in keys_to_delete:
+           redis_handle.hdel(redis_key,i)
+           cloud_handler_tx.hdel(redis_key,i)
+  
 
    file_handle = open("system_data_files/redis_server.json",'r')
    data = file_handle.read()
@@ -104,9 +117,6 @@ if __name__ == "__main__":
 
 
    key = "[SITE:"+redis_site["site"]+"][FILE:"
-   redis_handle.delete(key+"APP]")
-   redis_handle.delete(key+"SYS]")
-   redis_handle.delete(key+"LIMITS]")
    cloud_handler_tx = Cloud_TX_Handler(redis_handle)
    files = [f for f in listdir(app_files)]
 

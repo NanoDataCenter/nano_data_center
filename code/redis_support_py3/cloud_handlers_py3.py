@@ -17,7 +17,9 @@ class Send_Object(object):
        kwargs["ACTION"] = action
        
        print("Cloud TX -- action",kwargs)
-       self.redis_handle.lpush(self.transport_queue,kwargs )
+       
+       kwargs_pack = msgpack.packb(kwargs, use_bin_type = True)
+       self.redis_handle.lpush(self.transport_queue,kwargs_pack )
        self.redis_handle.ltrim(self.transport_queue, 0,self.queue_depth)
        
    def length(self):
@@ -100,19 +102,18 @@ class Cloud_RX_Handler(object):
       self.data_handlers["STREAM_LIST_WRITE"] = self.stream_list_write
       self.redis_stream =  Redis_Stream(redis_handle, exact_flag = False)
       self.file_path = {}
-      self.file_path["APP_FILES"] =  "app_data_files/"
-      self.file_path["SYS_FILES"] =  "system_data_files/"
+      self.file_path["APP"] =  "app_data_files/"
+      self.file_path["SYS"] =  "system_data_files/"
       self.file_path["LIMIT"]  = "limit_data_files/"
  
       
-   def unpack_remote_data( self, list_data ):
-     
-      for i_json in list_data:
-          
-          i = json.loads(i_json)
+   def unpack_remote_data( self, i_compress ):
+    
+          i = msgpack.unpackb(i_compress,encoding='utf-8')
           
           action = i["ACTION"]
-         
+          
+          
           if action in self.data_handlers:
               self.data_handlers[action](i)
           else:
@@ -120,32 +121,39 @@ class Cloud_RX_Handler(object):
 
  
    def check_for_file(self,key):
+       
        self.file_type = None
        fields = key.split("[FILE:")
+       
        if len(fields) > 1:
-          self.file_type = fields[1].split("]")[0]
-          return True
+          file_type = fields[1].split("]")[0]
+          return True, file_type
        else:
-          return False
+          return False, None
 
    def delete(self,key):
        self.redis_handle.delete(key)
  
 
    def save_raw_file(self,path,name,data): 
-       f = open(self.path + name, 'w')
+       f = open(path + name, 'w')
        f.write(data)
  
  
               
    def hset(self,data):
        self.redis_handle.hset(data["key"],data["field"],data["data"])
-       if self.check_for_file(data["key"]) == True:
-   
-          if self.file_type in self.file_path:
-               path = self.file_path[self.file_type]
+       
+       file_flag,file_type = self.check_for_file(data["key"])
+       if file_flag == True:
+          print("check file true",file_type)
+          if file_type in self.file_path:
+               print("made it here $$$$")
+               file_path = self.file_path[file_type]
                file = data["field"]
-               self.save_raw_file(file_path,file,json.dumps(data["data"]))
+               temp_data = msgpack.unpackb(data["data"],encoding='utf-8')
+               print("temp_data",temp_data)
+               self.save_raw_file(file_path,file,temp_data)
        
    def hdel(self,data):
       self.redis_handle.hdel(data["key"],data["field"] )

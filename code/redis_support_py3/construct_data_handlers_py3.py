@@ -78,7 +78,8 @@ class Redis_Hash_Dictionary( object ):
    def hset( self, field, data ):
    
       pack_data = msgpack.packb(data,use_bin_type = True )
-      
+      if self.redis.hget(self.key,field)== pack_data: # donot propagte identical values
+         return
       self.redis_handle.hset(self.key,field,pack_data)
       if self.cloud_handler != None:
          self.cloud_handler.hset(self.data,self.key,field,pack_data)     

@@ -32,6 +32,7 @@ class Redis_Cloud_Upload(object):
        self.cloud_tx_handler = Cloud_TX_Handler(self.redis_handle)
        self.packet_data = None
        self.topic = redis_site_data["mqtt_upload_topic"]
+       print("topic",self.topic)
        self.do_start()
        
    def do_connect(self):
