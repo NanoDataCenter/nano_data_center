@@ -125,12 +125,12 @@ class Eto_Management(object):
        eto_data = self.assemble_data("eto",self.ds_handlers["ETO_VALUES"])
        
        
-       self.ds_handlers["ETO_HISTORY"].add_json(data = eto_data) 
+       self.ds_handlers["ETO_HISTORY"].push(data = eto_data) 
        rain_data = self.assemble_data("rain",self.ds_handlers["RAIN_VALUES"])
        
-       self.ds_handlers["RAIN_HISTORY"].add_json(data = rain_data) 
+       self.ds_handlers["RAIN_HISTORY"].push(data = rain_data) 
        exception_data = self.ds_handlers["EXCEPTION_VALUES"].hgetall()
-       self.ds_handlers["EXCEPTION_LOG"].add_json(data=exception_data)
+       self.ds_handlers["EXCEPTION_LOG"].push(data=exception_data)
 
     def find_eto(self):
        eto_data = self.ds_handlers["ETO_VALUES"].hgetall()

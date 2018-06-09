@@ -78,7 +78,7 @@ class Redis_Hash_Dictionary( object ):
    def hset( self, field, data ):
    
       pack_data = msgpack.packb(data,use_bin_type = True )
-      if self.redis.hget(self.key,field)== pack_data: # donot propagte identical values
+      if self.redis_handle.hget(self.key,field)== pack_data: # donot propagte identical values
          return
       self.redis_handle.hset(self.key,field,pack_data)
       if self.cloud_handler != None:
@@ -194,7 +194,8 @@ class Job_Queue_Server( object ):
    def pop(self):
        pack_data = self.redis_handle.rpop(self.key)
        if self.cloud_handler != None:
-          self.cloud_handler.rpop(self.data ,self.key)
+          if pack_data != None:
+              self.cloud_handler.rpop(self.data ,self.key)
 
        if pack_data == None:
           return False, None

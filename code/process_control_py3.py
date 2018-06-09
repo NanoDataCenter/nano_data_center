@@ -169,7 +169,7 @@ class System_Control(object):
            temp.launch()
            if temp.error == True:
                
-               self.self.ds_handlers["ERROR_STREAM"].add_compress( data = { "script": script, "error_file" : temp.temp.error_file_rollover} )
+               self.self.ds_handlers["ERROR_STREAM"].push( data = { "script": script, "error_file" : temp.temp.error_file_rollover} )
                temp.error = False
 
    
@@ -185,7 +185,7 @@ class System_Control(object):
                with open(temp.error_file_rollover, 'r') as myfile:
                      data=myfile.read()
               
-               self.ds_handlers["ERROR_STREAM"].add_compress( data = { "script": script, "error_output" : data })
+               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script, "error_output" : data })
                temp.rollover_flag = False
       
        self.update_web_display()
@@ -217,12 +217,16 @@ class System_Control(object):
                 
    def update_web_display(self):
      
-       self.ds_handlers["WEB_DISPLAY_DICTIONARY"].delete_all()
+       old_keys = self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hkeys()
        for script in self.startup_list:
            temp = self.process_hash[script]
            self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hset(script,{"name":script,"enabled":temp.enabled,"active":temp.active,"error":temp.error})
       
-      
+       new_keys = self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hkeys()
+       keys_to_delete_set = set(old_keys).difference(set(new_keys))
+       keys_to_delete_list = set(keys_to_delete_set)
+       for i in keys_to_delete_list:
+          sekf.ds_handlers["WEB_DISPLAY_DICTIONARY"].hdelete(i)
  
  
 
