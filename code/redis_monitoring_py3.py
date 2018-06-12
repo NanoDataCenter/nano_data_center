@@ -34,7 +34,10 @@ class Redis_Monitor(object):
        if self.call_stat_previous != None:
            delta_call = {}
            for k,item in temp_calls.items():
-               delta_call[k] = item - self.call_stat_previous[k]
+               if k in self.call_stat_previous:
+                   delta_call[k] = item - self.call_stat_previous[k]
+               else:
+                 pass #  raise
            print("call stat ",delta_call)
            self.redis_monitoring_streams["REDIS_MONITOR_CALL_STREAM"].push(data=delta_call)  
        
@@ -43,7 +46,10 @@ class Redis_Monitor(object):
        if self.cpu_previous != None:
           temp = {}
           for key, item in redis_data.items():
-              temp[key] = float(item) - self.cpu_previous[key]
+              if key in self.cpu_previous:
+                   temp[key] = float(item) - self.cpu_previous[key]
+              else:
+                pass  #raise
           print(temp)
           self.redis_monitoring_streams["REDIS_MONITOR_SERVER_TIME"].push(data=temp)  
        else:
@@ -104,7 +110,7 @@ def add_chains(redis_monitor, cf):
     cf.define_chain("make_measurements", True)
     cf.insert.log("logging_redis_data")
     cf.insert.one_step(redis_monitor.log_data)
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 15)
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
     cf.insert.reset()
 
  
