@@ -38,7 +38,7 @@ class Redis_Monitor(object):
                    delta_call[k] = item - self.call_stat_previous[k]
                else:
                  pass #  raise
-           print("call stat ",delta_call)
+
            self.redis_monitoring_streams["REDIS_MONITOR_CALL_STREAM"].push(data=delta_call)  
        
        redis_data = self.redis_handle.info("cpu")
@@ -50,7 +50,7 @@ class Redis_Monitor(object):
                    temp[key] = float(item) - self.cpu_previous[key]
               else:
                 pass  #raise
-          print(temp)
+
           self.redis_monitoring_streams["REDIS_MONITOR_SERVER_TIME"].push(data=temp)  
        else:
           temp = redis_data
