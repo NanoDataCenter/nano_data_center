@@ -2,7 +2,7 @@
 import json
 
 
-ONE_MONTH = 24*30
+ONE_WEEK = 24*7
 
 class Construct_Controllers(object):
 
@@ -28,18 +28,24 @@ class Construct_Controllers(object):
 
 
        cd.construct_package("SYSTEM_MONITORING")
-       cd.add_stream("FREE_CPU",depth=ONE_MONTH) # one month of data
-       cd.add_stream("RAM",depth=ONE_MONTH)
-       cd.add_stream("DISK_SPACE",depth=ONE_MONTH) # one month of data
-       cd.add_stream("TEMPERATURE",depth=ONE_MONTH)
-       cd.add_stream("PROCESS_VSZ",depth=ONE_MONTH)
-       cd.add_stream("PROCESS_RSS",depth=ONE_MONTH)
-       cd.add_stream("PROCESS_STATE",depth=ONE_MONTH)
-       cd.close_package_contruction()
+       cd.add_stream("FREE_CPU",depth=ONE_WEEK) # one month of data
+       cd.add_stream("RAM",depth=ONE_WEEK)
+       cd.add_stream("DISK_SPACE",depth=ONE_WEEK) # one month of data
+       cd.add_stream("TEMPERATURE",depth=ONE_WEEK)
+       cd.add_stream("PROCESS_VSZ",depth=ONE_WEEK)
+       cd.add_stream("PROCESS_RSS",depth=ONE_WEEK)
+       cd.add_stream("PROCESS_STATE",depth=ONE_WEEK)
        
-       cd.construct_package("NETWORK_MONITORING")
-       cd.add_stream("SYSTEM_STATE",depth=ONE_MONTH) # one month of data
-
+       cd.add_stream("CPU_CORE",depth=ONE_WEEK)
+       cd.add_stream("SWAP_SPACE",depth=ONE_WEEK)
+       cd.add_stream("IO_SPACE",depth=ONE_WEEK)
+       cd.add_stream("BLOCK_DEV",depth=ONE_WEEK)
+       cd.add_stream("CONTEXT_SWITCHES",depth=ONE_WEEK)
+       cd.add_stream("RUN_QUEUE",depth=ONE_WEEK)       
+       cd.add_stream("DEV",depth=ONE_WEEK) # one month of data
+       cd.add_stream("SOCK",depth=ONE_WEEK) # one month of data
+       cd.add_stream("TCP",depth=ONE_WEEK) # one month of data
+       cd.add_stream("UDP",depth=ONE_WEEK) # one month of data
        cd.close_package_contruction()
           
        bc.end_header_node("PROCESSOR")
