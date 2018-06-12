@@ -110,7 +110,7 @@ def add_chains(redis_monitor, cf):
     cf.define_chain("make_measurements", True)
     cf.insert.log("logging_redis_data")
     cf.insert.one_step(redis_monitor.log_data)
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
+    cf.insert.wait_event_count( event = "HOUR_TICK",count = 1)
     cf.insert.reset()
 
  
