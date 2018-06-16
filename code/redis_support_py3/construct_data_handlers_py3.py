@@ -5,6 +5,7 @@ import time
 import base64
 import msgpack
 
+
 from .redis_stream_utilities_py3 import Redis_Stream
 from .cloud_handlers_py3 import Cloud_TX_Handler
 
@@ -286,17 +287,20 @@ class Stream_List_Reader(object):
              break
        return return_value
        
-'''
+
 class Stream_Writer(Redis_Stream):
        
-   def __init__(self,redis_handle, data,  redis_key,cloud_handler,):
+   def __init__(self,redis_handle,   data,key,cloud_handler):
       super().__init__(redis_handle)
+      
       self.data = data
+     
       self.redis_handle = redis_handle
       self.cloud_handler = cloud_handler
-      self.key = redis_key
+      self.key = key
       self.depth = data["depth"]
       self.add_pad = "~"
+      self.redis_stream = Redis_Stream(redis_handle)
 
    def delete_all( self ):
        self.redis_handle.delete(self.key)
@@ -309,30 +313,31 @@ class Stream_Writer(Redis_Stream):
           self.add_pad = ""
       else:
           self.add_pad = "~"
-   
-      
-   def add_compress(self,id="*", data={} ):
+
+
+
+   def push(self,id="*", data={} ):
        store_dictionary = {}
        if len(list(data.keys())) == 0:
            return
-       
-       for i , item in data.items():
-           
-           store_dictionary[i] = base64.b64encode(json.dumps(item)).decode()
-       self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=store_dictionary )
+       packed_data  =msgpack.packb(data,use_bin_type = True )
+       out_data = {}
+       out_data["data"] = packed_data
+       self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=out_data )
+
        if self.cloud_handler != None:
-           self.cloud_handler.stream_write(self.data,id, self.depth, self.key, store_dictionary ) 
+           self.cloud_handler.stream_write(self.data,  self.depth,id, self.key, out_data ) 
        
-   
+  
       
 
 class Stream_Reader(Redis_Stream):
        
-   def __init__(self,redis_handle,data, redis_key):
+   def __init__(self,redis_handle,data, key):
       super().__init__(redis_handle)
       self.data = data
       self.redis_handle = redis_handle
-      self.key = redis_key
+      self.key = key
 
    def delete_all( self ):
        self.redis_handle.delete(self.key)
@@ -340,36 +345,29 @@ class Stream_Reader(Redis_Stream):
            self.cloud_handler.delete(self.data, self.key)     
       
       
-   def xrange_compress(self,start_timestamp, end_timestamp , count=100):
+   def range(self,start_timestamp, end_timestamp , count=100):
+       if isinstance(start_timestamp,str) == False:
+           start_timestamp = int(start_timestamp*1000)
+       if isinstance(end_timestamp,str) == False:
+           end_timestamp = int(end_timestamp*1000)
+
        data_list = self.xrange(self.key,start_timestamp,end_timestamp, count)
-       
-       for i in data_list:
-          return_item = {}
-          for key, item in i["data"].items():
-                             
-              item = base64.b64decode(item)
-              item = msgpack.unpackb(item ,encoding='utf-8')
-      
-              return_item[key] = item
-          i["data"] = return_item
+
        return data_list
 
-   def xrevrange_compress(self,start_timestamp, end_timestamp , count=100):
+   def revrange(self,start_timestamp, end_timestamp , count=100):
+       if isinstance(start_timestamp,str) == False:
+           start_timestamp = int(start_timestamp*1000)
+       if isinstance(end_timestamp,str) == False:
+           end_timestamp = int(end_timestamp*1000)
+
+
        data_list = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
-       
-       for i in data_list:
-          return_item = {}
-          for key, item in i["data"].items():
-               
-              item = base64.b64decode(item)
-              item = msgpack.unpackb(item ,encoding='utf-8')
-      
-              return_item[key] = item
-          i["data"] = return_item
+
        return data_list
-   
+     
        
-'''
+
        
 class Generate_Handlers(object):
    
@@ -389,17 +387,20 @@ class Generate_Handlers(object):
    def construct_hash(self,data):
          assert(data["type"] == "HASH")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
+         
          return  Redis_Hash_Dictionary( self.redis_handle,data,key,self.cloud_handler )
 
-   '''
    # Taking these structures off line
    def construct_stream_writer(self,data):
          assert(data["type"] == "STREAM")
+
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_Writer(self.redis_handle,key,data,self.cloud_handler)
+        
+         return Stream_Writer(self.redis_handle,data,key,self.cloud_handler)
          
    def construct_stream_reader(self,data):
          assert(data["type"] == "STREAM")
+         
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_Reader(self.redis_handle,data,key)
    '''
@@ -413,7 +414,7 @@ class Generate_Handlers(object):
          assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_List_Reader(self.redis_handle,data,key,self.cloud_handler)
-
+   '''
    def construct_job_queue_client(self,data):
          assert(data["type"] == "JOB_QUEUE")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
@@ -435,8 +436,9 @@ class Generate_Handlers(object):
          return RPC_Server(self.redis_handle,data,key )
     
 if __name__== "__main__":
-       redis_handle = redis.StrictRedis( host = "localhost", port = 6379, db =10, decode_responses=True) # test_db
+       redis_handle = redis.StrictRedis( host = "localhost", port = 6379, db =0) # test_db
        print("starting hash test ************************************************")
+       '''
        hash_handler = Redis_Hash_Dictionary( redis_handle,data = {}, key = "__TEST__HASH__" , cloud_handler = None )
        dict_table = {"a":235,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
        print("hash input",dict_table)
@@ -447,12 +449,13 @@ if __name__== "__main__":
        print("hash_hexists(z)",hash_handler.hexists("z"))
        print("hash_hdelete(a)",hash_handler.hdelete("a"))
        print("hash_keys",hash_handler.hkeys())
-       print("hash_delete",hash_handler.delete())
+       print("hash_delete",hash_handler.delete_all())
        print("key exists",redis_handle.exists(hash_handler.key))
        print("hash test done**********************************************")
        
        print("staring job client test********************************************************")
-       job_queue_client = Job_Queue_Client(  redis_handle,data = {},key = "__TEST__JOB__" , depth= 16, cloud_handler = None )
+       
+       job_queue_client = Job_Queue_Client(  redis_handle,data = {"depth":16},key = "__TEST__JOB__" , cloud_handler = None )
        job_queue_client.push(dict_table)
        job_queue_client.push(dict_table)
        job_queue_client.push(dict_table)
@@ -493,7 +496,7 @@ if __name__== "__main__":
        print(job_queue_server.delete_all())  
        print("Done testing job sever *****************************************************************************")  
        print("Testing Stream Writer *******************************************************************************")
-       stream_writer = Stream_List_Writer( redis_handle, {},depth = 64, key ="__STREAM__TEST__",cloud_handler = None )
+       stream_writer = Stream_List_Writer( redis_handle, {"depth":64}, key ="__STREAM__TEST__",cloud_handler = None )
        stream_writer.push(dict_table_1)
        stream_writer.delete_all()
        for i in range(0,16):
@@ -503,6 +506,7 @@ if __name__== "__main__":
           stream_writer.push(dict_table_4)
           
        print("******** ending stream writer test")
+       
        print("******** starting stream reader list")
        print("testing stream reader test ")
        stream_reader = Stream_List_Reader( redis_handle,{},key = "__STREAM__TEST__",cloud_handler = None )
@@ -513,6 +517,44 @@ if __name__== "__main__":
        stream_writer.push(dict_table_4)
        print("testing for stream limit should be 64", stream_reader.length())
        print("******* ending stream reader list")
+       '''
+       dict_table_1 = {"a":1,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+       dict_table_2 = {"a":2,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+       dict_table_3 = {"a":3,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+       dict_table_4 = {"a":4,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
+
+       print("testing redis streams")
+       redis_handle.delete("__STREAM__TEST__")
+       stream_writer = Stream_Writer( redis_handle, {"depth":15}, key ="__STREAM__TEST__",cloud_handler = None )
+       stream_writer.push("*",dict_table_1)
+       stream_writer.delete_all()
+       for i in range(0,1000):
+          stream_writer.push("*",dict_table_1)
+          stream_writer.push("*",dict_table_2)
+          stream_writer.push("*",dict_table_3)
+          stream_writer.push("*",dict_table_4)
+          
+       print("******** ending stream writer test")
+       
+       print("******** starting stream reader list")
+       print("testing stream reader test ")
+       stream_reader = Stream_Reader( redis_handle,{},key = "__STREAM__TEST__" )
+       
+
+       #print("t_read", stream_reader.range(time.time()-.25,time.time(),count = 10 ))
+       print("t_read", stream_reader.range("-","+",count = 10 ))
+       print("xrevrange",stream_reader.revrange(time.time(),time.time()-.25, count = 10 ))
+   
+       print("t_read_xx", stream_reader.range(time.time()-.25,time.time(),count = 10 ))
+       print("t_read_xxx", stream_reader.revrange(time.time(),time.time()-.25,count = 10 ))
+       print("t_read_xx", stream_reader.range(time.time()-.25,time.time(),count = 0))
+       print("t_read_xxx", stream_reader.revrange(time.time(),time.time()-.25 ,count = 0))
+       print("xlen",stream_reader.xlen("__STREAM__TEST__"))
+       print("******* ending stream reader list")      
+       
+       
+       redis_handle.delete("__STREAM__TEST__")
+       print("redis_streams gone")
        
        
 

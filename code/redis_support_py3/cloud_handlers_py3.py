@@ -76,9 +76,9 @@ class Cloud_TX_Handler(Send_Object):
        if self.check_forwarding(forward_dat):
            self.send("RPOP",key=key)
        
-   def stream_write(self,forward_dat,depth, id, key,  store_dictionary_pack ):
+   def stream_write(self,forward_dat,depth, id, key,  store_dictionary ):
        if self.check_forwarding(forward_dat):
-           self.send("STREAM_WRITE",id=id,key=key,depth=depth , store_dictionary = store_dictionay_pack )
+           self.send("STREAM_WRITE",id=id,key=key,depth=depth , store_dictionary = store_dictionary )
        
    def stream_list_write(self, forward_dat,depth, key,data ):
        if self.check_forwarding(forward_dat):
