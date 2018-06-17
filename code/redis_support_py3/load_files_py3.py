@@ -41,6 +41,11 @@ class BASIC_FILES( object ):
         self.key = "[SITE:"+redis_site["site"]+"][FILE:"+label+ "]"
         self.hash_driver = Redis_Hash_Dictionary(self.redis_handle,data,self.key,self.cloud_handler)
 
+        
+    def file_exists(self,name):
+        return isfile(self.path+name)
+    
+        
     def file_directory(self):
         return self.hash_driver.hkeys()
 
