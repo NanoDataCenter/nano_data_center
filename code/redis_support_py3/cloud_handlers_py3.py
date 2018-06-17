@@ -108,12 +108,11 @@ class Cloud_RX_Handler(object):
  
       
    def unpack_remote_data( self, i_compress ):
-    
-          i = msgpack.unpackb(i_compress,encoding='utf-8')
           
+          i = msgpack.unpackb(i_compress,encoding='utf-8')
           action = i["ACTION"]
           
-          
+          print("action",action,)
           if action in self.data_handlers:
               self.data_handlers[action](i)
           else:
@@ -142,15 +141,16 @@ class Cloud_RX_Handler(object):
  
               
    def hset(self,data):
-       self.redis_handle.hset(data["key"],data["field"],data["data"])
+       field =data["field"]
+       self.redis_handle.hset(data["key"],field,data["data"])
        
        file_flag,file_type = self.check_for_file(data["key"])
        if file_flag == True:
           print("check file true",file_type)
           if file_type in self.file_path:
-               print("made it here $$$$")
+              
                file_path = self.file_path[file_type]
-               file = data["field"]
+               file = field
                temp_data = msgpack.unpackb(data["data"],encoding='utf-8')
                print("temp_data",temp_data)
                self.save_raw_file(file_path,file,temp_data)
