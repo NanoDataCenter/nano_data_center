@@ -10,6 +10,7 @@ from redis_support_py3.graph_query_support_py3 import  Query_Support
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 import msgpack
 import pickle
+import zlib
 
 class Process_Control(object ):
 
@@ -45,9 +46,12 @@ class Process_Control(object ):
        if returncode == None:
           return [ True, 0]
        else:
-         
-          del process_handle
-          return [ False, returncode ]
+       
+           process_handle.kill()
+           process_handle.wait()        
+           del process_handle
+           
+           return [ False, returncode ]
        
    def kill_process(self,process_handle):
       try:
@@ -168,8 +172,16 @@ class System_Control(object):
            temp = self.process_hash[script]
            temp.launch()
            if temp.error == True:
-               
-               self.self.ds_handlers["ERROR_STREAM"].push( data = { "script": script, "error_file" : temp.temp.error_file_rollover} )
+               with open(temp.error_file_rollover, 'r') as myfile:
+                     data=myfile.read()
+               if data != None:
+                    data = data.encode()
+                    crc = zlib.crc32(data)
+                    data = zlib.compress(data)
+               else:
+                    crc = 0
+                    data = ""
+               self.self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
                temp.error = False
 
    
@@ -184,8 +196,14 @@ class System_Control(object):
                print("process has died",script)
                with open(temp.error_file_rollover, 'r') as myfile:
                      data=myfile.read()
-              
-               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script, "error_output" : data })
+               if data != None:
+                    data = data.encode()
+                    crc = zlib.crc32(data)
+                    data = zlib.compress(data)
+               else:
+                    crc = 0
+                    data = ""
+               self.self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
                temp.rollover_flag = False
       
        self.update_web_display()
