@@ -36,8 +36,11 @@ class Redis_Cloud_Upload(object):
        self.do_start()
        
    def do_connect(self):
-      print("***************************connect state******************************************************")
-      status = self.mqtt_client.connect()
+      #print("***************************connect state******************************************************")
+      try:
+          status = self.mqtt_client.connect()
+      except:
+          status = False
       if status == True:
          self.state = "MONITOR"
       else:

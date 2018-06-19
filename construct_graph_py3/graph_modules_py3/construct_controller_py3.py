@@ -18,7 +18,14 @@ class Construct_Controllers(object):
        properties["command_list"].append( { "file":"mqtt_redis_gateway_py3.py","restart":True })
        properties["command_list"].append( { "file":"redis_cloud_download_py3.py","restart":True })
        bc.add_header_node("PROCESSOR","nano_data_center",properties=properties)
-       
+
+       properties["command_list"] =[]
+       properties["command_list"].append( {"file": "-m redis_support_py3.load_files_py3" } )       
+       #properties["command_list"].append( { "file":"eto_init_py3.py"})
+       #properties["command_list"].append( { "file":"utilities_init_py3.py" })
+       #properties["command_list"].append( { "file":"irrigation_initialization"} )
+       bc.add_info_node("PROCESS_INITIALIZATION","nano_data_center",properties=properties)
+              
 
        cd.construct_package("DATA_STRUCTURES")      
        cd.add_stream("ERROR_STREAM",depth=256)

@@ -9,8 +9,6 @@ import gzip
 import json
 
 
-
-
 def basic_init(self):
       self.sep       = "["
       self.rel_sep   = ":"

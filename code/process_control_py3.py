@@ -181,7 +181,7 @@ class System_Control(object):
                else:
                     crc = 0
                     data = ""
-               self.self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
+               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
                temp.error = False
 
    
@@ -203,10 +203,16 @@ class System_Control(object):
                else:
                     crc = 0
                     data = ""
-               self.self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
+               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
                temp.rollover_flag = False
       
        self.update_web_display()
+       
+   def terminate_jobs(self):
+       for script in self.startup_list:
+           temp = self.process_hash[script]
+           temp.kill()
+                         
            
    def process_web_queue( self, *unused ):
        data = self.ds_handlers["WEB_COMMAND_QUEUE"].pop()
@@ -317,8 +323,11 @@ if __name__ == "__main__":
    #
    # Executing chains
    #
-    
-   cf.execute()
+   try: 
+       cf.execute()
+   except:
+       system_control.terminate_jobs()
+       raise
 else:
    pass
 
