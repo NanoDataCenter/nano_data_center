@@ -292,7 +292,7 @@ if __name__ == "__main__":
     #import load_files_py3
     from redis_support_py3.graph_query_support_py3 import  Query_Support
     import datetime
-    from redis_support_py3.user_data_tables_py3 import User_Data_Tables
+    from eto_init_py3 import User_Data_Tables
 
     from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
 

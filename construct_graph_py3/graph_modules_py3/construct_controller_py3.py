@@ -20,10 +20,10 @@ class Construct_Controllers(object):
        bc.add_header_node("PROCESSOR","nano_data_center",properties=properties)
 
        properties["command_list"] =[]
-       properties["command_list"].append( {"file": "-m redis_support_py3.load_files_py3" } )       
-       #properties["command_list"].append( { "file":"eto_init_py3.py"})
-       #properties["command_list"].append( { "file":"utilities_init_py3.py" })
-       #properties["command_list"].append( { "file":"irrigation_initialization"} )
+           
+       properties["command_list"].append( { "file":"eto_init_py3.py"})
+      
+       properties["command_list"].append( { "file":"irrigation_int_py3.py"} )
        bc.add_info_node("PROCESS_INITIALIZATION","nano_data_center",properties=properties)
               
 

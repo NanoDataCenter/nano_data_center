@@ -20,6 +20,44 @@
 
 import msgpack
 
+
+class Irrigation_Scheduling(object):
+
+   def __init__(self,generate_handlers):
+        self.generate_handlers = generate_handlers
+        self.redis_handle = generate_handlers.get_redis_handle()
+
+   def get_hash_table(self):
+       return  self.generate_handlers.construct_hash("IRRIGATION_SCHEDULING","SCHEDULE_COMPLETED")
+
+class System_Scheduling(object):
+
+   def __init__(self,generate_handlers):
+        self.generate_handlers = generate_handlers
+        self.redis_handle = generate_handlers.get_redis_handle()
+
+   def get_hash_table(self):
+       return  self.generate_handlers.construct_hash("SYSTEM_SCHEDULING","SYSTEM_COMPLETED")
+       
+  
+class User_Data_Tables(object):
+
+   def __init__(self, redis_site_data ):
+       self.backup_db     = redis_site_data["redis_backup_db"]
+       self.redis_site_data = redis_site_data
+       self.table_handler = Generate_Table_Handlers( redis_site_data )
+       self.redis_handle = self.table_handler.get_redis_handle()
+
+       self.app_file_handle = APP_FILES( self.redis_handle,self.redis_site_data )
+       self.sys_filie_handle = SYS_FILES( self.redis_handle,self.redis_site_data)
+       
+       self.system_scheduling = System_Scheduling(self.table_handler)
+       self.irrigation_scheduling = Irrigation_Scheduling(self.table_handler)
+       
+   def get_redis_handle(self):
+      return self.redis_handle   
+
+ 
 class Delete_Cimis_Email():
 
    def __init__(self,  app_files,user_table,qs  ):
@@ -267,10 +305,14 @@ if __name__ == "__main__":
    
    from redis_support_py3.load_files_py3  import  APP_FILES
 
-   from redis_support_py3.user_data_tables_py3 import User_Data_Tables
+   
    from redis_support_py3.graph_query_support_py3 import Query_Support
    from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
    from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
+   from redis_support_py3.user_data_tables_py3 import Generate_Table_Handlers
+   from redis_support_py3.load_files_py3  import APP_FILES
+   from redis_support_py3.load_files_py3  import SYS_FILES
+
 
 
    file_handle = open("system_data_files/redis_server.json",'r')
@@ -353,3 +395,6 @@ else:
   pass
   
   
+'''
+
+'''
