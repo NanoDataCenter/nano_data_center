@@ -1,0 +1,324 @@
+
+
+ <!–Field Operation Diagnostics –>
+ 
+<div class="modal fade" id="field_operation" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">Field Operations</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                   <li><a href="/diagnostics/schedule_control" target="_self">Turn On/Off By Schedule Step</a></li>
+                   <li><a href="/diagnostics/controller_pin" target="_self">Turn On/Off By Controller Pin</a></li>
+                   <li><a href="/diagnostics/valve_group" target="_self">Turn On/Off By Valve Group</a></li>
+        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div> 
+ <!–System State –> 
+<div class="modal fade" id="system_state" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">System State</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                   <li><a href ='/control/display_past_system_alerts'  target="_self">Current System State</a></li>
+                   <li><a href ='/control/display_past_system_actions' target="_self">Manage Alerts</a></li>
+
+                   <li><a href ='/control/display_past_alerts' target="_self">Manage Tickets</a></li>
+                   <li><a href ='/control/display_past_actions' target="_self">Generate Alert</a></li>
+                   <li><a href="/control/display_irrigation_queue" target="_self">Generate Ticket</a></li>
+        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>  
+ <!–Irrigation Operations –> 
+<div class="modal fade" id="irrigation_operations" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">Irrigation Operations</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                
+                   <li><a href="/control/control" target="_self">Control Operation</a></li>
+                   <li><a href="/control/parameters" target="_self">Manage Parameters</a></li>
+                   <li><a href="/control/irrigation_queue" target="_self">Manage Pending Irrigation Queue</a></li>
+                   <li><a href ='/control/display_past_actions/ALL' target="_self">Past Actions</a></li>
+                   <li><a href ='/irrigation_streaming_data/display_minute_irrigation/3' target="_self">Irrigation 1 minute data</a></li>
+        
+        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>  
+ <!–ETO Management–>   
+<div class="modal fade" id="eto_functions" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                     <li><a href='/eto/eto_manage' target="_self">Manage ETO Valve Values</a></li>
+                     <li><a href="/eto/eto_setup" target="_self">Setup ETO Valves</a></li>
+                     <li><a href='/eto/eto_readings' target="_self">Display ETO Daily Values</a></li>
+                     <li><a href='/eto/eto_rain_queue' target="_self">Display ETO/Rain History</a></li>
+                     <li><a href='/eto/eto_exception_values' target="_self">Latest Weather Station Problems</a></li>
+        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>  
+ <!–Irrigation Statistics –>  
+<div class="modal fade" id="irrigation_statistics" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                   <li><a href="/composite_statistics/0/0" target="_self">Composite Statistics</a></li>        
+                   <li><a href="/detail_statistics/0/0/0/0" target="_self">Detail Statistics</a></li>
+                   <li><a href="/time_series_statistics/0/0/0/0/10" target="_self">Irrigation Time Profile</a></li>
+                   <li><a href="/valve_resistance/0" target="_self">Valve Resistance</a></li>
+       
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>   
+ <!–Irrigation Configurations –>  
+<div class="modal fade" id="irrigation_configuration" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                   <li><a href="/add_schedule"               target="_self">Add  Schedule </a></li>
+                   <li><a href="/copy_schedule"               target="_self">Copy Schedule </a></li>
+                   <li><a href="/delete_schedules"           target="_self">Delete Schedule </a></li>
+                   <li><a href="/edit_schedules"             target="_self">Edit Schedule </a></li>
+                   <li><a href ='/configure_resistance_limits/0' target="_self">Coil Resistance Limits</a></li>
+                    <li><a href ='/configure_irrigation_limits/0' target="_self">Tag Irrigation Limits</a></li>
+                    <li><a href="/system_actions"   target="_self">Configure System Actions </a></li>
+        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>   
+ <!–Moisture Data Diagnostics –> 
+<div class="modal fade" id="moisture_functions" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                      <li><a href ='/soil_moisture_data' target="_self">Soil Moisture Data</a></li>        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>  
+
+
+
+
+ 
+ <!–Linux Controller –>     
+<div class="modal fade" id="linux_controller" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                
+           <li><a href ='/linux/free_cpu/0' , target="_self">Free CPU</a></li>
+           <li><a href ='/linux/ram/0' , target="_self">Ram</a></li>
+           <li><a href ='/linux/disk_space/0' , target="_self">Disk Space</a></li>
+           <li><a href ='/linux/temperature/0', target="_self">Temperature</a></li>
+           <li><a href ='/linux/vsz/0' , target="_self">Python Process VSZ</a></li>
+
+           <li><a href ='/linux/rss/0' , target="_self">Python Process RSS</a></li>
+           <li><a href ='/linux/state/0' , target="_self">State</a></li>
+           <li><a href ='/linux/cpu_core/0' , target="_self">CPU Core</a></li>
+           <li><a href '/linux/swap_space/0', target="_self">Swap Space</a></li>
+           <li><a href ='/linux/io_space/0' , target="_self">IO</a></li>
+
+           <li><a href ='/linux/block_dev/0' , target="_self">Block Device</a></li>
+           <li><a href ='/linux/context_switches/0' , target="_self">Context Switches</a></li>
+           <li><a href ='/linux/run_queue/0' , target="_self">Run Queue</a></li>
+           <li><a href '/linux/dev/0', target="_self">Device</a></li>
+           <li><a href ='/linux/sock/0' , target="_self">SOCK</a></li>
+
+           <li><a href '/linux/tcp/0', target="_self">TCP</a></li>
+           <li><a href ='/linux/udp/0' , target="_self">UDP </a></li>
+           
+       
+       
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>   
+ <!–PLC Status –>      
+<div class="modal fade" id="plc_functions" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+            <li><a href ="/ping_device" , target="_self">Ping Modbus Device</a></li>
+            <li><a href="/modbus_current_status" target="_self">Current Modbus Conditions</a></li>
+            <li><a href="/modbus_basic_status" target ="_self">Hourly Basic Status </a></li>
+            <li><a href="/modbus_device_status/1"  target="_self">Hourly Device Status</a></li>
+        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>   
+ <!–Manage Running Processes –>    
+<div class="modal fade" id="running_processes" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                   <li><a href ="/start_and_stop_processes" , target="_self">Start and Stop Running Processes</a></li>        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>   
+ <!–Site Map   –>       
+<div class="modal fade" id="site_map" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                  <li><a href="/site_map/0"    target="_self">Valve Group Site Map</a></li>
+                  <li><a href="/site_map/1"    target="_self">Controller Site Map</a></li>
+                  <li><a href="/site_map/2"    target="_self">Avocado Block Map</a></li>
+        
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>  
+

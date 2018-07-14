@@ -1,0 +1,70 @@
+
+
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+	
+	
+
+	   <script  type="text/javascript">
+            eto_data = {{eto_data_json}}    
+            pin_list = {{pin_list_json}}              
+    </script>
+    
+      <script type = "text/javascript" >
+      {% include "js/eto_functions/eto_setup.js" %}
+      {% include "js/eto_functions/eto_setup_parameter_setup.js" %}
+	</script>    
+     
+{% endblock %}
+
+
+{% block application %}
+<div class="container">
+ <div id="main_panel">
+    <h3>Select Action</h3>
+   <select name="#action-choice" id="action-choice">
+      <option   value="nop">No Operation</option>
+      <option   value="recharge">Recharge Level</option>
+      <option   value="crop_util">Crop Utilization</option>
+      <option   value="salt">Salt Flush</option>
+      <option   value="sprayer">Sprayer Efficiency</option>
+      <option value="edit">Edit Eto Resource</option>
+      <option value="add">Add Eto Resource</option>
+      <option value="delete">Delete Eto Resource</option>
+   </select>
+<div style="margin-top:25px"></div>
+   <h3>Setup ETO Valve Stations</h3>
+   <div style="margin-top:10px"></div>
+   <h4 id="recharge_eto">ETO Recharge Level: </h4>
+   <h4 id="crop_utilization">Crop Utilization:</h4>
+   <h4 id="sprayer_effiency">Sprayer Efficency: </h4>
+   <h4 id="salt_flush_addition">Salt Flush Addition: </h4>
+
+<div style="margin-top:25px"></div>
+<h3>Select ETO Resource </h3>
+<div style="margin-top:10px"></div>
+{% for item in eto_data %}
+
+{% set id = "eto_emiter_id_"+ (loop.index -1)|string %}
+{% set label_text = "Controller: "+item.controller+ "  Valve: "+item.pin|string +" Recharge Rate: "+'%0.2f'| format(item.recharge_rate+0.005) + " Recharge Level: "+item.recharge_eto|string %}
+
+<div class="form-check">
+<label class="form-check-label" for="{{id}}">     	   
+
+<input type="radio" class="form-check-input" id={{id}} name="optradio" value={{loop.index-1}}>{{label_text}}        
+</label>
+</div>
+{% endfor %}
+
+</div> 
+
+{% include 'eto_templates/eto_setup_parameter_setup' %}
+{% include 'eto_templates/eto_setup_station' %}
+{% endblock %}
+

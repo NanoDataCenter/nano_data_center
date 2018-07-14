@@ -1,0 +1,33 @@
+{% extends "base_template" %}
+
+{% block application_javascript %}
+      <script type="text/javascript">
+         rain_data = {{rain_data}}
+         eto_data = {{eto_data}}         
+     </script>
+     <script src="/js/plotly-latest.min.js"></script> 
+ 
+{% endblock %}
+        
+ 
+{% block application %}
+<div class="container">
+<h4>ETO History</h4>
+
+{{ eto_data|tojson}}
+
+
+</div>
+
+<div style="margin-top:50px"></div>
+<div class="container">
+<h4>Rain History</h4>
+
+{{ rain_data|tojson}}
+
+</div>
+
+{% endblock %}
+
+
+ 

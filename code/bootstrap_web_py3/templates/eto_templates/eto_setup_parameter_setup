@@ -1,0 +1,32 @@
+
+<style>
+input[type="range"] {
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+.auto {
+  -ms-touch-action: auto;
+  touch-action: auto;
+} 
+</style>
+
+ 
+<div id="parameter_div">
+ <div class="container">
+   <h2 id="parameter_title">Title </h2>
+   <div>
+        <input type="button" id = "parameter_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "parameter_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "parameter_reset" value="Reset" data-inline="true"  /> 
+   </div>
+   
+  
+   
+<div style="margin-top:25px"></div>
+<h4 id="parameter_display">Recharge</h4>
+<div style="margin-top:25px"></div>
+
+<input id = "parameter_input", class="auto" mim = "0" max="1" step=".01" type="range">
+</div>
+</div>

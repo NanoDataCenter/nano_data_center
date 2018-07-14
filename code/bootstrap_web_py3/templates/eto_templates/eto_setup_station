@@ -1,0 +1,50 @@
+
+
+
+<script type="text/javascript">
+{% include  "js/eto_functions/eto_setup_station.js" %}    
+</script>
+
+
+<div id="station_setup_set">
+ <div class="container">      
+   <h3 id=station_setup_header> Modify Setup For Controller Pin </h3>
+   <div>
+        <input type="button" id = "station_save" value="Save"  data-inline="true"  /> 
+        <input type="button" id = "station_cancel" value="Cancel" data-inline="true"  /> 
+        <input type="button" id = "station_reset" value="Reset" data-inline="true"  /> 
+   </div>
+  <div style="margin-top:25px"></div>
+
+   <div id="station_add_controls">
+            <h3>Select Controller</h3>
+    	    <select  name="controller" id="station_controller" data-inline="true" >
+            </select>
+            <div style="margin-top:25px"></div>
+            <h3>Select Valve </h3>
+    	    <select  name="valve" id="station_valve"  data-inline="true"  >
+ 
+         
+         </select>
+<div style="margin-top:25px"></div>
+   </div>
+
+   <h3 id="station_eto_display" >Current ETO Recharge is : </h3> 
+  <div style="margin-top:25px"></div>
+   
+   <canvas  height=15  ></canvas>
+   <div data-role="fieldcontain" id="station_rate_field">     
+   <h4 id ="station_sprayer_rate_display"> Select Sprayer Rate (Gallons/Hour) </h4>
+   <input type="range"  , id="station_sprayer_rate" value="14" 
+                    min="0" max="24" data-highlight="true" step=".5" />
+   </div>
+<div style="margin-top:25px"></div>    
+   <canvas  height=15  ></canvas> 
+   <h4 id ="station_radius_display"> Select Tree Radius (feet) </h4>    
+   <div data-role="fieldcontain" id="station_radius_field"> 
+   <input type="range"  , id="station_tree_radius" value="6" 
+                    min="0" max="10" data-highlight="true" step=".1" />
+   </div>
+   
+</div>
+</div>

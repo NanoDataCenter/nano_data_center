@@ -1,0 +1,49 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"> 
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/css/bootstrap.min.css" >
+<!-- jQuery first, then Bootstrap JS. --> 
+<script src="/js/jquery-3.3.1.min.js"></script> 
+<script src="/js/bootstrap.js"></script> 
+
+<script type="text/javascript" >
+{% include "js/ajax_functions.js" %}
+{% include "js/redis_functions.js" %}
+</script>
+{% block application_javascript %}{% endblock %}
+<title>{{title}}</title>
+
+
+
+</head>
+<body>
+
+
+
+ 
+
+   {% include 'menu' %}
+   {% include 'modals' %}
+   {% include 'status_panel' %}
+   
+   
+   {% block application %}{% endblock %}
+ 
+ 
+   {% block footer %}{% endblock %} 
+
+   
+ 
+    
+   
+   
+  </body> 
+</html>
+<script src = "/js/popper.min.js"><script> 
+</body>
+</html>

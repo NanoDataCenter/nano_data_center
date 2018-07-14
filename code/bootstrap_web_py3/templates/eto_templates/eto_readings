@@ -1,0 +1,45 @@
+
+
+{% extends "base_template" %}
+
+
+
+
+{% block application %}
+<div class="container">
+<h3>Current Station Data Reading For ETO </h3>
+<ul>
+{% for reading in eto_keys %}
+<li>station: {{reading}}
+  <ul>
+      <li>eto: {{'%0.2f'| format(eto_data[reading].eto|float)}}</li>
+      <li>rank: {{'%0.0f'| format(eto_data[reading].priority|float)}} </li>
+  </ul>
+</li>
+{%endfor%}
+</ul>
+</div>
+</div>
+<div style="margin-top:50px"></div>
+<div class="container">
+<h3>Current Station Data Reading For Rain </h3>
+{<ul>
+{% for reading in rain_keys %}
+<li>station: {{reading}}
+  <ul>
+      <li>rain: {{'%0.2f'| format(rain_data[reading].rain|float)}}</li>
+      <li>rank: {{'%0.0f'| format(rain_data[reading].priority|float)}} </li>
+  </ul>
+</li>
+{%endfor%}
+</ul>
+</div> 
+
+{% endblock %} 
+
+
+
+
+
+
+

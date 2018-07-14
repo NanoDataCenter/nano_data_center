@@ -315,7 +315,7 @@ if __name__ == "__main__":
                                            
    package_sets, package_nodes = qs.match_list(query_list)  
    
-
+   print("package_nodes",package_nodes)
    generate_handlers = Generate_Handlers(package_nodes[0],site_data)
    system_control = System_Control(processor_nodes[0],package_nodes[0],generate_handlers)
    cf = CF_Base_Interpreter()

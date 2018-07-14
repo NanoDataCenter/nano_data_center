@@ -1,0 +1,32 @@
+
+
+{% extends "base_template" %}
+
+
+
+
+{% block application %}
+<div class="container">
+<h3>Current Weather Station Problems </h3>
+<ul>
+{% for reading in station_keys %}
+<li>station: {{reading}}
+  <ul>
+      <li> {{station_data[reading]|tojson}}</li>
+      
+  </ul>
+</li>
+{%endfor%}
+</ul>
+</div>
+
+
+
+{% endblock %} 
+
+
+
+
+
+
+

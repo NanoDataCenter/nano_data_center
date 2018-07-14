@@ -76,9 +76,12 @@ class Eto_Management(object):
 
     def new_day_rollover( self, *parameters ):
          
-         self.ds_handlers["EXCEPTION_VALUES"].delete()
-         self.ds_handlers["ETO_VALUES"].delete()
-         self.ds_handlers["RAIN_VALUES"].delete()
+         self.ds_handlers["EXCEPTION_VALUES"].delete_all()
+       
+         
+         self.ds_handlers["ETO_VALUES"].delete_all()
+         self.ds_handlers["RAIN_VALUES"].delete_all()
+         
          self.ds_handlers["ETO_CONTROL"].hset("ETO_UPDATE_FLAG",0)
          self.ds_handlers["ETO_CONTROL"].hset("ETO_LOG_FLAG",0)
          return "DISABLE"
@@ -90,10 +93,10 @@ class Eto_Management(object):
             if "calculator" in source:
                 try:
                     source["calculator"].compute_previous_day()
-                except:
+                except Exception as tst:
                    
                    print("exception",source["name"])
-                   self.ds_handlers["EXCEPTION_VALUES"].hset(source["name"],"EXCEPTION")
+                   self.ds_handlers["EXCEPTION_VALUES"].hset(source["name"],str(tst))
        
              
 
@@ -229,7 +232,14 @@ def construct_eto_instance(qs, site_data,user_table ):
 
 def add_eto_chains(eto, cf):
 
+    cf.define_chain("test_generator",False)
+    cf.insert.log("send Day Tick")
+    cf.insert.send_event("DAY_TICK")
+    cf.insert.terminate()
+
+
     cf.define_chain("eto_time_window", True)
+    cf.insert.log("Waiting for day tick")
     cf.insert.wait_event_count( event = "DAY_TICK" )
     cf.insert.log("Got Day Tick")
     cf.insert.one_step(eto.new_day_rollover)
@@ -271,9 +281,6 @@ def add_eto_chains(eto, cf):
     
     cf.insert.reset()
 
-    cf.define_chain("test_generator",False)
-
-    cf.insert.terminate()
 
 
 if __name__ == "__main__":

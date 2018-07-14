@@ -79,6 +79,7 @@ class Redis_Hash_Dictionary( object ):
    def hset( self, field, data ):
    
       pack_data = msgpack.packb(data,use_bin_type = True )
+      
       if self.redis_handle.hget(self.key,field)== pack_data: # donot propagte identical values
          return
       self.redis_handle.hset(self.key,field,pack_data)
@@ -106,8 +107,11 @@ class Redis_Hash_Dictionary( object ):
       keys = self.redis_handle.hkeys(self.key)
       
       for field in keys:
-        
-         return_value[field] = self.hget(field)
+         try:
+            new_field = field.decode('utf-8')
+         except:
+            new_field = field
+         return_value[new_field] = self.hget(field)
      
       return return_value
       

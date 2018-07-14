@@ -46,14 +46,12 @@ class User_Data_Tables(object):
        # need to merge old table values into the new table
        # there may be insertions as well as deletions
        eto_file_data = self.app_file_handle.load_file("eto_site_setup.json")
-       
+      
 
 
        eto_redis_hash_table = self.eto_data.get_hash_table()
        
        eto_redis_hash_data = eto_redis_hash_table.hgetall()
-       
-
 
        
        new_data = {}
@@ -62,12 +60,13 @@ class User_Data_Tables(object):
        # Step 1  Populate file dummy initial values
        #
        for j in eto_file_data:
-           
+          
            new_data[ j["controller"] + "|" + str(j["pin"])] = 0
        #
        # populate from redis hash table
        #
        #
+      
        eto_redis_hash_table.delete_all()
        
        #
@@ -75,8 +74,10 @@ class User_Data_Tables(object):
        #
        
        for i in new_data.keys():
+           
            data = new_data[i]
            if i in eto_redis_hash_data:
+             
               data = eto_redis_hash_data[i]   # key old values
            eto_redis_hash_table.hset(i,data )         
            

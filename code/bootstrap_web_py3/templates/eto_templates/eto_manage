@@ -1,0 +1,47 @@
+
+
+
+{% extends "base_template" %}
+
+{% block application_javascript %}
+      <script type="text/javascript">
+        eto_update_table = "{{eto_update_table}}"
+     </script>
+     
+     <script type="text/javascript">
+     {% include  "js/eto_functions/eto_handler.js" %}
+     </script>
+ 
+{% endblock %}
+
+
+{% block application %}
+<div class="container">
+<h3>Edit ETO Data</h3>
+<h4>Select Action For Checked Enities</h4> 
+    <select id="eto_op_mode">
+        <option selected value=0>No Action</option>
+	        <option value=1>Zero Selected ETO Data</option>
+	        <option value=2>Subtract .01 inch from ETO Data</option>
+	        <option value=3>Add .01 inch to ETO Data</option>
+	        <option value=4>Subtract .05 inch from ETO Data</option>
+	        <option value=5>Add .05 inch to ETO Data</option>
+	        <option value=6>Select All Elements</option>
+	        <option value=7>Unselect All Elememts</option>
+	        <option value=8>Reload Data</option>
+	        <option value=9>Save ETO Data</option>    
+     </select>
+</div>
+<div style="margin-top:50px"></div>
+<div class="container">
+<div id="eto_list">
+
+</div>
+ 
+</div> 
+
+{% endblock %} 
+
+
+
+

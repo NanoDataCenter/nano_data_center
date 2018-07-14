@@ -54,6 +54,7 @@ class Help_Functions(object):
    # Event Functions
    #  
    def send_event( self, event, event_data = "" ):
+       
        self.cf.insert_link("Send_Event",[event,event_data] )
        
 
