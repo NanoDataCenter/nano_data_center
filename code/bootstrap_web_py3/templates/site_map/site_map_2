@@ -1,0 +1,9 @@
+{% extends "base_template" %}
+{% block application %}
+<div class="container">
+<div style="margin-top:50px"></div>
+
+        <h3>Location Of Avocado/Fruit Tree Blocks</h3>
+	<img  src="/static/app_images/Avocado_block_map.png">
+</div>
+{% endblock %} 

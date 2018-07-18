@@ -46,7 +46,7 @@ class PI_MONITOR( object ):
        self.ds_handlers["TEMPERATURE"]        = generate_handlers.construct_stream_writer(data_structures["TEMPERATURE"])
        self.ds_handlers["PROCESS_VSZ"]        = generate_handlers.construct_stream_writer(data_structures["PROCESS_VSZ"])
        self.ds_handlers["PROCESS_RSS"]        = generate_handlers.construct_stream_writer(data_structures["PROCESS_RSS"])
-       self.ds_handlers["PROCESS_STATE"]        = generate_handlers.construct_stream_writer(data_structures["PROCESS_STATE"])  
+       self.ds_handlers["PROCESS_CPU"]        = generate_handlers.construct_stream_writer(data_structures["PROCESS_CPU"])  
        self.ds_handlers["CPU_CORE"]        = generate_handlers.construct_stream_writer(data_structures["CPU_CORE"])  
        self.ds_handlers["SWAP_SPACE"]        = generate_handlers.construct_stream_writer(data_structures["SWAP_SPACE"])  
        self.ds_handlers["IO_SPACE"]        = generate_handlers.construct_stream_writer(data_structures["IO_SPACE"])  
@@ -168,6 +168,29 @@ class PI_MONITOR( object ):
                        return_value[key] = temp_value["RSS"]
 
        return return_value
+       
+   def cpu_handler( self , *args  ):
+       headers = [ "USER","PID","%CPU","%MEM","VSZ","RSS","TTY","STAT","START","TIME","COMMAND", "PARAMETER1", "PARAMETER2" ]
+       f = os.popen("ps -aux | grep python3")
+       data = f.read()
+       f.close()
+       lines = data.split("\n")
+       return_value = {}
+       for i in range(0,len(lines)):
+     
+           
+           fields = lines[i].split()
+           temp_value = {}
+           if len(fields) <= len(headers):
+               for i in range(0,len(fields)):
+                   temp_value[headers[i]] = fields[i]
+               
+               if "PARAMETER1" in temp_value:
+                   if temp_value["COMMAND"] == "python3":
+                       key = temp_value["PARAMETER1"]
+                       return_value[key] = temp_value["%CPU"]
+
+       return return_value
 
    def measure_free_cpu( self,*args):
        headers = [ "Time","cpu","%user" , "%nice", "%system", "%iowait" ,"%steal" ,"%idle" ]
@@ -221,8 +244,9 @@ class PI_MONITOR( object ):
        self.ds_handlers["PROCESS_RSS"].push( data = data )
        return "DISABLE"
        
-   def assemble_process_state(self,*args):
-       self.measure_processor_load()
+   def assemble_cpu_handler(self,*args):
+       data = self.cpu_handler()
+       self.ds_handlers["PROCESS_CPU"].push( data = data )
        return "DISABLE"
       
    def assemble_disk_space(self,*args):
@@ -328,7 +352,7 @@ class PI_MONITOR( object ):
        cf.insert.one_step(self.assemble_temperature)
        cf.insert.one_step(self.assemble_vsz)
        cf.insert.one_step(self.assemble_rss)
-       cf.insert.one_step(self.assemble_process_state)
+       cf.insert.one_step(self.assemble_cpu_handler)
        cf.insert.one_step(self.assemble_disk_space)
        cf.insert.one_step(self.assemble_cpu_core)
        cf.insert.one_step(self.assemble_swap_space)

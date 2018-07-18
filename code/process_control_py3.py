@@ -142,9 +142,10 @@ class System_Control(object):
                
        self.command_list = processor_node["command_list"]
        data_structures = package_node["data_structures"]
-       
+       print(data_structures.keys())
        self.ds_handlers = {}
        self.ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
+       self.ds_handlers["ERROR_HASH"]        = generate_handlers.construct_hash(data_structures["ERROR_HASH"])
        self.ds_handlers["WEB_COMMAND_QUEUE"]   = generate_handlers.construct_job_queue_server(data_structures["WEB_COMMAND_QUEUE"])
        
        self.ds_handlers["WEB_DISPLAY_DICTIONARY"]   =  generate_handlers.construct_hash(data_structures["WEB_DISPLAY_DICTIONARY"])
@@ -181,6 +182,7 @@ class System_Control(object):
                else:
                     crc = 0
                     data = ""
+               self.ds_handlers["ERROR_HASH"].hset( script , { "script": script,"crc":crc, "error_output" : data } )
                self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
                temp.error = False
 
@@ -203,6 +205,7 @@ class System_Control(object):
                else:
                     crc = 0
                     data = ""
+               self.ds_handlers["ERROR_HASH"].hset( script , { "script": script,"crc":crc, "error_output" : data } )
                self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
                temp.rollover_flag = False
       

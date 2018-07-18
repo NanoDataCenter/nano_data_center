@@ -102,7 +102,8 @@
                      <li><a href='/eto/eto_manage' target="_self">Manage ETO Valve Values</a></li>
                      <li><a href="/eto/eto_setup" target="_self">Setup ETO Valves</a></li>
                      <li><a href='/eto/eto_readings' target="_self">Display ETO Daily Values</a></li>
-                     <li><a href='/eto/eto_rain_queue' target="_self">Display ETO/Rain History</a></li>
+                     <li><a href='/eto/eto_queue' target="_self">Display ETO History</a></li>
+                     <li><a href='/eto/rain_queue' target="_self">Display RAIN History</a></li>
                      <li><a href='/eto/eto_exception_values' target="_self">Latest Weather Station Problems</a></li>
         
                 </ul>
@@ -204,7 +205,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <h5 class="modal-title" id="accountModalLabel">Linux Controller </h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -220,20 +221,54 @@
            <li><a href ='/linux/vsz/0' , target="_self">Python Process VSZ</a></li>
 
            <li><a href ='/linux/rss/0' , target="_self">Python Process RSS</a></li>
-           <li><a href ='/linux/state/0' , target="_self">State</a></li>
+           <li><a href ='/linux/cpu/0' , target="_self">Python Process CPU</a></li>
            <li><a href ='/linux/cpu_core/0' , target="_self">CPU Core</a></li>
-           <li><a href '/linux/swap_space/0', target="_self">Swap Space</a></li>
-           <li><a href ='/linux/io_space/0' , target="_self">IO</a></li>
+   
+            <li><a href ='/linux/io_space/0' , target="_self">IO</a></li>
 
            <li><a href ='/linux/block_dev/0' , target="_self">Block Device</a></li>
            <li><a href ='/linux/context_switches/0' , target="_self">Context Switches</a></li>
            <li><a href ='/linux/run_queue/0' , target="_self">Run Queue</a></li>
-           <li><a href '/linux/dev/0', target="_self">Device</a></li>
-           <li><a href ='/linux/sock/0' , target="_self">SOCK</a></li>
-
-           <li><a href '/linux/tcp/0', target="_self">TCP</a></li>
-           <li><a href ='/linux/udp/0' , target="_self">UDP </a></li>
            
+           <li><a href ='/linux/dev/0', target="_self">Nework Error Statistics</a></li>
+           <li><a href ='/linux/sock/0' , target="_self">SOCK Statistics</a></li>
+
+           <li><a href ='/linux/tcp/0', target="_self">TCP    Statistics </a></li>
+           <li><a href ='/linux/udp/0' , target="_self">UDP Statistics   </a></li>
+           
+               
+       
+       
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>   
+ <!–Linux Controller –>     
+<div class="modal fade" id="linux_redis" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">Linux Controller </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+               
+           <li><a href ='/redis/redis_key_stream' , target="_self">Redis Key Stream</a></li>
+           <li><a href ='/redis/redis_client_stream' , target="_self">Redis Client Stream</a></li>
+           <li><a href ='/redis/redis_memory_stream' , target="_self">Redis Memory Stream</a></li>
+           <li><a href ='/redis/redis_call_stream', target="_self">Redis Call Stream</a></li>
+           <li><a href ='/redis/redis_cmd_time_stream' , target="_self">Redis Command Time Stream</a></li>
+           <li><a href ='/redis/redis_server_time_stream' , target="_self">Redis Server Time Stream</a></li>
+             
        
        
                 </ul>

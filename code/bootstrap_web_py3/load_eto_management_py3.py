@@ -3,8 +3,9 @@ import os
 import json
 from datetime import datetime
 import time
-
-class Load_ETO_Management(object):
+from .base_stream_processing_py3 import Base_Stream_Processing
+from  collections import OrderedDict
+class Load_ETO_Management(Base_Stream_Processing):
 
    def __init__( self, app, auth, request, app_files, sys_files,
                    render_template,redis_access,eto_update_table, handlers):
@@ -28,8 +29,12 @@ class Load_ETO_Management(object):
        app.add_url_rule('/eto/eto_readings',"eto_raw_data",a1)
 
        
-       a1 = auth.login_required( self.eto_rain_queue )
-       app.add_url_rule('/eto/eto_rain_queue',"eto_rain_queue",a1)
+       a1 = auth.login_required( self.eto_queue )
+       app.add_url_rule('/eto/eto_queue',"eto_queue",a1)
+
+       a1 = auth.login_required( self.rain_queue )
+       app.add_url_rule('/eto/rain_queue',"rain_queue",a1)
+       
        
         
        a1 = auth.login_required( self.eto_setup )
@@ -55,15 +60,59 @@ class Load_ETO_Management(object):
                                rain_data = rain_data,rain_keys =rain_data.keys() ) 
 
        
-   def eto_rain_queue(self):
-       rain_data = self.handlers["RAIN_HISTORY"].revrange("+","-" , count=100)
-       rain_data.reverse()
-       eto_data = self.handlers["ETO_HISTORY"].revrange("+","-" , count=100)
-       eto_data.reverse()
+   def eto_queue(self):
+   
+       temp_data = self.handlers["ETO_HISTORY"].revrange("+","-" , count=1000)
+       temp_data.reverse()
+       chart_title = " ETO Log For Weather Station : "
+       stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
+       eto_data =  self.handlers["ETO_VALUES"].hgetall()
+       temp_data = {}
+       for i,item in eto_data.items():
+           temp_data[i] = item["priority"]
+       temp_data =[(k, temp_data[k]) for k in sorted(temp_data, key=temp_data.get, reverse=True)]
+       stream_keys = []
+       for i in temp_data:
+          
+          stream_keys.append(i[0])
+       stream_keys.reverse()
+            
+       return self.render_template( "streams/base_stream",
+                                     stream_data = stream_data,
+                                     stream_keys = stream_keys,
+                                     title = stream_keys,
+                                     stream_range = stream_range,
+                                     
+                                     
+                                     )
 
-       return self.render_template("eto_templates/streaming_data",eto_data=eto_data, rain_data = rain_data ) 
+
   
+   def rain_queue(self):
+       temp_data = self.handlers["RAIN_HISTORY"].revrange("+","-" , count=1000)
+       temp_data.reverse()
+       chart_title = " ETO Log For Weather Station : "
+       stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
+       rain_data =  self.handlers["RAIN_VALUES"].hgetall()
+       temp_data = {}
+       for i,item in rain_data.items():
+           temp_data[i] = item["priority"]
+       temp_data =[(k, temp_data[k]) for k in sorted(temp_data, key=temp_data.get, reverse=True)]
+       stream_keys = []
+       for i in temp_data:
+          
+          stream_keys.append(i[0])
+       stream_keys.reverse()
        
+       return self.render_template( "streams/base_stream",
+                                     stream_data = stream_data,
+                                     stream_keys = stream_keys,
+                                     title = stream_keys,
+                                     stream_range = stream_range,
+                                     
+                                     
+                                     )
+      
 
    def eto_setup(self):
        eto_data  = self.app_files.load_file( "eto_site_setup.json" )

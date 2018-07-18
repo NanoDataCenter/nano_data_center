@@ -29,6 +29,7 @@ class Construct_Controllers(object):
 
        cd.construct_package("DATA_STRUCTURES")      
        cd.add_stream("ERROR_STREAM",depth=256)
+       cd.add_hash("ERROR_HASH")
        cd.add_job_queue("WEB_COMMAND_QUEUE",1)
        cd.add_hash("WEB_DISPLAY_DICTIONARY")
        cd.close_package_contruction()
@@ -41,7 +42,7 @@ class Construct_Controllers(object):
        cd.add_stream("TEMPERATURE",depth=ONE_WEEK)
        cd.add_stream("PROCESS_VSZ",depth=ONE_WEEK)
        cd.add_stream("PROCESS_RSS",depth=ONE_WEEK)
-       cd.add_stream("PROCESS_STATE",depth=ONE_WEEK)
+       cd.add_stream("PROCESS_CPU",depth=ONE_WEEK)
        
        cd.add_stream("CPU_CORE",depth=ONE_WEEK)
        cd.add_stream("SWAP_SPACE",depth=ONE_WEEK)

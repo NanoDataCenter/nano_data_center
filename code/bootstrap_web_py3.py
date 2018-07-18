@@ -24,6 +24,9 @@ from redis_support_py3.load_files_py3  import APP_FILES
 from redis_support_py3.load_files_py3  import SYS_FILES
 from bootstrap_web_py3.load_app_sys_files_py3 import Load_App_Sys_Files
 from bootstrap_web_py3.load_linux_management_py3 import Load_Linux_Management
+from bootstrap_web_py3.load_redis_management_py3 import Load_Redis_Management
+from bootstrap_web_py3.load_site_map_py3   import Load_Site_Data
+
 class PI_Web_Server(object):
 
    def __init__(self , name, redis_site_data ):
@@ -58,9 +61,10 @@ class PI_Web_Server(object):
        Load_Static_Files(self.app,self.auth)
        self.redis_access = Load_Redis_Access(self.app, self.auth, request )
        Load_App_Sys_Files( self.app, self.auth, request, self.app_files, self.sys_files    )
+       Load_Site_Data(self.app, self.auth, render_template)
        self.load_eto_management()
        self.load_linux_monitoring()
-
+       self.load_redis_monitoring()
 
        a1 = self.auth.login_required( self.get_index_page )
        self.app.add_url_rule('/index.html',"get_index_page",a1) 
@@ -183,7 +187,7 @@ class PI_Web_Server(object):
        ds_handlers["TEMPERATURE"] = generate_handlers.construct_stream_reader(data_structures["TEMPERATURE"])
        ds_handlers["PROCESS_VSZ"] = generate_handlers.construct_stream_reader(data_structures["PROCESS_VSZ"])
        ds_handlers["PROCESS_RSS"] = generate_handlers.construct_stream_reader(data_structures["PROCESS_RSS"])
-       ds_handlers["PROCESS_STATE"] = generate_handlers.construct_stream_reader(data_structures["PROCESS_STATE"])
+       ds_handlers["PROCESS_CPU"] = generate_handlers.construct_stream_reader(data_structures["PROCESS_CPU"])
        
        ds_handlers["CPU_CORE"] = generate_handlers.construct_stream_reader(data_structures["CPU_CORE"])
        ds_handlers["SWAP_SPACE"] = generate_handlers.construct_stream_reader(data_structures["SWAP_SPACE"])
@@ -197,7 +201,29 @@ class PI_Web_Server(object):
        ds_handlers["UDP"] = generate_handlers.construct_stream_reader(data_structures["UDP"])
        return ds_handlers
 
+   def load_redis_monitoring(self):
+       query_list = []
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+       query_list = self.qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", label = "REDIS_MONITORING" )
+                                           
+       package_sets, package_sources = self.qs.match_list(query_list)  
+       print("**************** package_sets",package_sets)
+       package = package_sources[0]
+       generate_handlers = Generate_Handlers(package,self.redis_site_data)
+       data_structures = package["data_structures"]     
  
+       ds_handlers = {}
+       ds_handlers["REDIS_MONITOR_KEY_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_KEY_STREAM"])
+       ds_handlers["REDIS_MONITOR_CLIENT_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_CLIENT_STREAM"])
+       ds_handlers["REDIS_MONITOR_MEMORY_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_MEMORY_STREAM"])
+       ds_handlers["REDIS_MONITOR_CALL_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_CALL_STREAM"])
+       ds_handlers["REDIS_MONITOR_CMD_TIME_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_CMD_TIME_STREAM"])
+       ds_handlers["REDIS_MONITOR_SERVER_TIME"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_SERVER_TIME"])
+
+       Load_Redis_Management(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
+                  render_template=render_template, handlers=ds_handlers )    
+  
        
        
         
