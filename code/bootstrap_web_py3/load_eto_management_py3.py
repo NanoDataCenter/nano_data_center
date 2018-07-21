@@ -55,9 +55,30 @@ class Load_ETO_Management(Base_Stream_Processing):
        
    def eto_readings(self):
        eto_data =  self.handlers["ETO_VALUES"].hgetall()
+       temp_data = {}
+       for i,item in eto_data.items():
+           temp_data[i] = item["priority"]
+       temp_data =[(k, temp_data[k]) for k in sorted(temp_data, key=temp_data.get, reverse=True)]
+       eto_keys = []
+       for i in temp_data:
+          
+          eto_keys.append(i[0])
+       eto_keys.reverse()
+       rain_data =  self.handlers["RAIN_VALUES"].hgetall()
+       temp_data = {}
+       for i,item in rain_data.items():
+           temp_data[i] = item["priority"]
+       temp_data =[(k, temp_data[k]) for k in sorted(temp_data, key=temp_data.get, reverse=True)]
+       rain_keys = []
+       for i in temp_data:
+          
+          rain_keys.append(i[0])
+       rain_keys.reverse()
+   
+       eto_data =  self.handlers["ETO_VALUES"].hgetall()
        rain_data = self.handlers["RAIN_VALUES"].hgetall()
-       return self.render_template( "eto_templates/eto_readings",eto_data = eto_data,eto_keys = eto_data.keys(), 
-                               rain_data = rain_data,rain_keys =rain_data.keys() ) 
+       return self.render_template( "eto_templates/eto_readings",eto_data = eto_data,eto_keys = eto_keys, 
+                               rain_data = rain_data,rain_keys =rain_keys ) 
 
        
    def eto_queue(self):

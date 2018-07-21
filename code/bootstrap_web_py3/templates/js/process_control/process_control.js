@@ -7,11 +7,42 @@ function refresh_data(event,ui)
 
 function load_data()
 {
-   json_obj = [process_data_key]
-   
-   ajax_post_get('/ajax/redis_get',json_obj, getQueueEntries, "Initialization Error!!!!") 
-}
+   json_object = {}
+   json_object["controller"]  = controller_id
 
+  
+   ajax_post_get('/manage_processes/load_process',json_object, getQueueEntries, "Initialization Error!!!!") 
+}
+function getQueueEntries(  )
+{
+   
+   var html = ""; 
+   $("#queue_elements").empty();
+   
+   for( i = 0; i < keys.length; i++ )
+   {           
+       if( eto_current_data[i] < 0 )
+       { 
+           eto_current_data[i] = 0.00 
+       }
+       temp_index = i +1;  
+       id = "check"+i
+       html += "<div>"
+       data = '<label for=id'+i+"> "+keys[i]+"    ---   Water Deficient (inch) -->"+eto_current_data[i].toFixed(2) +"</label>"
+      html += '<div class="btn-group" >'
+      html += '<label class=class="btn  btn-toggle" for="check'+i+'">'
+      html +=  '<input type="checkbox" class="btn  btn-toggle"  id="'+id+'"    name="option"   >'+data
+               +'</label>'
+      html += '</div>'
+      html += '</div>'
+    
+             
+   }
+  
+   $("#queue_elements").append (html)
+     
+ }
+     
 
 function getQueueEntries( data )
 {
@@ -19,12 +50,8 @@ function getQueueEntries( data )
    var temp_index;
    var temp
    var html;
-   
-   data = data[process_data_key]
-   data_ref = JSON.parse(data)
-   
 
-   
+   data_ref = data
    $("#queue_elements").empty();
    
       
@@ -40,20 +67,28 @@ function getQueueEntries( data )
    {
        var html = "";
        
-	      html += '<div data-role="controlgroup">';
+	      html += '';
 
        for( i = 0; i < display_list.length; i++ )
        {
+          temp_index = i +1;  
+          id = "check"+i
+          html += "<div>"
+          
+          name = display_list[i]
+	      temp  = data_ref[name]
+          data1 = 'Process: '+temp.name+" -- Enabled: "+temp.enabled+"  -- Active: "+
+                    "    Active: "+temp.active+" --  Error State: "+temp.error 
+          data = '<label for='+id+">"+data1+" </label>"
+          html += '<div class="btn-group" >'
+          html += '<label class=class="btn  btn-toggle" for="'+id+'">'
+          html +=  '<input type="checkbox" class="btn  btn-toggle"  id="'+id+'"    name="option"   >'+data
+               +'</label>'
+          html += '</div>'
+          html += '</div>'
            
              
-             name = display_list[i]
-	         temp  = data_ref[name]
-             temp_index = i +1; 
-             html += "<div id=div"+i+' />'
-	         html +=   '<label for=qid'+i+'  >Process: '+temp.name+" -- Enabled: "+temp.enabled+"  -- Active: "+
-                    "    Active: "+temp.active+" --  Error State: "+temp.error +"</label>"
-	         html +=   '<input  type=checkbox   id=qid'+i+' />';
-             html += "</div>"
+           
         }
         html += "</div>";
         
@@ -68,15 +103,14 @@ function getQueueEntries( data )
    {
        name = display_list[i]
 	   temp  = data_ref[name]
-       $("#qid"+i).checkboxradio();
-       $("#qid"+i).checkboxradio("refresh");
+       id = "#check"+i
        if(temp.enabled == True)
        {
-           $("#qid"+i).prop('checked', true).checkboxradio('refresh');
+           $(id).prop('checked', true)
        }
        else
        {
-           $("#qid"+i).prop('checked', true).checkboxradio('refresh');
+           $(id).prop('checked', false)
         }
 	 
    }   
@@ -90,15 +124,15 @@ function getQueueEntries( data )
 function  change_process_status(event,ui)
 {
 	 
-   
 	  
    for( i=0;i<display_list.length;i++)
    {
 	                  
         name = display_list[i]
 	    temp  = data_ref[name]
+        id = "#check"+i
    
-	     if( $("#qid"+i).is(":checked") == true )
+	     if( $(id).is(":checked") == true )
 	     {
 	         data_ref[name].enabled = true
 	     }
@@ -109,12 +143,14 @@ function  change_process_status(event,ui)
 	     }
      
   }
+
   let temp_json = JSON.stringify(data_ref)
   json_object = {}
-  json_object[command_queue_key] = temp_json
-  ajax_post_confirmation('/ajax/redis_lpush', json_object,"Do you want to start/kill selected processes ?",
+  json_object["controller"]  = controller_id
+  json_object["process_data"] = temp_json
+  ajax_post_confirmation('/manage_processes/change_process', json_object,"Do you want to start/kill selected processes ?",
                             "Changes Made", "Changes Not Made") 
-  //setTimeout(load_data,1000)
+  
 
 }
 
@@ -132,46 +168,5 @@ $(document).ready(
      
 
       
-/*
-
-
-   for( i = 0; i < display_list.length; i++ )
-   {
-     let  name = display_list[i]
-	 let  temp  = data_ref[name]
-     
-     if( temp.error == true)
-     {
-         alert("should not happen")
-        $("#qid"+i).css('background-color', 'red');
-        $("#qid"+i).css('color', 'white');
-        $("#qid"+i).checkboxradio("refresh");       
-         
-     }
-     else if( temp.enabled == true )
-     {    
-        alert(i)
-        $("#div"+i).css({'background-color': 'green'})
-        $("#div"+i).css({'color': 'yellow'})
-        
-          
-     }
-     else
-     {  alert("should not happen")
-        $("#qid"+i).css('background-color', 'yellow');
-        $("#qid"+i).css('color', 'black');
-        $("#qid"+i).checkboxradio("refresh");    
-     }
-     
-      
-  }
-*/
-  
-
-
-
-
-
-
 
 

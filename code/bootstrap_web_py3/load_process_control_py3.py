@@ -3,70 +3,70 @@ import os
 import json
 from datetime import datetime
 import time
-from .base_stream_processing_py3 import Base_Stream_Processing
-from  collections import OrderedDict
-class Load_ETO_Management(Base_Stream_Processing):
 
-   def __init__( self, app, auth, request, app_files, sys_files,
-                   render_template,redis_access,eto_update_table, handlers):
+class Load_Process_Management(object):
+
+   def __init__( self, app, auth, request, render_template,controller_names, handlers):
        self.app      = app
        self.auth     = auth
        self.request  = request
-       self.app_files = app_files
-       self.sys_files = sys_files
        self.render_template = render_template
-       self.eto_update_table = eto_update_table
+       self.controller_names = controller_names
        self.handlers = handlers
        
        #
        #  Adding Rules
        #
 
-       a1 = auth.login_required( self.eto_manage )
-       app.add_url_rule('/eto/eto_manage',"eto_manage",a1)
-            
-       a1 = auth.login_required( self.eto_readings )
-       app.add_url_rule('/eto/eto_readings',"eto_raw_data",a1)
+       a1 = auth.login_required( self.process_control )
+       app.add_url_rule('/start_and_stop_processes/<int:controller_id>',"start_and_stop_processes",a1)
+       
+       # internal callable
+       a1 = auth.login_required( self.load_processes )
+       app.add_url_rule('/manage_processes/load_process',"load_process",a1,methods=["POST"])
+       
+       # internal call
+       a1 = auth.login_required( self.manage_processes )
+       app.add_url_rule('/manage_processes/change_process',"change_process",a1,methods=["POST"])
 
-       
-       a1 = auth.login_required( self.eto_queue )
-       app.add_url_rule('/eto/eto_queue',"eto_queue",a1)
 
-       a1 = auth.login_required( self.rain_queue )
-       app.add_url_rule('/eto/rain_queue',"rain_queue",a1)
-       
-       
-        
-       a1 = auth.login_required( self.eto_setup )
-       app.add_url_rule('/eto/eto_setup',"eto_setup",a1)
-    
-       a1 = auth.login_required( self.weather_station_problems )
-       app.add_url_rule('/eto/eto_exception_values','exception_values',a1)
-       
-       
-        <!–Manage Running Processes –>    
-<div class="modal fade" id="running_processes" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                 
-            </div>
-            <div class="modal-body">
-                <ul >
-                   <li><a href ="/start_and_stop_processes" , target="_self">Start and Stop Running Processes</a></li>        
-                </ul>
-            </div>
-            <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    
-            </div>
-        </div>
-    </div>
-</div>   
-       
 
+   def process_control(self,controller_id):
+      
+      display_list = self.handlers[controller_id]["WEB_DISPLAY_DICTIONARY"].hkeys()
+      return self.render_template("process_control/process_control",
+                                  display_list = display_list, 
+                                  command_queue_key = "WEB_COMMAND_QUEUE",
+                                  process_data_key = "WEB_DISPLAY_DICTIONARY",
+                                  controller_id = controller_id,
+                                  controllers = self.controller_names )
+      
+
+
+   def load_processes(self):
+       param = self.request.get_json()
+      
+       controller = int(param["controller"])
+       
+       if controller >= len(self.controller_names):
+          return "BAD"
+       else:
+          result = self.handlers[controller]["WEB_DISPLAY_DICTIONARY"].hgetall()
+          result_json = json.dumps(result)
+          
+          return result_json.encode()
+          
+
+   def manage_processes(self):
+       param = self.request.get_json()
+      
+       controller = int(param["controller"])
+       process_state_json = param["process_data"]
+       process_state = json.loads(process_state_json)
+       if controller >= len(self.controller_names):
+          return "BAD"
+       else:
+          
+          self.handlers[controller]["WEB_COMMAND_QUEUE"].push(process_state)
+          return json.dumps("SUCCESS")
  

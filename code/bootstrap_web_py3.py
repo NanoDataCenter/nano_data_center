@@ -26,6 +26,7 @@ from bootstrap_web_py3.load_app_sys_files_py3 import Load_App_Sys_Files
 from bootstrap_web_py3.load_linux_management_py3 import Load_Linux_Management
 from bootstrap_web_py3.load_redis_management_py3 import Load_Redis_Management
 from bootstrap_web_py3.load_site_map_py3   import Load_Site_Data
+from bootstrap_web_py3.load_process_control_py3 import Load_Process_Management
 
 class PI_Web_Server(object):
 
@@ -62,9 +63,11 @@ class PI_Web_Server(object):
        self.redis_access = Load_Redis_Access(self.app, self.auth, request )
        Load_App_Sys_Files( self.app, self.auth, request, self.app_files, self.sys_files    )
        Load_Site_Data(self.app, self.auth, render_template)
+       
        self.load_eto_management()
        self.load_linux_monitoring()
        self.load_redis_monitoring()
+       self.load_process_management()
 
        a1 = self.auth.login_required( self.get_index_page )
        self.app.add_url_rule('/index.html',"get_index_page",a1) 
@@ -208,7 +211,7 @@ class PI_Web_Server(object):
                                         relationship = "PACKAGE", label = "REDIS_MONITORING" )
                                            
        package_sets, package_sources = self.qs.match_list(query_list)  
-       print("**************** package_sets",package_sets)
+      
        package = package_sources[0]
        generate_handlers = Generate_Handlers(package,self.redis_site_data)
        data_structures = package["data_structures"]     
@@ -226,8 +229,47 @@ class PI_Web_Server(object):
   
        
        
-        
+   def load_process_management(self): 
+       query_list = []
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+
+       query_list = self.qs.add_match_terminal( query_list, 
+                                        relationship = "PROCESSOR" )
+                                           
+       controller_sets, controller_nodes = self.qs.match_list(query_list)  
+       controller_names = []
+       for i in controller_nodes:
+           controller_names.append(i["name"])
+       controller_names.sort()
+       ds_handlers = []
+       for i in controller_names:
+          ds_handlers.append(self.assemble_process_controller_handlers(i))
+
+   
+       Load_Process_Management(self.app, self.auth, request, render_template, controller_names, ds_handlers) 
+
+ 
+   def assemble_process_controller_handlers(self,label ):
+       query_list = []
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+
+       query_list = self.qs.add_match_relationship( query_list, relationship = "PROCESSOR", label = label )
+       query_list = self.qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"DATA_STRUCTURES"} )
+                                           
+       package_sets, package_sources = self.qs.match_list(query_list)  
+     
+       package = package_sources[0] 
+       data_structures = package["data_structures"]
+       generate_handlers = Generate_Handlers(package,self.redis_site_data)
+       ds_handlers = {}
+       ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
+       ds_handlers["ERROR_HASH"]        = generate_handlers.construct_hash(data_structures["ERROR_HASH"])
+       ds_handlers["WEB_COMMAND_QUEUE"]   = generate_handlers.construct_job_queue_client(data_structures["WEB_COMMAND_QUEUE"])
        
+       ds_handlers["WEB_DISPLAY_DICTIONARY"]   =  generate_handlers.construct_hash(data_structures["WEB_DISPLAY_DICTIONARY"])
+       return ds_handlers
+ 
 if __name__ == "__main__":
 
    file_handle = open("system_data_files/redis_server.json",'r')

@@ -320,7 +320,7 @@
             </div>
             <div class="modal-body">
                 <ul >
-                   <li><a href ="/start_and_stop_processes" , target="_self">Start and Stop Running Processes</a></li>        
+                   <li><a href ="/start_and_stop_processes/0" , target="_self">Start and Stop Running Processes</a></li>        
                 </ul>
             </div>
             <div class="modal-footer">
