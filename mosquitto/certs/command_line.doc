@@ -1,2 +1,0 @@
-sudo mosquitto_sub -v -t 'test/topic' -p 8883 -u remote -P ready2go 
---cert client.crt --key client.key

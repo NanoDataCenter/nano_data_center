@@ -3,6 +3,8 @@ import os
 import json
 from datetime import datetime
 import time
+import zlib
+import datetime
 
 class Load_Process_Management(object):
 
@@ -20,6 +22,14 @@ class Load_Process_Management(object):
 
        a1 = auth.login_required( self.process_control )
        app.add_url_rule('/start_and_stop_processes/<int:controller_id>',"start_and_stop_processes",a1)
+
+       a1 = auth.login_required( self.display_exception_status )
+       app.add_url_rule('/display_exception_status/<int:controller_id>',"display_exception_status",a1)
+       
+       a1 = auth.login_required( self.display_exception_log )
+       app.add_url_rule('/display_exception_log/<int:controller_id>',"display_exception_log",a1)
+
+
        
        # internal callable
        a1 = auth.login_required( self.load_processes )
@@ -69,4 +79,43 @@ class Load_Process_Management(object):
           
           self.handlers[controller]["WEB_COMMAND_QUEUE"].push(process_state)
           return json.dumps("SUCCESS")
+          
+   def display_exception_status(self,controller_id):
+       controller_exceptions = self.handlers[controller_id]["ERROR_HASH"].hgetall()
+       
+       for i in controller_exceptions.keys():
+           temp = zlib.decompress(controller_exceptions[i]["error_output"]).decode()
+           controller_exceptions[i]["error_output"] = temp.split("\n")
+
+       return self.render_template("process_control/exception_status",
+                                  controller_keys = controller_exceptions.keys(),
+                                  controller_exceptions = controller_exceptions,
+                                  controller_id = controller_id,
+                                  controllers = self.controller_names )
+                                  
+                                  
+   def display_exception_log(self,controller_id):
+       temp_list = self.handlers[controller_id]["ERROR_STREAM"].revrange("+","-" , count=20)
+       
+       controller_exceptions = []
+      
+       for j in temp_list:
+           i = j["data"]
+           i["timestamp"] = j["timestamp"]
+           i["datetime"] =  datetime.datetime.fromtimestamp( i["timestamp"]).strftime('%Y-%m-%d %H:%M:%S')
+
+           temp = i["error_output"]
+           if len(temp) > 0:
+               temp = zlib.decompress(i["error_output"]).decode()
+               if len(temp) > 0:
+                   temp = temp.split("\n")
+                   i["error_output"] = temp
+                   controller_exceptions.append(i)
+       
+       return self.render_template("process_control/exception_log",                                 
+                                  log_data = controller_exceptions,
+                                  controller_id = controller_id,
+                                  controllers = self.controller_names )
+                                  
+  
  

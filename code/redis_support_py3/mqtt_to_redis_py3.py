@@ -78,6 +78,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace):
        
 
        self.construct_relations(namespace,namespace_list)
+       
        try:
           data = {}
           data["data"] = msgpack.unpackb(mqtt_data,encoding='utf-8')

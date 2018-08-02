@@ -20,7 +20,7 @@ class MQTT_Redis_Bridge(object):
        self.mqtt_bridge = MQTT_TO_REDIS_BRIDGE_STORE(redis_site_data,100)
        
        self.client = mqtt.Client(client_id="", clean_session=True, userdata=None,  transport="tcp")
-       self.client.tls_set(certfile= "/home/pi/mosquitto/certs/client.crt", keyfile= "/home/pi/mosquitto/certs/client.key", cert_reqs=ssl.CERT_NONE )
+       self.client.tls_set(ca_certs= "/etc/mosquitto/certs/ca.crt", cert_reqs=ssl.CERT_NONE )
        
        redis_handle_pw = redis.StrictRedis(redis_site_data["host"], 
                                            redis_site_data["port"], 

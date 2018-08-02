@@ -263,7 +263,7 @@ class PI_Web_Server(object):
        data_structures = package["data_structures"]
        generate_handlers = Generate_Handlers(package,self.redis_site_data)
        ds_handlers = {}
-       ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
+       ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_reader(data_structures["ERROR_STREAM"])
        ds_handlers["ERROR_HASH"]        = generate_handlers.construct_hash(data_structures["ERROR_HASH"])
        ds_handlers["WEB_COMMAND_QUEUE"]   = generate_handlers.construct_job_queue_client(data_structures["WEB_COMMAND_QUEUE"])
        

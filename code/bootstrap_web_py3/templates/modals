@@ -320,7 +320,10 @@
             </div>
             <div class="modal-body">
                 <ul >
-                   <li><a href ="/start_and_stop_processes/0" , target="_self">Start and Stop Running Processes</a></li>        
+                   <li><a href ="/start_and_stop_processes/0" , target="_self">Start and Stop Running Processes</a></li> 
+                   <li><a href ="/display_exception_status/0" , target="_self">Display Exception Status</a></li> 
+                   <li><a href ="/display_exception_log/0" , target="_self">Display Exception Log</a></li> 
+
                 </ul>
             </div>
             <div class="modal-footer">

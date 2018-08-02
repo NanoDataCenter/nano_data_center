@@ -1,0 +1,74 @@
+
+	
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       False = false
+       True = true
+       None = null
+       controller_id = {{controller_id}}                         
+                               
+      
+
+      </script>
+      <script type="text/javascript">
+
+$("#controller_select").val( {{ controller_id|int  }});
+
+$("#controller_select").bind('click',change_controller)
+ 
+function change_controller(event,ui)
+{
+  current_page = window.location.href
+  
+ 
+  current_page = current_page.slice(0,-2)
+  
+  current_page = current_page+"/"+$("#controller_select")[0].selectedIndex
+  window.location.href = current_page
+}
+ 
+</script>
+  
+{% endblock %}
+
+{% block application %}
+<div class="container">
+<center>
+<h4>Select Linux Controller</h4>
+</center>
+
+<div id="select_tag">
+<center>
+<select id="controller_select">
+  {% for item in controllers %}
+  
+  <option value="{{loop.index0}}">{{item}}</option>
+  {% endfor %}
+  
+</select>
+</center>
+</div>
+<div style="margin-top:20px"></div>
+<h4>Exception Log </h4>
+
+{% for item in log_data %}
+<div style="margin-top:10px"></div>
+<h5>{{item.script}}</h5>
+<ul>  
+<li>script: {{item.script}} </li>
+<li>crc: {{item.crc}} </li>
+<li>timestamp: {{item.timestamp}} </li>
+<li>date time:  {{item.datetime}} </li>
+<li>exception stack:</li>
+<ul>
+{% for line in item.error_output %}
+ <li>{{line}}</li>
+{% endfor %}
+</ul>
+</ul>
+{% endfor %}
+</div>
+
+{% endblock %}

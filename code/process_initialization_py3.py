@@ -92,7 +92,7 @@ if __name__ == "__main__":
    ds_handlers = {}
    ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
    
-   ds_handlers["ERROR_STREAM"].push( data = { "script":"Reboot","crc":0, "error_output" : "" } )
+   ds_handlers["ERROR_STREAM"].push( data = { "script":"Reboot","crc":0, "error_output" : "Process Manager is Rebooting" } )
 
    for i in results:
       print(i)
