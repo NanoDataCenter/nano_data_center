@@ -18,12 +18,12 @@ class Redis_Stream(object):
        
        
    def xrange(self,key, start_timestamp, end_timestamp , count=100):
-       print(key, start_timestamp, end_timestamp , count)
+      
        return self.__send_and_process_range_command__("XRANGE",key,start_timestamp,end_timestamp,count)
        
      
    def xrevrange(self,key, start_timestamp, end_timestamp , count=100):
-       print(key, start_timestamp, end_timestamp , count)
+       
        return self.__send_and_process_range_command__("XREVRANGE",key,start_timestamp,end_timestamp,count)
 
    def xdel(self,id):
@@ -37,11 +37,12 @@ class Redis_Stream(object):
         return self.redis_handle.execute_command("XLEN",key)
        
    def __send_and_process_range_command__(self, command, key, start_time,end_time,count): 
+       
        if count != 0:
           temp = self.redis_handle.execute_command(command, key,start_time,end_time,"COUNT",count)
        else:
           temp = self.redis_handle.execute_command(command, key,start_time,end_time)
-
+      
        return_value = []
        for i in temp:
           return_item= {}

@@ -20,7 +20,7 @@ class MQTT_Redis_Bridge(object):
        self.mqtt_bridge = MQTT_TO_REDIS_BRIDGE_STORE(redis_site_data,100)
        
        self.client = mqtt.Client(client_id="", clean_session=True, userdata=None,  transport="tcp")
-       self.client.tls_set(ca_certs= "/etc/mosquitto/certs/ca.crt", cert_reqs=ssl.CERT_NONE )
+       self.client.tls_set( cert_reqs=ssl.CERT_NONE )
        
        redis_handle_pw = redis.StrictRedis(redis_site_data["host"], 
                                            redis_site_data["port"], 
@@ -34,6 +34,7 @@ class MQTT_Redis_Bridge(object):
        self.connection_flag = False
        while self.connection_flag == False:
            try:
+              print(redis_site_data["mqtt_server"],redis_site_data["mqtt_port"])
               self.client.connect(redis_site_data["mqtt_server"],redis_site_data["mqtt_port"], 60)
            except:
               print("exception")
@@ -50,7 +51,8 @@ class MQTT_Redis_Bridge(object):
 
 # The callback for when a PUBLISH message is received from the server.
    def on_message(self, client, userdata, msg):
-       print(msg.topic+" "+str(msg.payload))
+       print("msg",msg.topic,msg.payload)
+       print(msg.topic,msgpack.unpackb(msg.payload))
        self.mqtt_bridge.store_mqtt_data(msg.topic,msg.payload)
 
 __test__ = False
