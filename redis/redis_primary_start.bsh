@@ -1,4 +1,4 @@
-
+mount /dev/sda1 /home/pi/mount_point/redis
 while [ 1 ]
 do
    
