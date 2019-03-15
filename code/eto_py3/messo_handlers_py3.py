@@ -49,6 +49,7 @@ class Messo_ETO(object):
         # print "keys",keys
         return_value_normal = []
         return_value_gust = []
+        
         for i in range(0, 24):
             temp = {}
             temp["delta_timestamp"] = 1./24.
@@ -64,6 +65,9 @@ class Messo_ETO(object):
             temp["SolarRadiationWatts/m^2"] = station_data["solar_radiation_set_1"][i]
             temp["TC"] = station_data["air_temp_set_1"][i]
             return_value_gust.append(temp)
+            
+        
+        print("messo calculation")
         self.eto_dict.hset("messo:"+self.station+":normal_eto",
                            { "eto":self.calculate_eto.__calculate_eto__( results  =  return_value_normal, alt = self.alt,lat = self.lat ), 
                            "priority":self.priority,"status":"OK" })

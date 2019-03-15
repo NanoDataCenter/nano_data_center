@@ -78,7 +78,7 @@ class Calculate_ETO(object):
             ETH = ETH*24  # equations are per hour we are using %day so multiply by 24 to normalize to hour
 
             
-            #print(ETH,ETH*i["delta_timestamp"])
+            
             ETod = ETod + (ETH*i["delta_timestamp"])
-
+        print(ETod/25.4)
         return ETod / 25.4

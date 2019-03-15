@@ -91,12 +91,12 @@ class Wunder_Personal( object ):
                             "SolarRadiationWatts/m^2":float(i["solarradiation"]) })  #i["wgusti"] )
        
        
-       self.eto_sources.hset("wunder:"+self.pws+":Normal", { "eto":self.calculate_eto.__calculate_eto__(results_normal,self.alt,self.lat),
+       self.eto_sources.hset("wunder:"+self.pws+":Normal", { "eto":self.calculate_eto.__calculate_eto__(results_max,self.alt,self.lat),
                                                             "priority":self.priority,"status":"OK" }       ) 
                                                             ### These sources are for information only                                                          
        self.eto_sources.hset("wunder:"+self.pws+":Gusts" ,  { "eto":self.calculate_eto.__calculate_eto__(results_gust,self.alt,self.lat),
                                                             "priority":100,"status":"OK" }       )  
-       self.eto_sources.hset("wunder:"+self.pws+":Max",   { "eto":self.calculate_eto.__calculate_eto__(results_max,self.alt,self.lat),
+       self.eto_sources.hset("wunder:"+self.pws+":Max",   { "eto":self.calculate_eto.__calculate_eto__(results_normal,self.alt,self.lat),
                                                             "priority":100,"status":"OK" }       )                                                       
                                                             
        self.rain_sources.hset("wunder:"+self.pws ,{"rain":list_data[-1]["precip_totali"],"priority":self.priority})

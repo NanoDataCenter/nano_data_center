@@ -30,7 +30,8 @@ class CIMIS_ETO(object):
         temp = response.read()
         #print("temp",temp)
         data = json.loads(temp.decode())
-        print("made it here")
+        value = float(data["Data"]["Providers"][0]["Records"][0]['DayAsceEto']["Value"])
+        print("*************** cimis made it here",value)
         self.eto_data.hset("CIMIS:"+str(self.station), {"eto":float(
                 data["Data"]["Providers"][0]["Records"][0]['DayAsceEto']["Value"]),
                 "priority":self.cimis_data["priority"],"status":"OK" })

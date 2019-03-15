@@ -8,7 +8,9 @@
          stream_data = {{stream_data}}
          stream_keys = {{stream_keys}}
          titles  = {{titles}}
-         steam_range = {{stream_range}}         
+         steam_range = {{stream_range}} 
+         max_value   = {{max_value}} 
+         min_value   = {{ min_value }}         
      </script>
     
 
@@ -34,7 +36,17 @@
  trace= data["data"]
  layout = data["layout"]
 
- 
+ for( i = 0;i< trace.x.length; i++)
+ {
+    if( trace.y[i] > max_value)
+    {
+       trace.y[i] = max_value
+    }
+    if( trace.y[i] < min_value)
+    {
+       trace.y[i] = min_value
+    }
+ }
  for( i = 0;i< trace.x.length; i++)
  { 
     trace.x[i] = new Date(trace.x[i]*1000)

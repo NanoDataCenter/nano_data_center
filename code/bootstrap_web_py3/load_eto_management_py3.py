@@ -76,6 +76,7 @@ class Load_ETO_Management(Base_Stream_Processing):
        rain_keys.reverse()
    
        eto_data =  self.handlers["ETO_VALUES"].hgetall()
+       
        rain_data = self.handlers["RAIN_VALUES"].hgetall()
        return self.render_template( "eto_templates/eto_readings",eto_data = eto_data,eto_keys = eto_keys, 
                                rain_data = rain_data,rain_keys =rain_keys ) 
@@ -85,6 +86,7 @@ class Load_ETO_Management(Base_Stream_Processing):
    
        temp_data = self.handlers["ETO_HISTORY"].revrange("+","-" , count=1000)
        temp_data.reverse()
+       
        chart_title = " ETO Log For Weather Station : "
        stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
        eto_data =  self.handlers["ETO_VALUES"].hgetall()
@@ -94,7 +96,7 @@ class Load_ETO_Management(Base_Stream_Processing):
        temp_data =[(k, temp_data[k]) for k in sorted(temp_data, key=temp_data.get, reverse=True)]
        stream_keys = []
        for i in temp_data:
-          
+
           stream_keys.append(i[0])
        stream_keys.reverse()
             
@@ -103,7 +105,8 @@ class Load_ETO_Management(Base_Stream_Processing):
                                      stream_keys = stream_keys,
                                      title = stream_keys,
                                      stream_range = stream_range,
-                                     
+                                     max_value = .5,
+                                     min_value = 0.,
                                      
                                      )
 

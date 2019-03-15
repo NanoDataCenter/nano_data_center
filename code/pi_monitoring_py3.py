@@ -198,6 +198,7 @@ class PI_MONITOR( object ):
        f = os.popen("sar -u 60 1 ")
        data = f.readlines()
        f.close()
+       print("data",data)
        fields = data[-1].split()
        for i in range(2,len(fields)):
            return_value[headers[i]] = float(fields[i])
