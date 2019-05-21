@@ -28,7 +28,7 @@ class Construct_Controllers(object):
               
 
        cd.construct_package("DATA_STRUCTURES")      
-       cd.add_stream("ERROR_STREAM",depth=256)
+       cd.add_redis_stream("ERROR_STREAM")
        cd.add_hash("ERROR_HASH")
        cd.add_job_queue("WEB_COMMAND_QUEUE",1)
        cd.add_hash("WEB_DISPLAY_DICTIONARY")
@@ -36,24 +36,24 @@ class Construct_Controllers(object):
 
 
        cd.construct_package("SYSTEM_MONITORING")
-       cd.add_stream("FREE_CPU",depth=ONE_WEEK) # one month of data
-       cd.add_stream("RAM",depth=ONE_WEEK)
-       cd.add_stream("DISK_SPACE",depth=ONE_WEEK) # one month of data
-       cd.add_stream("TEMPERATURE",depth=ONE_WEEK)
-       cd.add_stream("PROCESS_VSZ",depth=ONE_WEEK)
-       cd.add_stream("PROCESS_RSS",depth=ONE_WEEK)
-       cd.add_stream("PROCESS_CPU",depth=ONE_WEEK)
+       cd.add_stream("FREE_CPU") # one month of data
+       cd.add_stream("RAM")
+       cd.add_stream("DISK_SPACE") # one month of data
+       cd.add_stream("TEMPERATURE")
+       cd.add_stream("PROCESS_VSZ")
+       cd.add_stream("PROCESS_RSS")
+       cd.add_stream("PROCESS_CPU")
        
-       cd.add_stream("CPU_CORE",depth=ONE_WEEK)
-       cd.add_stream("SWAP_SPACE",depth=ONE_WEEK)
-       cd.add_stream("IO_SPACE",depth=ONE_WEEK)
-       cd.add_stream("BLOCK_DEV",depth=ONE_WEEK)
-       cd.add_stream("CONTEXT_SWITCHES",depth=ONE_WEEK)
-       cd.add_stream("RUN_QUEUE",depth=ONE_WEEK)       
-       cd.add_stream("DEV",depth=ONE_WEEK) # one month of data
-       cd.add_stream("SOCK",depth=ONE_WEEK) # one month of data
-       cd.add_stream("TCP",depth=ONE_WEEK) # one month of data
-       cd.add_stream("UDP",depth=ONE_WEEK) # one month of data
+       cd.add_stream("CPU_CORE")
+       cd.add_stream("SWAP_SPACE")
+       cd.add_stream("IO_SPACE")
+       cd.add_stream("BLOCK_DEV")
+       cd.add_stream("CONTEXT_SWITCHES")
+       cd.add_stream("RUN_QUEUE")       
+       cd.add_stream("DEV") 
+       cd.add_stream("SOCK") 
+       cd.add_stream("TCP") 
+       cd.add_stream("UDP") 
        cd.close_package_contruction()
           
        bc.end_header_node("PROCESSOR")

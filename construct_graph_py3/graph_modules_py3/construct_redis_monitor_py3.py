@@ -13,12 +13,12 @@ class Construct_Redis_Monitoring(object):
 
        
        cd.construct_package("REDIS_MONITORING")      
-       cd.add_stream("REDIS_MONITOR_KEY_STREAM",depth=ONE_MONTH)
-       cd.add_stream("REDIS_MONITOR_CLIENT_STREAM",depth=ONE_MONTH)
-       cd.add_stream("REDIS_MONITOR_MEMORY_STREAM",depth=ONE_MONTH)
-       cd.add_stream("REDIS_MONITOR_CALL_STREAM",depth=ONE_MONTH)
-       cd.add_stream("REDIS_MONITOR_CMD_TIME_STREAM",depth=ONE_MONTH)
-       cd.add_stream("REDIS_MONITOR_SERVER_TIME",depth = ONE_MONTH)
+       cd.add_stream("REDIS_MONITOR_KEY_STREAM")
+       cd.add_stream("REDIS_MONITOR_CLIENT_STREAM")
+       cd.add_stream("REDIS_MONITOR_MEMORY_STREAM")
+       cd.add_stream("REDIS_MONITOR_CALL_STREAM")
+       cd.add_stream("REDIS_MONITOR_CMD_TIME_STREAM")
+       cd.add_stream("REDIS_MONITOR_SERVER_TIME")
        
        cd.close_package_contruction()
           

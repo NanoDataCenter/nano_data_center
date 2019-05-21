@@ -1,7 +1,7 @@
 
 
-from redis_support_py3.construct_data_handlers_py3 import Stream_Writer
-from redis_support_py3.construct_data_handlers_py3 import Stream_Reader
+
+
 from redis_support_py3.construct_data_handlers_py3 import Redis_Hash_Dictionary
 from redis_support_py3.cloud_handlers_py3 import Cloud_TX_Handler
 from redis_support_py3.load_files_py3  import APP_FILES
@@ -24,7 +24,7 @@ class ETO_Data(object):
 class User_Data_Tables(object):
 
    def __init__(self, redis_site_data ):
-       self.backup_db     = redis_site_data["redis_backup_db"]
+       
        self.redis_site_data = redis_site_data
        self.table_handler = Generate_Table_Handlers( redis_site_data )
        self.redis_handle = self.table_handler.get_redis_handle()
@@ -75,10 +75,12 @@ class User_Data_Tables(object):
        
        for i in new_data.keys():
            
-           data = new_data[i]
-           if i in eto_redis_hash_data:
+           
+           if i in eto_redis_hash_data: #checking to see if entry in old table
              
               data = eto_redis_hash_data[i]   # key old values
+           else:
+              pass  # leave value to default value of zero
            eto_redis_hash_table.hset(i,data )         
            
            

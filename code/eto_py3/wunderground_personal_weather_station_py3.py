@@ -28,6 +28,7 @@ class Wunder_Personal( object ):
      
      
    def compute_previous_day( self):
+       
        if self.eto_sources.hget("wunder:"+self.pws+":Normal") != None:
           print("*********************","am returning wunder")
           return
@@ -35,8 +36,10 @@ class Wunder_Personal( object ):
        year = str(dt.year).zfill(4)
        month = str(dt.month).zfill(2)
        day = str(dt.day).zfill(2)
+       
        url = 'http://api.wunderground.com/api/'+self.access_key+'/history_'+year+month+day+'/q/pws:'+self.pws+'.json'
        response = self.__load_web_page__(url)
+       print("response  ",reponse)
        if response[0] == True:
           return True, self.__parse_data__(response[1])
        else:
@@ -91,12 +94,12 @@ class Wunder_Personal( object ):
                             "SolarRadiationWatts/m^2":float(i["solarradiation"]) })  #i["wgusti"] )
        
        
-       self.eto_sources.hset("wunder:"+self.pws+":Normal", { "eto":self.calculate_eto.__calculate_eto__(results_max,self.alt,self.lat),
+       self.eto_sources.hset("wunder:"+self.pws+":Normal", { "eto":self.calculate_eto.__calculate_eto__(results_normal,self.alt,self.lat),
                                                             "priority":self.priority,"status":"OK" }       ) 
                                                             ### These sources are for information only                                                          
        self.eto_sources.hset("wunder:"+self.pws+":Gusts" ,  { "eto":self.calculate_eto.__calculate_eto__(results_gust,self.alt,self.lat),
                                                             "priority":100,"status":"OK" }       )  
-       self.eto_sources.hset("wunder:"+self.pws+":Max",   { "eto":self.calculate_eto.__calculate_eto__(results_normal,self.alt,self.lat),
+       self.eto_sources.hset("wunder:"+self.pws+":Max",   { "eto":self.calculate_eto.__calculate_eto__(results_max,self.alt,self.lat),
                                                             "priority":100,"status":"OK" }       )                                                       
                                                             
        self.rain_sources.hset("wunder:"+self.pws ,{"rain":list_data[-1]["precip_totali"],"priority":self.priority})

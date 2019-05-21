@@ -16,7 +16,7 @@ class Send_Object(object):
    def send(self,action, **kwargs):
        kwargs["ACTION"] = action
        
-       print("Cloud TX -- action",kwargs)
+       #print("Cloud TX -- action",kwargs)
        
        kwargs_pack = msgpack.packb(kwargs, use_bin_type = True)
        self.redis_handle.lpush(self.transport_queue,kwargs_pack )
@@ -112,7 +112,7 @@ class Cloud_RX_Handler(object):
           i = msgpack.unpackb(i_compress,encoding='utf-8')
           action = i["ACTION"]
           
-          print("action",action,)
+          #print("action",action,)
           if action in self.data_handlers:
               self.data_handlers[action](i)
           else:
@@ -146,13 +146,13 @@ class Cloud_RX_Handler(object):
        
        file_flag,file_type = self.check_for_file(data["key"])
        if file_flag == True:
-          print("check file true",file_type)
+          #print("check file true",file_type)
           if file_type in self.file_path:
               
                file_path = self.file_path[file_type]
                file = field
                temp_data = msgpack.unpackb(data["data"],encoding='utf-8')
-               print("temp_data",temp_data)
+               #print("temp_data",temp_data)
                self.save_raw_file(file_path,file,temp_data)
        
    def hdel(self,data):

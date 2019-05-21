@@ -8,6 +8,7 @@ import msgpack
 
 from .redis_stream_utilities_py3 import Redis_Stream
 from .cloud_handlers_py3 import Cloud_TX_Handler
+from .influxdb_driver.influxdb_driver_py3 import Influx_Handler
 
 class Field_Not_Defined(Exception):
     pass       
@@ -291,8 +292,8 @@ class Stream_List_Reader(object):
              break
        return return_value
        
-'''
-class Stream_Writer(Redis_Stream):
+
+class Stream_Redis_Writer(Redis_Stream):
        
    def __init__(self,redis_handle,   data,key,cloud_handler):
       super().__init__(redis_handle)
@@ -371,22 +372,92 @@ class Stream_Reader(Redis_Stream):
        return data_list
      
        
+'''
+class Influx_Stream_Writer(object):
 
+   def __init__(self,influx_handler,data):
+       self.influx_handler = influx_handler
+       self.measurement = data["measurement"]
+       self.data = data 
        
+   def push(self,data,tags = {}): 
+       influx_data = {}   
+       tags["site"] = str(self.data["site"])
+       tags["index"] = str(self.data["index"])
+       influx_data["fields"] = data
+       influx_data["measurement"] = self.measurement
+
+       self.influx_handler.write_point(influx_data,tags)
+       
+class Stream_Redis_Writer(Redis_Stream):
+       
+   def __init__(self,redis_handle,   data,key,cloud_handler):
+      super().__init__(redis_handle)
+      
+      self.data = data
+     
+      self.redis_handle = redis_handle
+      self.cloud_handler = cloud_handler
+      self.key = key
+      self.depth = data["depth"]
+      self.add_pad = "~"
+      self.redis_stream = Redis_Stream(redis_handle)
+
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       if self.cloud_handler != None:
+          self.cloud_handler.delete(self.data,self.key)     
+
+      
+   def change_add_flag(self, state):
+      if state == True:
+          self.add_pad = ""
+      else:
+          self.add_pad = "~"
+
+
+
+   def push(self,id="*", data={} ):
+       store_dictionary = {}
+       if len(list(data.keys())) == 0:
+           return
+       packed_data  =msgpack.packb(data,use_bin_type = True )
+       out_data = {}
+       out_data["data"] = packed_data
+       self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=out_data )
+
+       if self.cloud_handler != None:
+           self.cloud_handler.stream_write(self.data,  self.depth,id, self.key, out_data ) 
+       
+  
+             
 class Generate_Handlers(object):
    
    def __init__(self,package,site_data  ):
        self.site_data = site_data
        self.package = package
        self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] ) #, decode_responses=True)
+       redis_handle_password = redis.StrictRedis(site_data["host"], site_data["port"], db=site_data["redis_password_db"], decode_responses=True)
+       self.influx_server = redis_handle_password.hget("influx_local_server","server")
+       self.influx_user = redis_handle_password.hget("influx_local_server","user")
+       self.influx_password = redis_handle_password.hget("influx_local_server","password")
+       self.influx_retention = redis_handle_password.hget("influx_local_server", "retention" )
+       self.influx_database = redis_handle_password.hget("influx_local_server","database" )
+       self.influx_handler = None
        self.cloud_handler = Cloud_TX_Handler(self.redis_handle) 
        
    def get_redis_handle(self):
        return self.redis_handle   
 
 
-
-
+   def construct_influx_handler(self):
+ 
+       self.influx_handler =  Influx_Handler(self.influx_server,
+                                             self.influx_user,
+                                             self.influx_password,
+                                             self.influx_database,
+                                             self.influx_retention)
+       self.influx_handler.switch_database(self.influx_database)
          
    def construct_hash(self,data):
          assert(data["type"] == "HASH")
@@ -394,36 +465,44 @@ class Generate_Handlers(object):
          
          return  Redis_Hash_Dictionary( self.redis_handle,data,key,self.cloud_handler )
 
-   # Taking these structures off line
+
    def construct_stream_writer(self,data):
          assert(data["type"] == "STREAM")
-
-         key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-        
-         return Stream_Writer(self.redis_handle,data,key,self.cloud_handler)
+          
          
+         if self.influx_handler == None:
+            self.construct_influx_handler()
+            
+         return Influx_Stream_Writer(self.influx_handler,data)
+
+
+   def construct_redis_stream_writer(self,data):
+         assert(data["type"] == "STREAM_REDIS")
+         key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
+         return Stream_Redis_Writer(self.redis_handle,data,key,self.cloud_handler)
+         
+   '''     
    def construct_stream_reader(self,data):
          assert(data["type"] == "STREAM")
          
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_Reader(self.redis_handle,data,key)
-   '''
+
    def construct_stream_writer(self,data):
          assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_List_Writer(self.redis_handle,data,key,self.cloud_handler)
-
-
+  
    def construct_stream_reader(self,data):
          assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_List_Reader(self.redis_handle,data,key,self.cloud_handler)
+         retun Stream_List_Reader(self.redis_handle,data,key,self.cloud_handler)
    '''
    def construct_job_queue_client(self,data):
          assert(data["type"] == "JOB_QUEUE")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Job_Queue_Client(self.redis_handle,data,key,self.cloud_handler )
-
+                                                                                                                                                                                                                                                                                 
    def construct_job_queue_server(self,data):
          assert(data["type"] == "JOB_QUEUE")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
@@ -527,41 +606,3 @@ if __name__== "__main__":
        dict_table_3 = {"a":3,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
        dict_table_4 = {"a":4,"b":333,"c":"test","d":b'1234', "e":[1,2,3,[4,5],6,7], "f":{"a":{"b":1} }}
 
-       print("testing redis streams")
-       redis_handle.delete("__STREAM__TEST__")
-       stream_writer = Stream_Writer( redis_handle, {"depth":15}, key ="__STREAM__TEST__",cloud_handler = None )
-       stream_writer.push("*",dict_table_1)
-       stream_writer.delete_all()
-       for i in range(0,1000):
-          stream_writer.push("*",dict_table_1)
-          stream_writer.push("*",dict_table_2)
-          stream_writer.push("*",dict_table_3)
-          stream_writer.push("*",dict_table_4)
-          
-       print("******** ending stream writer test")
-       
-       print("******** starting stream reader list")
-       print("testing stream reader test ")
-       stream_reader = Stream_Reader( redis_handle,{},key = "__STREAM__TEST__" )
-       
-
-       #print("t_read", stream_reader.range(time.time()-.25,time.time(),count = 10 ))
-       print("t_read", stream_reader.range("-","+",count = 10 ))
-       print("xrevrange",stream_reader.revrange(time.time(),time.time()-.25, count = 10 ))
-   
-       print("t_read_xx", stream_reader.range(time.time()-.25,time.time(),count = 10 ))
-       print("t_read_xxx", stream_reader.revrange(time.time(),time.time()-.25,count = 10 ))
-       print("t_read_xx", stream_reader.range(time.time()-.25,time.time(),count = 0))
-       print("t_read_xxx", stream_reader.revrange(time.time(),time.time()-.25 ,count = 0))
-       print("xlen",stream_reader.xlen("__STREAM__TEST__"))
-       print("******* ending stream reader list")      
-       
-       
-       redis_handle.delete("__STREAM__TEST__")
-       print("redis_streams gone")
-       
-       
-
-
-   
- 

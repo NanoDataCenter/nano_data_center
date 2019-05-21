@@ -1,9 +1,10 @@
 
 
 
+import time
 
-from .construct_data_handlers_py3 import Stream_Writer
-from .construct_data_handlers_py3 import Stream_Reader
+#from .construct_data_handlers_py3 import Stream_Writer
+
 from .construct_data_handlers_py3 import Redis_Hash_Dictionary
 from .cloud_handlers_py3 import Cloud_TX_Handler
 from .load_files_py3  import APP_FILES
@@ -20,6 +21,8 @@ class Generate_Table_Handlers(object):
        self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_table_db"] )
        self.prefix = "[SITE:"+site_data["site"]+"][TABLE_DATA:"
        self.cloud_handler = Cloud_TX_Handler(self.redis_handle) 
+       
+
        
    def get_redis_handle(self):
        return self.redis_handle   
@@ -45,7 +48,7 @@ class Generate_Table_Handlers(object):
          data["forward"] = True
          key = self.prefix + table_name+"][STREAM:"+stream_name+"]"
          return Stream_Reader(self.redis_handle,data,key)
-   '''
+  
    def construct_stream_writer(self,table_name,stream_name,depth,forward = True):
          data = { "depth":depth}
          data["forward"] = True
@@ -60,4 +63,4 @@ class Generate_Table_Handlers(object):
         key = self.prefix + table_name+"][STREAM_LIST:"+stream_name+"]"
         return Stream_List_Reader(self.redis_handle,data,key)
   
-
+  '''

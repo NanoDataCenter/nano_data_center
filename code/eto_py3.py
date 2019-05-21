@@ -71,7 +71,8 @@ class Eto_Management(object):
             if data["type"] == "MESSO_RAIN":
                data["calculator"] = Messo_Precp(data,self.ds_handlers["ETO_VALUES"],self.ds_handlers["RAIN_VALUES"])
                continue
-            assert(0,"data type is not recognized",data["type"] )
+            assert 0,"data type is not recognized "+data["type"] 
+        
        
 
     def new_day_rollover( self, *parameters ):
@@ -95,12 +96,13 @@ class Eto_Management(object):
                     source["calculator"].compute_previous_day()
                 except Exception as tst:
                    
-                   print("exception",source["name"])
-                   self.ds_handlers["EXCEPTION_VALUES"].hset(source["name"],str(tst))
+                    print("exception",source["name"])
+                    self.ds_handlers["EXCEPTION_VALUES"].hset(source["name"],str(tst))
        
              
 
     def update_eto_bins(self, *parameters):
+        
         if int(self.ds_handlers["ETO_CONTROL"].hget("ETO_UPDATE_FLAG")) == 1:
             return True
         self.ds_handlers["ETO_CONTROL"].hset("ETO_UPDATE_FLAG",1) 
@@ -111,7 +113,7 @@ class Eto_Management(object):
         self.reference_eto = eto
         rain = self.find_rain()
         self.reference_rain = self.find_rain()
-        print("reference_eto",eto)
+        
         for i in self.eto_hash_table.hkeys():
            
            new_value = float(self.eto_hash_table.hget(i)) + float(eto)
@@ -127,12 +129,13 @@ class Eto_Management(object):
     
        eto_data = self.assemble_data("eto",self.ds_handlers["ETO_VALUES"])
        
-       
+       print("log data ",eto_data)
        self.ds_handlers["ETO_HISTORY"].push(data = eto_data) 
        rain_data = self.assemble_data("rain",self.ds_handlers["RAIN_VALUES"])
        
        self.ds_handlers["RAIN_HISTORY"].push(data = rain_data) 
        exception_data = self.ds_handlers["EXCEPTION_VALUES"].hgetall()
+       print("exception data",exception_data)
        self.ds_handlers["EXCEPTION_LOG"].push(data=exception_data)
 
     def find_eto(self):
@@ -141,7 +144,7 @@ class Eto_Management(object):
        ref_priority = 1000000 # large starting number
        eto_value = None
        for i ,data in eto_data.items():
-          
+           print("################## i data @@@@@@@@@@@@@@@@@@@@@",i,data)
            if data["priority"] < ref_priority:
                ref_priority = int(data["priority"])
                eto_value = float(data["eto"])
@@ -212,7 +215,8 @@ def construct_eto_instance(qs, site_data,user_table ):
      
     
 
-    print(package_sets)
+    
+    
     #
     # Replace symbolic keys with actual api keys
     #
@@ -252,20 +256,20 @@ def add_eto_chains(eto, cf):
     cf.insert.log("enabling making_measurement")
     cf.insert.wait_tod_ge(hour=8)
     cf.insert.enable_chains(["update_eto_bins"])
-    cf.insert.wait_tod_ge( hour =  12 )
+    cf.insert.wait_tod_ge( hour =  23 )
     cf.insert.disable_chains(["eto_make_measurements","update_eto_bins","log_sprinkler_data"])
     cf.insert.enable_chains(["log_sprinkler_data"])
     cf.insert.wait_event_count( event = "DAY_TICK" )
     cf.insert.reset()
 
     cf.define_chain("update_eto_bins", False)
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 5)
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 8)
     cf.insert.log("updating eto bins")
     cf.insert.wait_function( eto.update_eto_bins )
     cf.insert.terminate()
     
     cf.define_chain("log_sprinkler_data", False)
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 2)
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
     cf.insert.log("logging sprinkler data")
     cf.insert.one_step( eto.log_sprinkler_data )
     cf.insert.terminate()
@@ -273,9 +277,9 @@ def add_eto_chains(eto, cf):
     
     cf.define_chain("eto_make_measurements", False)
     cf.insert.log("starting make measurement")
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 2)
+    #cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
     cf.insert.one_step( eto.make_measurement )
-    
+    cf.insert.one_step( eto.log_sprinkler_data ) ###
     cf.insert.wait_event_count( event = "MINUTE_TICK",count = 8)
     cf.insert.log("Receiving 8 minute tick")
     
@@ -312,17 +316,21 @@ if __name__ == "__main__":
     data = file_handle.read()
     file_handle.close()
     redis_site = json.loads(data)
- 
+     
     #
     # Setup handle
     # open data stores instance
     user_table = User_Data_Tables(redis_site)
+    
+    user_table.initialize()  
+    
     qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
     
     eto = construct_eto_instance(qs, redis_site,user_table )
     #
     # Adding chains
     #
+
     cf = CF_Base_Interpreter()
     add_eto_chains(eto, cf)
     #

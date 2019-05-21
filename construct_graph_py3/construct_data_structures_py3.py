@@ -26,7 +26,7 @@ class Construct_Data_Structures(object):
         
 
       
-   def add_hash(self,name,forward=True):
+   def add_hash(self,name,forward=False):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name
@@ -35,16 +35,27 @@ class Construct_Data_Structures(object):
        self.properties["data_structures"][name] = properties 
         
       
-   def add_stream(self,name,depth,forward=True):
+   def add_stream(self,measurement, index = 0 ,forward=False):
+       assert(measurement not in self.properties )
+       properties = {}
+       properties["site"] = self.site
+       properties["type"]  = "STREAM"
+       properties["measurement"] = measurement
+       properties["index"] = index
+       properties["forward"] =forward
+       self.properties["data_structures"][measurement] = properties 
+
+   def add_redis_stream(self,name,depth=256,forward=False):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name
-       properties["type"]  = "STREAM"
-       properties["depth"] = depth
+       properties["type"]  = "STREAM_REDIS"
+       properties["depth"]  =depth
        properties["forward"] =forward
        self.properties["data_structures"][name] = properties 
+
        
-   def add_stream_list(self,name,depth,forward=True):
+   def add_stream_list(self,name,depth,forward=False):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name
@@ -53,7 +64,7 @@ class Construct_Data_Structures(object):
        properties["forward"] =forward
        self.properties["data_structures"][name] = properties 
        
-   def add_job_queue(self,name,depth,forward=True):
+   def add_job_queue(self,name,depth,forward=False):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name
