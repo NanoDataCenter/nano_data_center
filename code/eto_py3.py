@@ -279,7 +279,7 @@ def add_eto_chains(eto, cf):
     cf.insert.log("starting make measurement")
     #cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
     cf.insert.one_step( eto.make_measurement )
-    cf.insert.one_step( eto.log_sprinkler_data ) ###
+    ###cf.insert.one_step( eto.log_sprinkler_data ) ### for debug
     cf.insert.wait_event_count( event = "MINUTE_TICK",count = 8)
     cf.insert.log("Receiving 8 minute tick")
     
