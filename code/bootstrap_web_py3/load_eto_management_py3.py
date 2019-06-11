@@ -102,7 +102,7 @@ class Load_ETO_Management(Base_Stream_Processing):
 
           stream_keys.append(i[0])
        stream_keys.reverse()
-            
+       
        return self.render_template( "streams/base_stream",
                                      stream_data = stream_data,
                                      stream_keys = stream_keys,
@@ -122,7 +122,7 @@ class Load_ETO_Management(Base_Stream_Processing):
       
        chart_title = " Rain Log For Weather Station : "
        stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
-       '''
+
        print("stream keys",stream_keys)
        rain_data = self.handlers["RAIN_VALUES"].hgetall()
        print("rain data",rain_data)
@@ -139,7 +139,7 @@ class Load_ETO_Management(Base_Stream_Processing):
           stream_keys.append(i[0])
        stream_keys.reverse()
        print("stream keys ",stream_keys)
-       '''
+     
        stream_data = temp_data
        print("stream_keys",stream_keys)
        return self.render_template( "streams/base_stream",

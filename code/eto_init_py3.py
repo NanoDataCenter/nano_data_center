@@ -80,6 +80,7 @@ class User_Data_Tables(object):
              
               data = eto_redis_hash_data[i]   # key old values
            else:
+              data = 0
               pass  # leave value to default value of zero
            eto_redis_hash_table.hset(i,data )         
            

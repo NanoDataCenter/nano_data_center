@@ -1,4 +1,4 @@
-class Construct_MQTT_HANDLERS(object):
+class Construct_MQTT_Handlers(object):
 
    def __init__(self,bc,cd):
       self.bc = bc
@@ -24,14 +24,27 @@ class Construct_MQTT_HANDLERS(object):
 
    def add_status_panel(self,base_topic):
        properties = {"base_topic":base_topic,"type":"STATION_PANEL"}
-       self.bc.add_info_node( "STATION_PANNEL",base_topic,properties=properties) 
+       messages = {}
+       messages["HEART_BEAT"] = "/HEART_BEAT"
+       messages["GPIO_CHANGE"] ="INPUT/GPIO/CHANGE"
+       properties["SUBSCRIPTION_MESSAGES"] = messages
+       self.bc.add_info_node( "STATION_PANEL",base_topic,properties=properties) 
        
    def add_well_monitor(self,base_topic):
        properties = {"base_topic":base_topic,"type":"WELL_MONITOR"}
+       messages = {}
+       messages["HEART_BEAT"] = "/HEART_BEAT"
+       messages["WELL_MEASUREMENTS"] ="/INPUT/AD1/VALUE/RESPONSE"
+       messages["FLOW_MEASUREMENTS"] = "/INPUT/PULSE_COUNT/VALUE"
+       properties["SUBSCRIPTION_MESSAGES"] = messages
        self.bc.add_info_node( "WELL_MONITOR",base_topic,properties=properties) 
         
    def add_power_supply_monitor(self,base_topic):
        properties = {"base_topic":base_topic,"type":"POWER_SUPPLY"}
+       messages = {}
+       messages["HEART_BEAT"] = "/HEART_BEAT"
+       messages["CURRENT_MEASUREMENT"] ="/INPUT/AD1/VALUE/RESPONSE"
+       properties["SUBSCRIPTION_MESSAGES"] = messages
        self.bc.add_info_node( "POWER_SUPPLY",base_topic,properties=properties) 
         
      

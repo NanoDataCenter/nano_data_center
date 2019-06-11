@@ -63,6 +63,7 @@ class Base_Stream_Processing(object):
        data = {}
       
        x_axis = {
+          "autorange":True,
           "showgrid":True,
           "zeroline":True,
           "ntick": ntick_x,
@@ -71,6 +72,7 @@ class Base_Stream_Processing(object):
           "mirror":"all"
           }
        y_axis = {
+           "autorange":True,
            "showgrid":True,
            "zeroline":True,
            "ntick": ntick_y,

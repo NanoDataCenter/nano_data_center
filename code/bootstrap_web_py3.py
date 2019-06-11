@@ -132,9 +132,9 @@ class PI_Web_Server(object):
        self.ds_handlers["ETO_VALUES"] = generate_handlers.construct_hash(data_structures["ETO_VALUES"])
        self.ds_handlers["RAIN_VALUES"] = generate_handlers.construct_hash(data_structures["RAIN_VALUES"])
        self.ds_handlers["ETO_CONTROL"] = generate_handlers.construct_hash(data_structures["ETO_CONTROL"])
-       self.ds_handlers["ETO_HISTORY"] = generate_handlers.construct_stream_reader(data_structures["ETO_HISTORY"])
-       self.ds_handlers["RAIN_HISTORY"] = generate_handlers.construct_stream_reader(data_structures["RAIN_HISTORY"] )
-       self.ds_handlers["EXCEPTION_LOG"] = generate_handlers.construct_stream_reader(data_structures["EXCEPTION_LOG"] )
+       self.ds_handlers["ETO_HISTORY"] = generate_handlers.construct_redis_stream_reader(data_structures["ETO_HISTORY"])
+       self.ds_handlers["RAIN_HISTORY"] = generate_handlers.construct_redis_stream_reader(data_structures["RAIN_HISTORY"] )
+       self.ds_handlers["EXCEPTION_LOG"] = generate_handlers.construct_redis_stream_reader(data_structures["EXCEPTION_LOG"] )
       
        
        self.redis_access.add_access_handlers("ETO_VALUES",self.ds_handlers["ETO_VALUES"],"Redis_Hash_Dictionary") 
@@ -164,6 +164,7 @@ class PI_Web_Server(object):
        for i in controller_nodes:
            controller_names.append(i["name"])
        controller_names.sort()
+     
        ds_handlers = []
        for i in controller_names:
           ds_handlers.append(self.assemble_controller_handlers(i))
@@ -184,24 +185,24 @@ class PI_Web_Server(object):
        data_structures = package["data_structures"]
        generate_handlers = Generate_Handlers(package,self.redis_site_data)
        ds_handlers = {}
-       ds_handlers["FREE_CPU"] = generate_handlers.construct_stream_reader(data_structures["FREE_CPU"])
-       ds_handlers["RAM"] = generate_handlers.construct_stream_reader(data_structures["RAM"])
-       ds_handlers["DISK_SPACE"] = generate_handlers.construct_stream_reader(data_structures["DISK_SPACE"])
-       ds_handlers["TEMPERATURE"] = generate_handlers.construct_stream_reader(data_structures["TEMPERATURE"])
-       ds_handlers["PROCESS_VSZ"] = generate_handlers.construct_stream_reader(data_structures["PROCESS_VSZ"])
-       ds_handlers["PROCESS_RSS"] = generate_handlers.construct_stream_reader(data_structures["PROCESS_RSS"])
-       ds_handlers["PROCESS_CPU"] = generate_handlers.construct_stream_reader(data_structures["PROCESS_CPU"])
+       ds_handlers["FREE_CPU"] = generate_handlers.construct_redis_stream_reader(data_structures["FREE_CPU"])
+       ds_handlers["RAM"] = generate_handlers.construct_redis_stream_reader(data_structures["RAM"])
+       ds_handlers["DISK_SPACE"] = generate_handlers.construct_redis_stream_reader(data_structures["DISK_SPACE"])
+       ds_handlers["TEMPERATURE"] = generate_handlers.construct_redis_stream_reader(data_structures["TEMPERATURE"])
+       ds_handlers["PROCESS_VSZ"] = generate_handlers.construct_redis_stream_reader(data_structures["PROCESS_VSZ"])
+       ds_handlers["PROCESS_RSS"] = generate_handlers.construct_redis_stream_reader(data_structures["PROCESS_RSS"])
+       ds_handlers["PROCESS_CPU"] = generate_handlers.construct_redis_stream_reader(data_structures["PROCESS_CPU"])
        
-       ds_handlers["CPU_CORE"] = generate_handlers.construct_stream_reader(data_structures["CPU_CORE"])
-       ds_handlers["SWAP_SPACE"] = generate_handlers.construct_stream_reader(data_structures["SWAP_SPACE"])
-       ds_handlers["IO_SPACE"] = generate_handlers.construct_stream_reader(data_structures["IO_SPACE"])
-       ds_handlers["BLOCK_DEV"] = generate_handlers.construct_stream_reader(data_structures["BLOCK_DEV"])
-       ds_handlers["CONTEXT_SWITCHES"] = generate_handlers.construct_stream_reader(data_structures["CONTEXT_SWITCHES"])
-       ds_handlers["RUN_QUEUE"] = generate_handlers.construct_stream_reader(data_structures["RUN_QUEUE"])
-       ds_handlers["DEV"] = generate_handlers.construct_stream_reader(data_structures["DEV"])
-       ds_handlers["SOCK"] = generate_handlers.construct_stream_reader(data_structures["SOCK"])
-       ds_handlers["TCP"] = generate_handlers.construct_stream_reader(data_structures["TCP"])
-       ds_handlers["UDP"] = generate_handlers.construct_stream_reader(data_structures["UDP"])
+       ds_handlers["CPU_CORE"] = generate_handlers.construct_redis_stream_reader(data_structures["CPU_CORE"])
+       ds_handlers["SWAP_SPACE"] = generate_handlers.construct_redis_stream_reader(data_structures["SWAP_SPACE"])
+       ds_handlers["IO_SPACE"] = generate_handlers.construct_redis_stream_reader(data_structures["IO_SPACE"])
+       ds_handlers["BLOCK_DEV"] = generate_handlers.construct_redis_stream_reader(data_structures["BLOCK_DEV"])
+       ds_handlers["CONTEXT_SWITCHES"] = generate_handlers.construct_redis_stream_reader(data_structures["CONTEXT_SWITCHES"])
+       ds_handlers["RUN_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["RUN_QUEUE"])
+       ds_handlers["DEV"] = generate_handlers.construct_redis_stream_reader(data_structures["DEV"])
+       ds_handlers["SOCK"] = generate_handlers.construct_redis_stream_reader(data_structures["SOCK"])
+       ds_handlers["TCP"] = generate_handlers.construct_redis_stream_reader(data_structures["TCP"])
+       ds_handlers["UDP"] = generate_handlers.construct_redis_stream_reader(data_structures["UDP"])
        return ds_handlers
 
    def load_redis_monitoring(self):
@@ -217,12 +218,12 @@ class PI_Web_Server(object):
        data_structures = package["data_structures"]     
  
        ds_handlers = {}
-       ds_handlers["REDIS_MONITOR_KEY_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_KEY_STREAM"])
-       ds_handlers["REDIS_MONITOR_CLIENT_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_CLIENT_STREAM"])
-       ds_handlers["REDIS_MONITOR_MEMORY_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_MEMORY_STREAM"])
-       ds_handlers["REDIS_MONITOR_CALL_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_CALL_STREAM"])
-       ds_handlers["REDIS_MONITOR_CMD_TIME_STREAM"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_CMD_TIME_STREAM"])
-       ds_handlers["REDIS_MONITOR_SERVER_TIME"] = generate_handlers.construct_stream_reader(data_structures["REDIS_MONITOR_SERVER_TIME"])
+       ds_handlers["REDIS_MONITOR_KEY_STREAM"] = generate_handlers.construct_redis_stream_reader(data_structures["REDIS_MONITOR_KEY_STREAM"])
+       ds_handlers["REDIS_MONITOR_CLIENT_STREAM"] = generate_handlers.construct_redis_stream_reader(data_structures["REDIS_MONITOR_CLIENT_STREAM"])
+       ds_handlers["REDIS_MONITOR_MEMORY_STREAM"] = generate_handlers.construct_redis_stream_reader(data_structures["REDIS_MONITOR_MEMORY_STREAM"])
+       ds_handlers["REDIS_MONITOR_CALL_STREAM"] = generate_handlers.construct_redis_stream_reader(data_structures["REDIS_MONITOR_CALL_STREAM"])
+       ds_handlers["REDIS_MONITOR_CMD_TIME_STREAM"] = generate_handlers.construct_redis_stream_reader(data_structures["REDIS_MONITOR_CMD_TIME_STREAM"])
+       ds_handlers["REDIS_MONITOR_SERVER_TIME"] = generate_handlers.construct_redis_stream_reader(data_structures["REDIS_MONITOR_SERVER_TIME"])
 
        Load_Redis_Management(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
                   render_template=render_template, handlers=ds_handlers )    
@@ -263,7 +264,7 @@ class PI_Web_Server(object):
        data_structures = package["data_structures"]
        generate_handlers = Generate_Handlers(package,self.redis_site_data)
        ds_handlers = {}
-       ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_reader(data_structures["ERROR_STREAM"])
+       ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_redis_stream_reader(data_structures["ERROR_STREAM"])
        ds_handlers["ERROR_HASH"]        = generate_handlers.construct_hash(data_structures["ERROR_HASH"])
        ds_handlers["WEB_COMMAND_QUEUE"]   = generate_handlers.construct_job_queue_client(data_structures["WEB_COMMAND_QUEUE"])
        

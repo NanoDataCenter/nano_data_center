@@ -387,7 +387,7 @@ class Influx_Stream_Writer(object):
        influx_data["fields"] = data
        influx_data["measurement"] = self.measurement
 
-       self.influx_handler.write_point(influx_data,tags)
+       print("influx write",self.influx_handler.write_point(influx_data,tags))
        
 class Stream_Redis_Writer(Redis_Stream):
        
@@ -429,7 +429,40 @@ class Stream_Redis_Writer(Redis_Stream):
        if self.cloud_handler != None:
            self.cloud_handler.stream_write(self.data,  self.depth,id, self.key, out_data ) 
        
-  
+class Stream_Redis_Reader(Redis_Stream):
+       
+   def __init__(self,redis_handle,data, key):
+      super().__init__(redis_handle)
+      self.data = data
+      self.redis_handle = redis_handle
+      self.key = key
+
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       if self.cloud_handler != None:
+           self.cloud_handler.delete(self.data, self.key)     
+      
+      
+   def range(self,start_timestamp, end_timestamp , count=100):
+       if isinstance(start_timestamp,str) == False:
+           start_timestamp = int(start_timestamp*1000)
+       if isinstance(end_timestamp,str) == False:
+           end_timestamp = int(end_timestamp*1000)
+
+       data_list = self.xrange(self.key,start_timestamp,end_timestamp, count)
+
+       return data_list
+
+   def revrange(self,start_timestamp, end_timestamp , count=100):
+       if isinstance(start_timestamp,str) == False:
+           start_timestamp = int(start_timestamp*1000)
+       if isinstance(end_timestamp,str) == False:
+           end_timestamp = int(end_timestamp*1000)
+
+
+       data_list = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
+
+       return data_list 
              
 class Generate_Handlers(object):
    
@@ -467,6 +500,8 @@ class Generate_Handlers(object):
 
 
    def construct_stream_writer(self,data):
+         return self.construct_redis_stream_writer(data)
+         
          assert(data["type"] == "STREAM")
           
          
@@ -481,13 +516,13 @@ class Generate_Handlers(object):
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_Redis_Writer(self.redis_handle,data,key,self.cloud_handler)
          
-   '''     
-   def construct_stream_reader(self,data):
-         assert(data["type"] == "STREAM")
+     
+   def construct_redis_stream_reader(self,data):
+         assert(data["type"] == "STREAM_REDIS")
          
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_Reader(self.redis_handle,data,key)
-
+         return Stream_Redis_Reader(self.redis_handle,data,key)
+   '''
    def construct_stream_writer(self,data):
          assert(data["type"] == "STREAM")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"

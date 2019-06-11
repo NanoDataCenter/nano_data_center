@@ -40,14 +40,12 @@ def run_process_to_completion_no_log(command_string ):
            data=myfile.read()
        if data != None:
            
-           data = data.encode()
-           crc = zlib.crc32(data)
-           data = zlib.compress(data)
+           pass
        else:
-            crc = 0
+
             data = ""
  
-       return return_value,crc, data
+       return return_value, data
  
 
 
@@ -90,13 +88,14 @@ if __name__ == "__main__":
    data_structures = package_nodes[0]["data_structures"]
    generate_handlers = Generate_Handlers(package_nodes[0],site_data)
    ds_handlers = {}
-   ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_redis_stream_writer(data_structures["ERROR_STREAM"])
+   ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
    
-   ds_handlers["ERROR_STREAM"].push( data = { "script":"Reboot","crc":0, "error_output" : "Process Manager is Rebooting" } )
+   
+   ds_handlers["ERROR_STREAM"].push( data = { "script":"Reboot", "error_output" : "Process Manager is Rebooting" } )
 
    for i in results:
       print(i)
-      ds_handlers["ERROR_STREAM"].push( data = { "script":i[1],"crc":i[0][1], "error_output" : i[0][2] } )
+      ds_handlers["ERROR_STREAM"].push( data = { "script":i[1], "error_output" : i[0][1] } )
       
    
    
@@ -106,7 +105,7 @@ if __name__ == "__main__":
 
    for i in results:
       print(i)
-      ds_handlers["ERROR_STREAM"].push( data = { "script":i[1],"crc":i[0][1], "error_output" : i[0][2] } )
+      ds_handlers["ERROR_STREAM"].push( data = { "script":i[1], "error_output" : i[0][1] } )
        
        
        

@@ -1,5 +1,22 @@
-{% extends "streams/base_stream" %}
+{% extends "base_template"  %}
+{% block application_javascript %}
+<script src="/static/js/plotly-latest.min.js"></script> 
+ 
 
+      <script type="text/javascript">
+         True = true
+         False = false
+         stream_data = {{stream_data}}
+         stream_keys = {{stream_keys}}
+         titles  = {{titles}}
+         steam_range = {{stream_range}} 
+                 
+     </script>
+    
+
+
+
+{% endblock %}
 {% block application_header %}
 <div style="margin-top:20px"></div>
 <div id="controller_tag">
@@ -37,5 +54,37 @@ function change_controller(event,ui)
 }
  
 </script>
-    
 {% endblock %}
+{% block application %}
+
+{% for i in stream_range %}
+
+<div style="margin-top:50px"></div>
+<div class="container">
+
+
+
+<div id="{{title[i].replace(".","_").replace("-","_")}}" style="width:1200px;height:600px;"></div>
+
+ <script>
+
+ data = stream_data[stream_keys[{{i}}]]
+ trace= data["data"]
+ layout = data["layout"]
+
+ 
+ for( i = 0;i< trace.x.length; i++)
+ { 
+    trace.x[i] = new Date(trace.x[i]*1000)
+ } 
+
+ Plotly.newPlot("{{title[i].replace(".","_").replace("-","_")}}", [trace],layout);
+    
+</script>
+
+</div>
+
+
+{% endfor %}
+{% block application_footer %}{% endblock %}
+{% endblock %}    

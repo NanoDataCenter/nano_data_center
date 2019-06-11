@@ -78,7 +78,7 @@ function getQueueEntries( data )
           name = display_list[i]
 	      temp  = data_ref[name]
           data1 = 'Process: '+temp.name+" -- Enabled: "+temp.enabled+"  -- Active: "+
-                    "    Active: "+temp.active+" --  Error State: "+temp.error 
+                    temp.active+" --  Error State: "+temp.error 
           data = '<label for='+id+">"+data1+" </label>"
           html += '<div class="btn-group" >'
           html += '<label class=class="btn  btn-toggle" for="'+id+'">'

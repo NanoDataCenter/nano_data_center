@@ -36,6 +36,7 @@ class Construct_Data_Structures(object):
         
       
    def add_stream(self,measurement, index = 0 ,forward=False):
+
        assert(measurement not in self.properties )
        properties = {}
        properties["site"] = self.site

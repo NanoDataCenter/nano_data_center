@@ -130,13 +130,15 @@ class Eto_Management(object):
        eto_data = self.assemble_data("eto",self.ds_handlers["ETO_VALUES"])
        
        print("log data ",eto_data)
-       self.ds_handlers["ETO_HISTORY"].push(data = eto_data) 
+       if len(eto_data.keys()) > 0:
+          self.ds_handlers["ETO_HISTORY"].push(data = eto_data) 
        rain_data = self.assemble_data("rain",self.ds_handlers["RAIN_VALUES"])
-       
-       self.ds_handlers["RAIN_HISTORY"].push(data = rain_data) 
+       if len(rain_data.keys()) > 0:      
+           self.ds_handlers["RAIN_HISTORY"].push(data = rain_data) 
        exception_data = self.ds_handlers["EXCEPTION_VALUES"].hgetall()
        print("exception data",exception_data)
-       self.ds_handlers["EXCEPTION_LOG"].push(data=exception_data)
+       if len(eto_data.keys()) > 0:
+            self.ds_handlers["EXCEPTION_LOG"].push(data=exception_data)
 
     def find_eto(self):
        eto_data = self.ds_handlers["ETO_VALUES"].hgetall()
@@ -236,7 +238,7 @@ def construct_eto_instance(qs, site_data,user_table ):
 
 def add_eto_chains(eto, cf):
 
-    cf.define_chain("test_generator",True)
+    cf.define_chain("test_generator",False)
     cf.insert.log("send Day Tick")
     cf.insert.send_event("DAY_TICK")
     cf.insert.terminate()
@@ -251,10 +253,10 @@ def add_eto_chains(eto, cf):
 
     cf.define_chain("enable_measurement", True)
     cf.insert.log("starting enable_measurement")
-    cf.insert.wait_tod_ge( hour =  1 )
+    cf.insert.wait_tod_ge( hour =  8 )
     cf.insert.enable_chains(["eto_make_measurements"])
     cf.insert.log("enabling making_measurement")
-    cf.insert.wait_tod_ge(hour=8)
+    cf.insert.wait_tod_ge(hour=11)
     cf.insert.enable_chains(["update_eto_bins"])
     cf.insert.wait_tod_ge( hour =  23 )
     cf.insert.disable_chains(["eto_make_measurements","update_eto_bins","log_sprinkler_data"])
@@ -277,9 +279,12 @@ def add_eto_chains(eto, cf):
     
     cf.define_chain("eto_make_measurements", False)
     cf.insert.log("starting make measurement")
-    #cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
+    
     cf.insert.one_step( eto.make_measurement )
-    ###cf.insert.one_step( eto.log_sprinkler_data ) ### for debug
+    #cf.insert.wait_event_count( event = "MINUTE_TICK",count = 2)
+    #cf.insert.log("starting logging")
+    #cf.insert.one_step( eto.log_sprinkler_data ) ### for debug
+    #cf.insert.log("logging done")
     cf.insert.wait_event_count( event = "MINUTE_TICK",count = 8)
     cf.insert.log("Receiving 8 minute tick")
     

@@ -144,7 +144,7 @@ class System_Control(object):
        data_structures = package_node["data_structures"]
        print(data_structures.keys())
        self.ds_handlers = {}
-       self.ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
+       self.ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_redis_stream_writer(data_structures["ERROR_STREAM"])
        self.ds_handlers["ERROR_HASH"]        = generate_handlers.construct_hash(data_structures["ERROR_HASH"])
        self.ds_handlers["WEB_COMMAND_QUEUE"]   = generate_handlers.construct_job_queue_server(data_structures["WEB_COMMAND_QUEUE"])
        
@@ -152,7 +152,9 @@ class System_Control(object):
  
        self.startup_list = []
        self.process_hash = {}
-      
+       keys = self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hkeys()
+       for i in keys:
+           self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hdelete(i)
        for command in self.command_list:
           temp_class = Manage_A_Python_Process( command_string = command["file"], restart_flag = command["restart"] )
           python_script = temp_class.get_script()
@@ -176,14 +178,12 @@ class System_Control(object):
                with open(temp.error_file_rollover, 'r') as myfile:
                      data=myfile.read()
                if data != None:
-                    data = data.encode()
-                    crc = zlib.crc32(data)
-                    data = zlib.compress(data)
+                  pass
                else:
-                    crc = 0
+                    
                     data = ""
-               self.ds_handlers["ERROR_HASH"].hset( script , { "script": script,"crc":crc, "error_output" : data } )
-               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
+               self.ds_handlers["ERROR_HASH"].hset( script , { "script": script, "error_output" : data } )
+               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script, "error_output" : data } )
                temp.error = False
 
    
@@ -199,14 +199,12 @@ class System_Control(object):
                with open(temp.error_file_rollover, 'r') as myfile:
                      data=myfile.read()
                if data != None:
-                    data = data.encode()
-                    crc = zlib.crc32(data)
-                    data = zlib.compress(data)
+                   pass
                else:
-                    crc = 0
+                    
                     data = ""
-               self.ds_handlers["ERROR_HASH"].hset( script , { "script": script,"crc":crc, "error_output" : data } )
-               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script,"crc":crc, "error_output" : data } )
+               self.ds_handlers["ERROR_HASH"].hset( script , { "script": script, "error_output" : data } )
+               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script, "error_output" : data } )
                temp.rollover_flag = False
       
        self.update_web_display()
@@ -243,18 +241,12 @@ class System_Control(object):
 
                 
    def update_web_display(self):
-     
-       old_keys = self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hkeys()
+       
+
        for script in self.startup_list:
            temp = self.process_hash[script]
            self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hset(script,{"name":script,"enabled":temp.enabled,"active":temp.active,"error":temp.error})
       
-       new_keys = self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hkeys()
-       keys_to_delete_set = set(old_keys).difference(set(new_keys))
-       keys_to_delete_list = set(keys_to_delete_set)
-       for i in keys_to_delete_list:
-          sekf.ds_handlers["WEB_DISPLAY_DICTIONARY"].hdelete(i)
- 
  
 
   
@@ -319,7 +311,9 @@ if __name__ == "__main__":
    package_sets, package_nodes = qs.match_list(query_list)  
    
    print("package_nodes",package_nodes)
+  
    generate_handlers = Generate_Handlers(package_nodes[0],site_data)
+ 
    system_control = System_Control(processor_nodes[0],package_nodes[0],generate_handlers)
    cf = CF_Base_Interpreter()
    system_control.add_chains(cf)

@@ -44,6 +44,7 @@ class Load_Process_Management(object):
    def process_control(self,controller_id):
       
       display_list = self.handlers[controller_id]["WEB_DISPLAY_DICTIONARY"].hkeys()
+   
       return self.render_template("process_control/process_control",
                                   display_list = display_list, 
                                   command_queue_key = "WEB_COMMAND_QUEUE",
@@ -81,12 +82,13 @@ class Load_Process_Management(object):
           return json.dumps("SUCCESS")
           
    def display_exception_status(self,controller_id):
-       controller_exceptions = self.handlers[controller_id]["ERROR_HASH"].hgetall()
-       
-       for i in controller_exceptions.keys():
-           temp = zlib.decompress(controller_exceptions[i]["error_output"]).decode()
-           controller_exceptions[i]["error_output"] = temp.split("\n")
 
+       controller_exceptions = self.handlers[controller_id]["ERROR_HASH"].hgetall()
+
+       for i in controller_exceptions.keys():
+           temp = controller_exceptions[i]["error_output"]
+           controller_exceptions[i]["error_output"] = [temp]
+      
        return self.render_template("process_control/exception_status",
                                   controller_keys = controller_exceptions.keys(),
                                   controller_exceptions = controller_exceptions,
@@ -106,9 +108,10 @@ class Load_Process_Management(object):
 
            temp = i["error_output"]
            if len(temp) > 0:
-               temp = zlib.decompress(i["error_output"]).decode()
+               temp = i["error_output"]
                if len(temp) > 0:
-                   temp = temp.split("\n")
+                   temp = [temp]
+                   #temp = temp.split("\n")
                    i["error_output"] = temp
                    controller_exceptions.append(i)
        

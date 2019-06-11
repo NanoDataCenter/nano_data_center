@@ -367,7 +367,7 @@ class PI_MONITOR( object ):
        cf.insert.one_step(self.assemble_net_tcp)
        cf.insert.one_step(self.assemble_net_udp)
        cf.insert.log("ending processor measurements")
-       cf.insert.wait_event_count( event = "HOUR_TICK",count = 1)
+       cf.insert.wait_event_count( event = "MINUTE_TICK",count = 15)
        cf.insert.reset()
        cf.execute()
         

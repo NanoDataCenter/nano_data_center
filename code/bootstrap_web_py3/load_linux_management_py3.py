@@ -80,7 +80,7 @@ class Load_Linux_Management(Base_Stream_Processing):
 
 
    def free_cpu(self,controller_id):
-       print("made it here",controller_id)
+       
        
        temp_data = self.handlers[controller_id]["FREE_CPU"].revrange("+","-" , count=1000)
        temp_data.reverse()
@@ -88,7 +88,7 @@ class Load_Linux_Management(Base_Stream_Processing):
        
        stream_keys,stream_range,stream_data = self.format_data(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
        
-      
+       
        return self.render_template( "streams/stream_multi_controller",
                                      stream_data = stream_data,
                                      stream_keys = stream_keys,
@@ -96,7 +96,8 @@ class Load_Linux_Management(Base_Stream_Processing):
                                      stream_range = stream_range,
                                      controllers = self.controllers,
                                      controller_id = controller_id
-                                     
+                              
+             
                                      )
 
 

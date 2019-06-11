@@ -88,7 +88,7 @@ if __name__ == "__main__":
            try:
                fileName, fileExtension = os.path.splitext(i)
            
-               forward = {"forward":True}
+               forward = {"forward":False}
                if fileExtension == ".json":
                    f = open(path+i, 'r')
                    data = f.read()
@@ -125,19 +125,24 @@ if __name__ == "__main__":
    cloud_handler_tx = Cloud_TX_Handler(redis_handle)
    files = [f for f in listdir(app_files)]
 
+   
+   
+  
    # load app files
    load_file( files,app_files,key+"APP]",cloud_handler_tx )
 
-  
 
    # load sys files
 
    files = [ f for f in listdir(sys_files)  ]
+  
    load_file( files,sys_files, key+"SYS]",cloud_handler_tx )
+
 
    # load limit files
 
    files = [ f for f in listdir(limit_files)  ]
+  
    load_file( files,limit_files,key+"LIMITS]",cloud_handler_tx )
    
 

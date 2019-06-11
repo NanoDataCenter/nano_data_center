@@ -46,19 +46,21 @@ class Load_Redis_Management(Base_Stream_Processing):
 
 
    def redis_key_stream(self):
-      
+       
        temp_data = self.handlers["REDIS_MONITOR_KEY_STREAM"].revrange("+","-" , count=1000)
        temp_data.reverse()
        chart_title = " Number of Redis Key in : "
-       
+      
        stream_keys,stream_range,stream_data = self.format_data_specific_key(temp_data,title=chart_title,title_y="Deg F",title_x="Date",specific_key = "keys")
        
-      
+       
        return self.render_template( "streams/base_stream",
                                      stream_data = stream_data,
                                      stream_keys = stream_keys,
                                      title = stream_keys,
                                      stream_range = stream_range,
+                                     max_value = 10000000,
+                                     min_value = 0
                                      
                                      )
 
@@ -81,6 +83,8 @@ class Load_Redis_Management(Base_Stream_Processing):
                                      stream_keys = stream_keys,
                                      title = stream_keys,
                                      stream_range = stream_range,
+                                     max_value = 10000000,
+                                     min_value = 0
                                      
                                      )
 
@@ -99,6 +103,9 @@ class Load_Redis_Management(Base_Stream_Processing):
                                      stream_keys = stream_keys,
                                      title = stream_keys,
                                      stream_range = stream_range,
+                                     max_value = 10000000,
+                                     min_value = 0
+
                                      
                                      )
 
@@ -107,17 +114,20 @@ class Load_Redis_Management(Base_Stream_Processing):
 
    def redis_call_stream(self):
        temp_data = self.handlers["REDIS_MONITOR_CALL_STREAM"].revrange("+","-" , count=1000)
+       print(temp_data)
        temp_data.reverse()
        chart_title = " Number of Redis Command Calls/hour : "
        
        stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
        
-      
+       print("made it here",stream_keys,stream_data)
        return self.render_template( "streams/base_stream",
                                      stream_data = stream_data,
                                      stream_keys = stream_keys,
                                      title = stream_keys,
                                      stream_range = stream_range,
+                                     max_value = 10000000,
+                                     min_value = 0
                                      
                                      )
 
@@ -136,6 +146,8 @@ class Load_Redis_Management(Base_Stream_Processing):
                                      stream_keys = stream_keys,
                                      title = stream_keys,
                                      stream_range = stream_range,
+                                     max_value = 10000000,
+                                     min_value = 0
                                      
                                      )
 
@@ -154,6 +166,8 @@ class Load_Redis_Management(Base_Stream_Processing):
                                      stream_keys = stream_keys,
                                      title = stream_keys,
                                      stream_range = stream_range,
+                                     max_value = 10000000,
+                                     min_value = 0
                                      
                                      )
        
