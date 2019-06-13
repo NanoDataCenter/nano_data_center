@@ -1,0 +1,25 @@
+
+
+<div id=edit_panel>
+  <div id="master_save">
+       <h3 id=edit_panel_header> Modify Setup For Schedule </h3>
+       <div>
+           <input type="button" id = "edit_panel_save" value="Save"  data-inline="true"  />
+           <input type="button" id = "edit_panel_cancel" value="Cancel" data-inline="true"  />
+       </div>
+  </div>
+
+  <div id="choice-0">
+     <label for="select-choice-0" class="select"><h3>Select Action:</h3></label>
+        <select  name="select-choice-0" id="function_choice">
+            <option value=0>Edit Steps</option>
+            <option value=1>Edit Start Time</option>
+
+             </select>
+   </div>
+
+   {% include 'irrigation_configuration/edit_schedule_start_time' %}
+   {% include 'irrigation_configuration/edit_steps' %}
+</div>
+   {% include 'irrigation_configuration/edit_a_step' %}
+   {% include 'irrigation_configuration/edit_a_valve' %}

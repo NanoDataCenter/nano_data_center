@@ -1,0 +1,65 @@
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+  
+  <script type="text/javascript">
+{% include  "js/irrigation_configuration/ajax_functions.js" %}    
+</script> 
+        <script  type="text/javascript">
+
+            schedule_data = {{ schedule_data_json }}
+            schedule_list = Object.keys(schedule_data)
+            pin_list      = {{ pin_list }}
+
+      </script>
+
+
+         <script type="text/javascript">
+            template_type = "add"
+         </script>
+
+
+
+     <script type="text/javascript">
+     
+     {% include  "js/irrigation_configuration/edit_schedule_main.js" %}
+
+     {% include  "js/irrigation_configuration/edit_schedule.js" %}
+     {% include  "js/irrigation_configuration/edit_schedule_start_time.js" %}
+     {% include  "js/irrigation_configuration/edit_schedule_edit_steps.js" %}
+     {% include  "js/irrigation_configuration/edit_schedule_edit_a_step.js" %}
+     {% include  "js/irrigation_configuration/edit_a_valve.js" %}
+
+    </script>
+
+ 
+     
+{% endblock %}
+
+
+{% block application %}
+<div class="container">
+   <div id="define-schedule">
+
+    <fieldset data-role="controlgroup">
+        <legend>Select Irrigation Schedule to Edit</legend>
+        {% for item in schedule_list %}
+          <input type="radio"  name="edit" id="{{item}}" >
+          <label for="{{item}}">{{item}}</label><br>
+       {% endfor %}
+       <input type="button" id = "action_button" value="Edit Selected Irrigation Schedule" />
+    </fieldset>
+    </div>
+   
+
+{% include 'irrigation_configuration/edit_a_panel' %}
+{% endblock %}
+
+</div><!-- /containter -->
+</html>
+</body>
+
