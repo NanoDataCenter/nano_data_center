@@ -120,7 +120,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <h5 class="modal-title" id="accountModalLabel">Irrigation Statistics</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -147,7 +147,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <h5 class="modal-title" id="accountModalLabel">Irrigation Configuration</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -155,13 +155,11 @@
             </div>
             <div class="modal-body">
                 <ul >
-                   <li><a href="/add_schedule"               target="_self">Add  Schedule </a></li>
+                   <li><a href="/create_schedule"               target="_self">Create  Schedule </a></li>
                    <li><a href="/copy_schedule"               target="_self">Copy Schedule </a></li>
                    <li><a href="/delete_schedules"           target="_self">Delete Schedule </a></li>
                    <li><a href="/edit_schedules"             target="_self">Edit Schedule </a></li>
-                   <li><a href ='/configure_resistance_limits/0' target="_self">Coil Resistance Limits</a></li>
-                    <li><a href ='/configure_irrigation_limits/0' target="_self">Tag Irrigation Limits</a></li>
-                    <li><a href="/system_actions"   target="_self">Configure System Actions </a></li>
+                   <li><a href="/system_actions"   target="_self">Configure System Actions </a></li>
         
                 </ul>
             </div>
@@ -177,7 +175,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <h5 class="modal-title" id="accountModalLabel">Moisture Diagnostics</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -285,7 +283,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <h5 class="modal-title" id="accountModalLabel">PLC Status</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -312,7 +310,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <h5 class="modal-title" id="accountModalLabel">Manage Running Processes</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -338,7 +336,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="accountModalLabel">ETO Functons</h5>
+                <h5 class="modal-title" id="accountModalLabel">Site Map</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="close">
                     <span aria-hidden="true">&times;</span>
                 </button>

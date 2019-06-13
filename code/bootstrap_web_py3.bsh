@@ -1,0 +1,11 @@
+
+while [ 1 ]
+do
+   echo "executing process_control interface"
+   python3 bootstrap_web_py3.py 2>  /tmp/bootstrap_web_py3.err 
+   
+   sleep 10
+   echo "dumping error file"
+   mv /tmp/bootstrap_web_py3.err  /tmp/bootstrap_web_py3.errr
+
+done

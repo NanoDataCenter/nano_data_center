@@ -1,0 +1,55 @@
+
+
+
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+  
+  <script type="text/javascript">
+{% include  "js/irrigation_configuration/ajax_functions.js" %}    
+</script> 
+ <script type="text/javascript">
+{% include  "js/irrigation_configuration/delete_schedule.js" %}    
+</script>
+   
+        <script  type="text/javascript">
+
+            schedule_data = {{ schedule_data_json }}
+            schedule_list = Object.keys(schedule_data)
+           
+
+ </script>
+ 
+     
+{% endblock %}
+
+
+{% block application %}
+<div class="container">
+ <div id="main_panel">
+ 
+    <fieldset data-role="controlgroup">
+        <legend>Select Irrigation Schedules to Delete</legend>
+        {% for item in schedule_list %}
+          <input type="radio" name="delete" id="{{item}}" >
+          <label for="{{item}}">{{item}}</label><br>
+       {% endfor %}
+    </fieldset>
+    <input type="button" id = "action_button" value="Delete Selected Irrigation Schedule" />
+
+
+
+
+ 
+ </div>
+{% endblock %}
+
+
+
+
+
+

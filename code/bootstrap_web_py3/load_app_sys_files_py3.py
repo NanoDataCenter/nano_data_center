@@ -17,7 +17,9 @@ class Load_App_Sys_Files(object):
        app.add_url_rule("/ajax/get_app_file/<path:file_name>","get_app_file",a1)
        a1 = auth.login_required( self.save_app_file )
        app.add_url_rule("/ajax/save_app_file/<path:file_name>","save_app_file",a1,methods=["POST"])
-              
+       a1 = auth.login_required( self.save_sys_file )
+       app.add_url_rule("/ajax/save_sys_file/<path:file_name>","save_sys_file",a1,methods=["POST"])
+               
 
 
    def get_system_file(self, file_name):   
@@ -33,3 +35,7 @@ class Load_App_Sys_Files(object):
        self.app_files.save_file(file_name, json_object );
        return json.dumps('SUCCESS')
 
+   def save_sys_file(self,file_name):
+       json_object = self.request.json
+       self.sys_files.save_file(file_name, json_object );
+       return json.dumps('SUCCESS')

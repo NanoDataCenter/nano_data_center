@@ -27,6 +27,7 @@ from bootstrap_web_py3.load_linux_management_py3 import Load_Linux_Management
 from bootstrap_web_py3.load_redis_management_py3 import Load_Redis_Management
 from bootstrap_web_py3.load_site_map_py3   import Load_Site_Data
 from bootstrap_web_py3.load_process_control_py3 import Load_Process_Management
+from bootstrap_web_py3.load_configuration_py3 import Load_Configuration_Data
 
 class PI_Web_Server(object):
 
@@ -68,6 +69,7 @@ class PI_Web_Server(object):
        self.load_linux_monitoring()
        self.load_redis_monitoring()
        self.load_process_management()
+       self.load_configuration_management()
 
        a1 = self.auth.login_required( self.get_index_page )
        self.app.add_url_rule('/index.html',"get_index_page",a1) 
@@ -270,6 +272,11 @@ class PI_Web_Server(object):
        
        ds_handlers["WEB_DISPLAY_DICTIONARY"]   =  generate_handlers.construct_hash(data_structures["WEB_DISPLAY_DICTIONARY"])
        return ds_handlers
+       
+   def load_configuration_management(self):
+       Load_Configuration_Data(self.app, self.auth,  render_template,request, self.app_files,self.sys_files)
+
+
  
 if __name__ == "__main__":
 
