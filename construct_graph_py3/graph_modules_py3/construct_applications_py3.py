@@ -11,7 +11,7 @@ class Construct_Applications(object):
        bc.add_header_node("APPLICATION_SUPPORT")
        Construct_Weather_Stations(bc,cd)
        Construct_MQTT_Handlers(bc,cd)
-       #Construct_Scheduling(bc,cd)
+       Construct_Scheduling(bc,cd)
        #Construct_Irrigation(bc,cd)
        #Construct_Data_Acquisition(bc,cd)
        bc.end_header_node("APPLICATION_SUPPORT")

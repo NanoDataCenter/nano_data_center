@@ -9,15 +9,9 @@ class Construct_Weather_Stations(object):
       cd.add_hash("EXCEPTION_VALUES")
       cd.add_hash("RAIN_VALUES")
       cd.add_hash("ETO_VALUES")
-      cd.add_redis_stream("ETO_HISTORY")
-      cd.add_redis_stream("RAIN_HISTORY")
-      cd.add_redis_stream("EXCEPTION_LOG") 
+ 
       cd.close_package_contruction()
-      #self.add_station_wunderground()
-      self.add_station_cimis_satellite()
-      self.add_station_cimis()
-      #self.add_station_messo_west_sruc1_eto()
-      #self.add_station_messo_west_sruc1_rain()
+
       bc.end_header_node("WEATHER_STATIONS")
 
    def add_station_wunderground(self):

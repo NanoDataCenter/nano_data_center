@@ -51,7 +51,7 @@ class BASIC_FILES( object ):
 
     def delete_file(self, name):
         self.hash_driver.hdelete(name)
-
+        os.remove(self.path+name)
     
         
     def save_file(self, name, data):
@@ -59,6 +59,7 @@ class BASIC_FILES( object ):
         json_data = json.dumps(data)
         f.write(json_data)
         self.hash_driver.hset( name,json_data)
+        f.close()
 
     def load_file(self, name):
         return json.loads(self.hash_driver.hget(name))
