@@ -1,0 +1,52 @@
+<html>
+<head>
+	  <meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+   <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+
+   
+   
+   {% set title = 'Control Functions' %}
+   {% set header_name = 'Display Pending Irrigation Operations' %}
+
+
+   {% set header_name = title %}
+	  <title>{{title_name}}</title>
+   {% include 'common_setup' %}
+	
+	
+	 <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+
+  </script>
+
+  <script type="text/javascript" >
+      {% include "js/irrigation_functions/display_work_queue.js" %}
+  </script>
+
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+       
+   {% include 'menu' %}
+   <!-- /header -->
+
+       
+   <h3>Pending Irrigation Actions</h3>
+   <button type="button" id="refresh_c">Refresh Results</button>
+   <div id="queue_elements">
+   </div>
+
+
+
+  
+</div>    
+    
+
+
+</div><!-- /page -->
+</html>
+

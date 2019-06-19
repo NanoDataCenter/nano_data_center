@@ -3,13 +3,14 @@
 # File: eto.py
 #
 #
+
 from eto_py3.wunderground_personal_weather_station_py3 import Wunder_Personal
 from eto_py3.messo_handlers_py3 import Messo_ETO
 from eto_py3.messo_handlers_py3 import Messo_Precp
 from eto_py3.cimis_spatial_py3 import CIMIS_SPATIAL
 from eto_py3.cimis_handlers_py3 import CIMIS_ETO
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
-
+ 
 
 
 
@@ -119,6 +120,8 @@ class Eto_Management(object):
            new_value = float(self.eto_hash_table.hget(i)) + float(eto)
            print("eto_update",i,new_value)
            self.eto_hash_table.hset(i,new_value)
+        print("logging sprinkler_data")
+        self.log_sprinkler_data()
         
 
 
@@ -172,6 +175,7 @@ class Eto_Management(object):
        data = hash_handler.hgetall()
        return_value = {}
        for key , item in data.items():
+         
           return_value[key] = item[field_key]
        return return_value
       
@@ -256,11 +260,12 @@ def add_eto_chains(eto, cf):
     cf.insert.wait_tod_ge( hour =  8 )
     cf.insert.enable_chains(["eto_make_measurements"])
     cf.insert.log("enabling making_measurement")
-    cf.insert.wait_tod_ge(hour=11)
+    cf.insert.wait_tod_ge(hour=9)
     cf.insert.enable_chains(["update_eto_bins"])
+    
     cf.insert.wait_tod_ge( hour =  23 )
     cf.insert.disable_chains(["eto_make_measurements","update_eto_bins","log_sprinkler_data"])
-    cf.insert.enable_chains(["log_sprinkler_data"])
+    #cf.insert.enable_chains(["log_sprinkler_data"])
     cf.insert.wait_event_count( event = "DAY_TICK" )
     cf.insert.reset()
 
@@ -273,7 +278,7 @@ def add_eto_chains(eto, cf):
     cf.define_chain("log_sprinkler_data", False)
     cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
     cf.insert.log("logging sprinkler data")
-    cf.insert.one_step( eto.log_sprinkler_data )
+    
     cf.insert.terminate()
     
     

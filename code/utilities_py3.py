@@ -13,7 +13,7 @@
 import msgpack
 from redis_support_py3.load_files_py3  import APP_FILES
 from redis_support_py3.load_files_py3  import SYS_FILES
-
+from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 
 
 
@@ -51,11 +51,11 @@ class Monitoring_Base(object):
       try:
          data = self.completion_dictionary.hget( item )
  
-         print("data check flag",data)
+         #print("data check flag",data)
          data = json.loads( data)
 
       except:
-         print("exception check_flag")
+         #print("exception check_flag")
          data = [ 0 , -3 ]
       
       if int(data[0]) == 0 :
@@ -78,6 +78,7 @@ class Monitoring_Base(object):
    def determine_start_time( self, start_time,end_time ):
        return_value = False
        temp = datetime.datetime.today()
+       #print("start_time",start_time,end_time)
        st_array = [ temp.hour, temp.minute ]
        if self.match_time( start_time,end_time ) == True:
 	           if ( self.match_time( start_time, st_array) and 
@@ -89,10 +90,11 @@ class Monitoring_Base(object):
                return_value = True
           if  self.match_time(st_array,end_time):
                 return_value = True
+       #print("return_value",return_value)
        return return_value
      
 
-  def check_for_active_activity( self, *args):
+   def check_for_active_activity( self, *args):
       if self.active_function != None:
          if self.active_function() == False:
             return  # something like rain day has occurred
@@ -105,24 +107,24 @@ class Monitoring_Base(object):
       item_control = self.app_file.load_file(self.file_name)
       for j in item_control:
           name = j["name"]
-          print( "checking schedule",name )
+          #print( "checking schedule",name )
           
           if j["dow"][dow] != 0 :
 	    
             start_time = j["start_time"]
             end_time   = j["end_time"]
-        
-            if self.determine_start_time( start_time,end_time ):
-                 print( "made it past start time",start_time,end_time )
+            #print("made it here")
+            if self.determine_start_time( start_time,end_time )  == True:
+                 #print( "made it past start time",start_time,end_time )
                  if self.check_flag( name ):
-                     print( "queue in schedule ",name )
+                     #print( "queue in schedule ",name )
                      temp = {}
                      temp["command"] =  "QUEUE_SCHEDULE"
                      temp["schedule_name"]  = name
                      temp["step"]           = 0
                      temp["run_time"]       = 0
                      self.job_queue.push( json.dumps(temp) )
-                     temp = [1,time.time()+60*3600 ]  # +hour prevents a race condition
+                     temp = [1,time.time()+60*60 ]  # +hour prevents a race condition
                      self.completion_dictionary.hset( name,json.dumps(temp) ) 
 
   
@@ -139,32 +141,38 @@ class System_Monitoring(Monitoring_Base):
 
                   
   
-class Schedule_Monitoring(Monitoring_Base):
+class Irrigation_Schedule_Monitoring(Monitoring_Base):
    def __init__(self, app_files,completion_dictionary,job_queue,irrigation_control,rain_field ):
-       Monitoring_Base.__init__(self,app_files,"sprinkler_ctrl.json",completion_dictionary,job_queue,self.rain_check)
+       Monitoring_Base.__init__(self,app_files,"sprinkler_ctrl.json",completion_dictionary,job_queue,self.rain_check_list)
        self.irrigation_control = irrigation_control
        
-       self.rain_field = rail_field
+       self.rain_field = rain_field
 
        
        
        
-
+   def rain_check_list(self):
+      for i in self.rain_field:
+        #print(i)
+        if self.rain_check(i) == False:
+           return False
+      #print("return true")
+      return True
    
-   def rain_check(self):
-       print("rain_check")
+   def rain_check(self,field):
+       #print("rain_check")
        try:
           
-          rain_day = self.irrigation_control.hget(self.rain_field)
+          rain_day = self.irrigation_control.hget(field)
           
          
           rain_day = int( rain_day )
        except:
           
           rain_day = int(0)
-          self.irrigation_control.hset(self.rain_field,0  )
+          self.irrigation_control.hset(field,0  )
           
-          print("exception")
+          #print("exception")
        
 
        if rain_day == 0:
@@ -250,7 +258,7 @@ if __name__ == "__main__":
 
     qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
     query_list = []
-    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
 
     query_list = qs.add_match_terminal( query_list, 
                                         relationship = "PACKAGE", property_mask={"name":"IRRIGIGATION_SCHEDULING_CONTROL_DATA"} )
@@ -265,21 +273,23 @@ if __name__ == "__main__":
     #
     #
     data_structures = package["data_structures"]
-    generate_handlers = Generate_Handlers( package, site_data )
+    generate_handlers = Generate_Handlers( package, redis_site )
     
     
     redis_handle = generate_handlers.get_redis_handle()
     app_files = APP_FILES(redis_handle,redis_site)
     data_structures = package["data_structures"]
-    job_queue = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_JOB_SCHEDULING"])                
+    job_queue = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_JOB_SCHEDULING"])
+    #job_queue.delete_all()    
     completion_dictionary        = generate_handlers.construct_hash(data_structures["SYSTEM_COMPLETION_DICTIONARY"])
-   
+    #completion_dictionary.delete_all()
     action       = System_Monitoring( app_files,completion_dictionary,job_queue )
     query_list = []
-    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_terminal( query_list,relationship="IRRIGATION_CONTROL_FIELDS",label="IRRIGATION_CONTROL_FIELDS" )
     control_field, control_field_nodes = qs.match_list(query_list)
-    shut_off_list = control_field_nodes[0]
+    shut_off_list = control_field_nodes[0]['access_keys']
+
     irrigation_control        = generate_handlers.construct_hash(data_structures["IRRIGATION_CONTROL"])
     sched        = Irrigation_Schedule_Monitoring( app_files,completion_dictionary,job_queue,irrigation_control,shut_off_list )
 
@@ -289,12 +299,12 @@ if __name__ == "__main__":
     #
 
     cf = CF_Base_Interpreter()
-    add_eto_chains(eto, cf)
+    add_chains(cf,sched,action,ntpd)
     #
     # Executing chains
     #
     
-    cf.execute()
+    #cf.execute()
 
 else:
   pass

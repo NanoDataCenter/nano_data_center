@@ -28,6 +28,7 @@ from bootstrap_web_py3.load_redis_management_py3 import Load_Redis_Management
 from bootstrap_web_py3.load_site_map_py3   import Load_Site_Data
 from bootstrap_web_py3.load_process_control_py3 import Load_Process_Management
 from bootstrap_web_py3.load_configuration_py3 import Load_Configuration_Data
+from bootstrap_web_py3.load_irrigation_control_py3 import Load_Irrigation_Pages
 
 class PI_Web_Server(object):
 
@@ -56,9 +57,10 @@ class PI_Web_Server(object):
        self.app.config["DEBUG"]           = True
        self.app.debug                     = True
        self.users                    = json.loads(startup_dict["users"])
-       redis_handle = redis.StrictRedis(redis_site_data["host"], redis_site_data["port"], db=redis_site_data["redis_file_db"] )
-       self.app_files = APP_FILES(redis_handle, self.redis_site_data) 
-       self.sys_files = SYS_FILES(redis_handle, self.redis_site_data)          
+       self.redis_handle = redis.StrictRedis(redis_site_data["host"], redis_site_data["port"], db=redis_site_data["redis_file_db"] )
+       
+       self.app_files = APP_FILES(self.redis_handle, self.redis_site_data) 
+       self.sys_files = SYS_FILES(self.redis_handle, self.redis_site_data)          
 
        Load_Static_Files(self.app,self.auth)
        self.redis_access = Load_Redis_Access(self.app, self.auth, request )
@@ -70,11 +72,10 @@ class PI_Web_Server(object):
        self.load_redis_monitoring()
        self.load_process_management()
        self.load_configuration_management()
+       self.load_irrigation_control()
 
-       a1 = self.auth.login_required( self.get_index_page )
-       self.app.add_url_rule('/index.html',"get_index_page",a1) 
-       self.app.add_url_rule("/","get_slash_page",a1)
-       
+      
+ 
 
    def get_pw( self,username):
        
@@ -85,10 +86,7 @@ class PI_Web_Server(object):
        return None
     
        
-   def get_index_page (self):
-       print("made it here",os.path.join('html', "bootstrap4_test.html"))
-       
-       return render_template("base_template",Brand = "Irrigation Control",title="Test")
+ 
 
    def run_http( self):
        self.app.run(threaded=True , use_reloader=True, host='0.0.0.0',port=80)
@@ -171,7 +169,27 @@ class PI_Web_Server(object):
        for i in controller_names:
           ds_handlers.append(self.assemble_controller_handlers(i))
        Load_Linux_Management(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
-                  render_template=render_template, handlers=ds_handlers, controllers = controller_names )    
+                  render_template=render_template, handlers=ds_handlers, controllers = controller_names ) 
+
+   def load_irrigation_control(self):
+                             
+    
+       query_list = []
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+
+       query_list = self.qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"IRRIGIGATION_SCHEDULING_CONTROL_DATA"} )
+                                           
+       package_sets, package_sources = self.qs.match_list(query_list)  
+     
+       package = package_sources[0] 
+       data_structures = package["data_structures"]
+       generate_handlers = Generate_Handlers(package,self.redis_site_data)
+       ds_handlers = {}
+       ds_handlers["IRRIGATION_JOB_SCHEDULING"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_JOB_SCHEDULING"])
+       ds_handlers["IRRIGATION_CONTROL"] =  generate_handlers.construct_hash(data_structures["IRRIGATION_CONTROL"])
+       Load_Irrigation_Pages(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
+                  render_template=render_template, redis_handle= self.redis_handle, handlers= ds_handlers )
        
    def assemble_controller_handlers(self,label ):
        query_list = []

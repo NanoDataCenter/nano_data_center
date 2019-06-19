@@ -29,8 +29,7 @@ function populate_valves( index )
 	
      }
      $("#valve_select")[0].selectedIndex = 0;
-     $("#valve_select").selectmenu();
-     $("#valve_select").selectmenu("refresh");
+
 }
 
 function send_irrigation_event(event, ui) 
@@ -66,10 +65,10 @@ function new_valve_group_event(event,ui)
    populate_valves( index );
 }
       
-function valve_group_success( data )
+function valve_group_success(  )
 {
 
-     valve_group_data = data;
+     valve_group_data = JSON.parse(controller_valve_group_json);
 
      $("#valve_group_select").empty()
      for( var i = 0; i < valve_group_data.length; i++ )
@@ -77,8 +76,7 @@ function valve_group_success( data )
         $("#valve_group_select").append('<option value='+i+'>'+valve_group_data[i].name+'</option>');	
      }
      $("#valve_group_select")[0].selectedIndex = 0;
-     $("#valve_group_select").selectmenu();
-     $("#valve_group_select").selectmenu("refresh");
+ 
      
      populate_valves( 0)
 }
@@ -95,8 +93,7 @@ $(document).ready(
 	
     }
     $("#run_time")[0].selectedIndex = 0;
-    $("#run_time").selectmenu();
-    $("#run_time").selectmenu("refresh");
+ 
 
   
    
@@ -108,9 +105,8 @@ $(document).ready(
    $("#op_mode" ).bind( "change",mode_change );
    
    $("#schedule_div").hide()
-
-   ajax_get( '/ajax/get_system_file/valve_group_assignments.json', 
-              "Server Error", valve_group_success )
+   valve_group_success()
+   
  
 
  }

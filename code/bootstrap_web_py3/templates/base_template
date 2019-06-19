@@ -15,6 +15,32 @@
 {% include "js/ajax_functions.js" %}
 {% include "js/redis_functions.js" %}
 </script>
+{% macro canvas( canvasName = "test", featuredColor = "Green", featuredMeasure = 0, qualScale1 = 0, qualScale1Color = "Black", titleText = "Step 1", maxValue = 35 ,std = "a") -%}
+			$("{{ "#"+canvasName }}").bullet({
+                                featuredColor: "{{ featuredColor }}",
+				featuredMeasure: {{ featuredMeasure }},
+				//compMeasure1: 100,
+				qualScale1: {{ qualScale1 }},
+				minValue: 0,
+				maxValue: {{ max_value }},
+                                limit_std: {{ std }},
+                                titleText: "{{ titleText }}",
+                                qualScale1Color: "{{ qualScale1Color }}"
+			})
+   
+{%- endmacro %}
+
+<style>
+input[type="range"] {
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+.auto {
+  -ms-touch-action: auto;
+  touch-action: auto;
+} 
+</style>
 {% block application_javascript %}{% endblock %}
 <title>{{title}}</title>
 

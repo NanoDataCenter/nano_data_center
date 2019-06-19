@@ -1,18 +1,5 @@
  
-{% macro canvas( canvasName = "test", featuredColor = "Green", featuredMeasure = 0, qualScale1 = 0, qualScale1Color = "Black", titleText = "Step 1", maxValue = 35 ,std = "a") -%}
-			$("{{ "#"+canvasName }}").bullet({
-                                featuredColor: "{{ featuredColor }}",
-				featuredMeasure: {{ featuredMeasure }},
-				//compMeasure1: 100,
-				qualScale1: {{ qualScale1 }},
-				minValue: 0,
-				maxValue: {{ max_value }},
-                                limit_std: {{ std }},
-                                titleText: "{{ titleText }}",
-                                qualScale1Color: "{{ qualScale1Color }}"
-			})
-   
-{%- endmacro %}
+
 
    
 <div id="min_eto_set">

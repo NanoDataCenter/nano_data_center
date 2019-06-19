@@ -86,11 +86,13 @@ if __name__ == "__main__":
    def load_file( file_list,path, redis_key,cloud_handler_tx):
        old_fields = set(redis_handle.hkeys(redis_key))
        for i in file_list:
+           #print(i)
            try:
                fileName, fileExtension = os.path.splitext(i)
            
                forward = {"forward":False}
                if fileExtension == ".json":
+                   #print("file passed json test ",i)
                    f = open(path+i, 'r')
                    data = f.read()
 
@@ -102,7 +104,7 @@ if __name__ == "__main__":
                        redis_handle.hset( redis_key, i , pack_data)
                        cloud_handler_tx.hset(forward,redis_key,i,pack_data)
            except:
-              pass # add log
+              print("file exception ",i)
        new_fields = set(redis_handle.hkeys(redis_key))
        # remove old keys
        keys_to_delete = list(old_fields.difference(new_fields))

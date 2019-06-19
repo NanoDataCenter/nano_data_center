@@ -1,0 +1,76 @@
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+  <script type="text/javascript" >
+       schedule_data_json = '{{ schedule_data }}'                
+                                  
+      {% include  "js/irrigation_functions/irrigation_control.js" %}
+      
+      </script>
+ 
+  
+{% endblock %}
+
+{% block application %}
+  <div data-role="page"> 
+
+ 
+   <h3>Manually Control System</h3>     
+   <h4>Select Operating Mode</h4> 
+	  <select id="op_mode">
+	     <option value="CLEAR">Stop Irrigation / Empty Queue</option>
+      <option value="SKIP_STATION">Skip Current Irrigation Step  </option>
+	     <option value="QUEUE_SCHEDULE">Queue Schedule</option>
+	     <option value="QUEUE_SCHEDULE_STEP">Queue Schedule Step</option>
+	     <option value="QUEUE_SCHEDULE_STEP_TIME_A">Queue Schedule Step Time</option>
+
+	     <option value="OPEN_MASTER_VALVE">Open Master Valve</option>
+	     <option value="CLOSE_MASTER_VALVE">Close Master Valve</option> 
+	     <option value="CLEAN_FILTER">Clean Filter</option> 
+      <option value="RESISTANCE_CHECK">Valve Resistance Check </option>
+      <option value="CHECK_OFF">Check Off Condition</option>
+      <option value="SUSPEND">Suspend Operation </option> 
+      <option value="RESUME">Resume Operation  </option> 
+              
+
+      <option value="RESET_SYSTEM_Queue">Reset System_Queue</option>
+	 
+     <option value="RESET_SYSTEM_Now">Reset System Now</option>
+	 </select>
+  
+	 <div id = "schedule_div">
+        <h4 id="schedule_label">Select Schedule</h4> 
+	       <select id="manual_schedule">
+	       </select>
+   </div>
+   <div id ="manual_div">
+        <h4 id="step_label">Select step</h4> 
+	       <select id="manual_step">
+	       </select>
+	 </div>
+  <div id = "run_div"> 
+       <h4 id ="run_label">Select Run Time (1 to 60 Minutes) </h4> 
+       <select id="run_time">
+       </select>
+   </div>
+   <h4><br><br>Click to Change Schedule Modifier</h4>
+   <button type="button" id="change_mode">Click to Change Mode Mode</button>  
+
+    
+
+   
+    
+
+
+</div><!-- /page -->
+</html>
+
+
+{% endblock %}
+
+
+

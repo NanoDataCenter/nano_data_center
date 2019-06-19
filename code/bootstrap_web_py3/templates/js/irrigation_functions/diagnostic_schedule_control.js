@@ -17,7 +17,7 @@ function generate_description( index , schedule_name)
 }
 
 
-function schedule_success(data)
+function schedule_success()
 {
          
    schedules = []
@@ -26,6 +26,8 @@ function schedule_success(data)
    schedules_end_times = {}
    schedules_dow = {}
    schedules_pins = {}
+   data = JSON.parse(schedule_data_json)
+   
    for (var i = 0; i < data.length; i++) 
    {
 	     
@@ -42,8 +44,7 @@ function schedule_success(data)
      $("#manual_schedule").append('<option value='+schedules[i]+'>'+schedules[i]+'</option>');	
 	  }
    $("#manual_schedule")[0].selectedIndex = 0;
-   $("#manual_schedule").selectmenu();
-	  $("#manual_schedule").selectmenu("refresh");
+
    set_step( 0 );
 }
             
@@ -62,8 +63,7 @@ function set_step(index)
 	   }
 
     $("#manual_step")[0].selectedIndex = 0;
-	   $("#manual_step").selectmenu();
-	   $("#manual_step").selectmenu("refresh");
+
  
        
 }
@@ -159,7 +159,7 @@ $(document).ready(
  {
  function schedule_setup()
  {
- 
+
      schedules_pins = {}
      schedules = []
      schedules_steps = {}
@@ -191,8 +191,7 @@ $(document).ready(
       }
 
       $("#run_time")[0].selectedIndex = 9;
-      $("#run_time").selectmenu();
-      $("#run_time").selectmenu("refresh")
+
 
      bind_schedule_change()
      bind_change_mode()
@@ -203,12 +202,9 @@ $(document).ready(
    
    
 
+    schedule_success()
   
-  
-  ajax_get( '/ajax/schedule_data',
-            '/ajax/schedule_data' +"   "+"Server Error Change not made",
-            schedule_success )
-   
+ 
    
          
        

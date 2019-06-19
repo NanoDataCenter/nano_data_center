@@ -14,6 +14,7 @@
   <ul>
       <li>eto: {{'%0.2f'| format(eto_data[reading].eto|float)}}</li>
       <li>rank: {{'%0.0f'| format(eto_data[reading].priority|float)}} </li>
+      <li>time: {{ eto_data[reading].time}} </li>
   </ul>
 </li>
 {%endfor%}
@@ -29,6 +30,7 @@
   <ul>
       <li>rain: {{'%0.2f'| format(rain_data[reading].rain|float)}}</li>
       <li>rank: {{'%0.0f'| format(rain_data[reading].priority|float)}} </li>
+      <li>time: {{ eto_data[reading].time}} </li>
   </ul>
 </li>
 {%endfor%}

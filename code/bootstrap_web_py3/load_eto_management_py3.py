@@ -90,20 +90,24 @@ class Load_ETO_Management(Base_Stream_Processing):
    
        temp_data = self.handlers["ETO_HISTORY"].revrange("+","-" , count=1000)
        temp_data.reverse()
-       
+       print("temp_data",temp_data)
        chart_title = " ETO Log For Weather Station : "
        stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
+       '''
        eto_data =  self.handlers["ETO_VALUES"].hgetall()
        temp_data = {}
        for i,item in eto_data.items():
            temp_data[i] = item["priority"]
+        
        temp_data =[(k, temp_data[k]) for k in sorted(temp_data, key=temp_data.get, reverse=True)]
        stream_keys = []
-       for i in temp_data:
-
-          stream_keys.append(i[0])
-       stream_keys.reverse()
-       
+       if len(temp_data) > 0:
+           for i in temp_data:
+              stream_keys.append(i[0])
+           stream_keys.reverse()
+       if len(stream_keys )== 0:
+            stream_range = []
+       '''
        return self.render_template( "streams/base_stream",
                                      stream_data = stream_data,
                                      stream_keys = stream_keys,
@@ -124,7 +128,7 @@ class Load_ETO_Management(Base_Stream_Processing):
        chart_title = " Rain Log For Weather Station : "
        stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
 
-      
+       '''
        rain_data = self.handlers["RAIN_VALUES"].hgetall()
        
        rain_data =  self.handlers["RAIN_VALUES"].hgetall()
@@ -135,14 +139,19 @@ class Load_ETO_Management(Base_Stream_Processing):
        
        temp_data =[(k, temp_data[k]) for k in sorted(temp_data, key=temp_data.get, reverse=True)]
        stream_keys = []
-       for i in temp_data:
-          
-          stream_keys.append(i[0])
+       if len(temp_data) > 0:
+           for i in temp_data:
+              stream_keys.append(i[0])
+       
        stream_keys.reverse()
-       print("stream keys ",stream_keys)
+
+ 
      
        stream_data = temp_data
-       print("stream_data",stream_data)
+       if len(stream_keys )== 0:
+            stream_range = []
+
+       '''            
        return self.render_template( "streams/base_stream",
                                      stream_data = stream_data,
                                      stream_keys = stream_keys,

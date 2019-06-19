@@ -180,7 +180,7 @@ class Station_Setup
    {
        var value = $("#station_sprayer_rate").val()
       station_control_class.reference_data["sprayer_rate"] = value
-      alert(station_control_class.reference_data["sprayer_rate"])
+      
        station_control_class.set_sprayer_capacity( value)
       station_control_class.calculate_recharge_rate()
    }

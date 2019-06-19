@@ -32,15 +32,14 @@ function set_step(index)
 	  }
 
    $("#manual_step")[0].selectedIndex = 0;
-	  $("#manual_step").selectmenu();
-	  $("#manual_step").selectmenu("refresh");
+
  
        
        
        
 }
 
-function ajax_schedule_success(data)
+function ajax_schedule_success()
 {
          
    schedules = []
@@ -49,6 +48,7 @@ function ajax_schedule_success(data)
    schedules_end_times = {}
    schedules_dow = {}
    schedules_pins = {}
+   data = JSON.parse(schedule_data_json);
    for (var i = 0; i < data.length; i++) 
    {   
 	     schedules.push(data[i].name)
@@ -66,8 +66,7 @@ function ajax_schedule_success(data)
 	   }
        
    	 $("#manual_schedule")[0].selectedIndex = 0;
-	   $("#manual_schedule").selectmenu();
-	   $("#manual_schedule").selectmenu("refresh");
+
     set_step( 0 );
 }
 
@@ -151,13 +150,13 @@ function op_mode_change(event, ui)
           $("#run_div").hide()
 	         break;
 
-       case 12: // RESTART_PROGRAM
+       case 12: // RESET_SYSTEM Job Queue
 	         $("#schedule_div").hide()
           $("#manual_div").hide()
           $("#run_div").hide()
 	         break;
 
-       case 13: // RESET_SYSTEM
+       case 13: // RESET_SYSTEM now
 	         $("#schedule_div").hide()
           $("#manual_div").hide()
           $("#run_div").hide()
@@ -215,9 +214,7 @@ $(document).ready(
    }
 
    $("#run_time")[0].selectedIndex = 9;
-	  $("#run_time").selectmenu();
-	  $("#run_time").selectmenu("refresh");
-	
+
   
    $( "#op_mode" ).bind( "change",op_mode_change) 
    
@@ -228,7 +225,7 @@ $(document).ready(
 
      $( "#change_mode" ).bind( "click",schedule_irrigation_event )
 
-    ajax_get( '/ajax/schedule_data', "Server Error", ajax_schedule_success )   
+    ajax_schedule_success()
    
    
 

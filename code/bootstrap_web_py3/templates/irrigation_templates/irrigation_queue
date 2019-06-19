@@ -1,0 +1,53 @@
+<html>
+<head>
+	  <meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
+   <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+
+   
+   
+   {% set title = 'Control Functions' %}
+   {% set header_name = 'Manage Pending Irrigation Operations' %}
+
+
+   {% set header_name = title %}
+	  <title>{{title_name}}</title>
+   {% include 'common_setup' %}
+	
+	
+	 <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+
+  </script>
+
+  <script type="text/javascript" >
+      {% include "js/irrigation_functions/edit_work_queue.js" %}
+  </script>
+
+</head> 
+<body> 
+
+   <div data-role="page"> 
+
+       
+   {% include 'menu' %}
+   <!-- /header -->
+
+   <h4>Refresh Values</h4>       
+   <button type="button" id="refresh_b">Refresh</button>
+   <h4>Edit Irrigation Queue</h4>
+   <button type="button" id="delete_limits">Delete Selected Elements</button> 
+   <div id="queue_elements">
+   </div>
+
+
+
+  
+</div>    
+    
+
+
+</div><!-- /page -->
+</html>
+

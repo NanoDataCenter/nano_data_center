@@ -14,7 +14,7 @@ class CIMIS_ETO(object):
         self.station = self.cimis_data["station"]
 
     def compute_previous_day( self):
-        
+      
         if self.eto_data.hget("CIMIS:"+str(self.station) ) != None:
            print("***************** cimis eto returning")
            return
@@ -32,9 +32,11 @@ class CIMIS_ETO(object):
         data = json.loads(temp.decode())
         value = float(data["Data"]["Providers"][0]["Records"][0]['DayAsceEto']["Value"])
         print("*************** cimis made it here",value)
+        date_string = str(datetime.datetime.now())
         self.eto_data.hset("CIMIS:"+str(self.station), {"eto":float(
                 data["Data"]["Providers"][0]["Records"][0]['DayAsceEto']["Value"]),
-                "priority":self.cimis_data["priority"],"status":"OK" })
+                "priority":self.cimis_data["priority"],"status":"OK","time": date_string })
         self.rain_data.hset("CIMIS:"+str(self.station), {"rain":float(
                 data["Data"]["Providers"][0]["Records"][0]['DayPrecip']["Value"]),
-                "priority":self.cimis_data["priority"],"status":"OK" })
+                "priority":self.cimis_data["priority"],"status":"OK","time": date_string })
+      

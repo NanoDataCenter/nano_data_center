@@ -3,6 +3,7 @@ import urllib.request
 import time
 import datetime
 import json
+import datetime
 ONE_DAY = 3600*24
 
 class CIMIS_SPATIAL(object):
@@ -36,7 +37,8 @@ class CIMIS_SPATIAL(object):
        
         temp = float(data["Data"]["Providers"][0]
                      ["Records"][0]['DayAsceEto']["Value"])
-
-        self.eto_sources.hset("CIMIS_SAT:"+str(self.longitude), { "eto":temp,"priority":self.priority,"status":"OK"})
+        date_string = str(datetime.datetime.now())
+        self.eto_sources.hset("CIMIS_SAT:"+str(self.longitude), 
+           { "eto":temp,"priority":self.priority,"status":"OK","time": date_string})
 
 

@@ -22,15 +22,16 @@ function populate_pins( index )
      var pins;
      
      pins = controller_pin_data[index].pins;
+  
      $("#select_pin").empty()
+     
      for( var i = 1; i <= pins.length; i++ )
      {
           $("#select_pin").append('<option value='+i+'>pin: '+i+' '+pins[i-1]+ ' </option>');	
 	
      }
      $("#select_pin")[0].selectedIndex = 0;
-     $("#select_pin").selectmenu();
-     $("#select_pin").selectmenu("refresh");
+
 }
 
 function send_irrigation_event(event, ui) 
@@ -63,18 +64,18 @@ function new_controller_event(event,ui)
    populate_pins( index );
 }
       
-function controller_pins_success( data )
+function controller_pins_success(  )
 {
   
-     controller_pin_data = data;
+     controller_pin_data = JSON.parse(controller_pin_json)
      $("#controller_select").empty()
+     
      for( var i = 0; i < controller_pin_data.length; i++ )
      {
         $("#controller_select").append('<option value='+controller_pin_data[i].name+'>'+controller_pin_data[i].name+'</option>');	
      }
      $("#controller_select")[0].selectedIndex = 0;
-     $("#controller_select").selectmenu();
-     $("#controller_select").selectmenu("refresh");
+ 
      
      populate_pins( 0)
 
@@ -92,8 +93,7 @@ $(document).ready(
 	
     }
     $("#run_time")[0].selectedIndex = 0;
-    $("#run_time").selectmenu();
-    $("#run_time").selectmenu("refresh");
+  
 
   
    
@@ -105,9 +105,8 @@ $(document).ready(
    $("#op_mode" ).bind( "change",mode_change );
    
    $("#schedule_div").hide()
-
-   ajax_get( '/ajax/get_system_file/controller_cable_assignment.json', 
-              "Server Error", controller_pins_success )
+   controller_pins_success()
+ 
  
 
  }
