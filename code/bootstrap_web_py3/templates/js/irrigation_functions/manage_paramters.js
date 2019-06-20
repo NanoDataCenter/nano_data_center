@@ -20,23 +20,16 @@ function load_data_success()
   $("#max_rate").val(data.FLOW_CUT_OFF)
   max_rate_change()
     
-   if( typeof CLEANING_INTERVAL === "undefined" ){data.CLEANING_INTERVAL = 15000}
+   if( typeof data.CLEANING_INTERVAL === "undefined" ){data.CLEANING_INTERVAL = 15000}
    $("#cleaning_interval").val(data.CLEANING_INTERVAL)
    $( "#cleaning_value" ).html(data.CLEANING_INTERVAL);
    cleaning_interval_change() 
            
 }
-function load_data()
-{
-   json_object = {}
-   json_object["hash_name"]  = "CONTROL_VARIABLES"
-   json_object["key_list"] = ["rain_day","ETO_MANAGE_FLAG","FLOW_CUT_OFF","CLEANING_INTERVAL" ]
 
-   ajax_post_get("/ajax/redis_hget", json_object, load_data_success, "Initialization Data Not Loaded!!!!!" ) 
-}
 function change_rain_day_flag(event, ui)
 {
-   key = "rain_day"
+   key = "RAIN_FLAG"
    value = $("#rain_flag").val();
    general_change_function(key,value,"change rain day flag?")
 
@@ -70,12 +63,12 @@ function change_gallon_trigger(event, ui)
 function general_change_function( key, value,confirmation_message )
 {
    temp = {}
-   temp["redis_key"] = "CONTROL_VARIABLES"
-   temp["hash"] = key
-   temp["value"] = value
-   json_object = [temp]  
+
+   temp["field"] = key
+   temp["data"] = value
+   json_object = temp
    
-   ajax_post_confirmation("/ajax/redis_hset", json_object, confirmation_message, 
+   ajax_post_confirmation('/ajax/parameter_update', json_object, confirmation_message, 
                                          "CHANGES MADE", "Data Not Saved!!!!!" )
    
 }

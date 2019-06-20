@@ -46,6 +46,10 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        a1 = auth.login_required( self.mode_change )
        app.add_url_rule('/ajax/mode_change',"get_mode_change",a1, methods=["POST"]) 
 
+
+       a1 = auth.login_required( self.parameter_update )
+       app.add_url_rule('/ajax/parameter_update',"get_parameter_update",a1, methods=["POST"]) 
+
        '''
      
        
@@ -90,10 +94,11 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
 
 
    def manage_parameters(self):
-       self.handlers["IRRIGATION_CONTROL"].delete_all()
+       
        control_data = self.handlers["IRRIGATION_CONTROL"].hgetall()
+      
        control_data_json = json.dumps(control_data)
-       print("control_data",control_data)
+      
        return self.render_template("irrigation_templates/manage_parameters",
                                     title = "Manage Irrigation Parameters",
                                     control_data_json = control_data_json  )
@@ -103,6 +108,28 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
 
    def display_irrigation_queue(self):
        return self.render_template("irrigation_templates/display_irrigation_queue" )
+    
+   def display_past_actions( self,event):
+       fields = self.alarm_queue.get_events()
+       fields['ALL'] = time.time()
+       time_data = self.alarm_queue.get_time_data()
+       sorted_data = []
+       if event in fields:
+           if event == "ALL":
+              sorted_data = time_data
+           else:
+               for i in time_data:
+                   print(i,event)
+                   if i["event"] == event:
+                       sorted_data.append(i)   
+                             
+       
+       for i in sorted_data:
+          temp = i["time"]
+          i["time"]  = time.strftime( "%b %d %Y %H:%M:%S",time.localtime(temp))
+       return self.render_template("irrigation_templates/display_action_queue" ,time_history = sorted_data, events = fields, ref_field_index=event,
+                  header_name="Past Events"       )
+        
 
    #  
    #  Function serves a post operation
@@ -138,27 +165,15 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        json_object = self.request.json
        self.handlers["IRRIGATION_JOB_SCHEDULING"].push(json_object)
        return json.dumps("SUCCESS")
- 
 
-   def display_past_actions( self,event):
-       fields = self.alarm_queue.get_events()
-       fields['ALL'] = time.time()
-       time_data = self.alarm_queue.get_time_data()
-       sorted_data = []
-       if event in fields:
-           if event == "ALL":
-              sorted_data = time_data
-           else:
-               for i in time_data:
-                   print(i,event)
-                   if i["event"] == event:
-                       sorted_data.append(i)   
-                             
-       
-       for i in sorted_data:
-          temp = i["time"]
-          i["time"]  = time.strftime( "%b %d %Y %H:%M:%S",time.localtime(temp))
-       return self.render_template("irrigation_templates/display_action_queue" ,time_history = sorted_data, events = fields, ref_field_index=event,
-                  header_name="Past Events"       )
-                
+   def parameter_update(self):
+       json_object = self.request.json
+      
+       field = json_object["field"]
+       data = json_object["data"]
+       self.handlers["IRRIGATION_CONTROL"].hset( field, data )
+      
+       return json.dumps("SUCCESS")
+
+        
   
