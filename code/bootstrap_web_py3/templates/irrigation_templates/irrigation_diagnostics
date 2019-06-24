@@ -42,7 +42,7 @@
        <h4>Select Operating Function</h4> 
        <select id="op_mode">
 	         <option value="CLEAR">Clear</option>
-	         <option value="QUEUE_SCHEDULE_STEP_TIME">Queue Schedule Step Time</option>
+	         <option value="QUEUE_SCHEDULE_STEP_TIME_NO_ETO">Queue Schedule Step Time</option>
 	         <option value="OPEN_MASTER_VALVE">Open Master Valve</option>
 	         <option value="CLOSE_MASTER_VALVE">Close Master Valve</option>
 	     </select>

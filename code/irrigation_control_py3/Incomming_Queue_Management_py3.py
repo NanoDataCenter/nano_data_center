@@ -1,4 +1,126 @@
 import json
+import time
+import os
+import time
+## 1 gallon is 0.133681 ft3
+## assuming a 5 foot radius
+## a 12 gallon/hour head 0.2450996343 inch/hour
+## a 14	gallon/hour head 0.2859495733 inch/hour
+## a 16	gallon/hour head 0.3267995123 inch/hour
+##
+##
+##
+##
+## capacity of soil
+## for silt 2 feet recharge rate 30 % recharge inches -- .13 * 24 *.3 = .936 inch 
+## for sand 1 feet recharge rate 30 % recharge inches -- .06 * 12 *.3 = .216 inch
+##
+## recharge rate for is as follows for 12 gallon/hour head:
+## sand 1 feet .216/.245 which is 52 minutes
+## silt 2 feet recharge rate is 3.820 hours or 229 minutes
+##
+## {"controller":"satellite_1", "pin": 9,  "recharge_eto": 0.216, "recharge_rate":0.245 },
+## eto_site_data
+
+
+class ETO_Management(object):
+   def __init__(self,handlers,resource_key,app_files):
+       self.handlers = handlers
+       self.app_files = app_files
+       self.eto_hash_key = eto_hash_key
+       
+   
+      
+      
+   def update_eto_values(self,sensor_list):
+       self.eto_site_data = self.app_files.load_file( "eto_site_setup.json" )
+       for l in  sensor_list:
+           j_index = l[0]
+           queue_name = l[1]
+           j = self.eto_site_data[ j_index ]
+           deficient = self.handlers[self.eto_hash_key].hget( queue_name )
+           
+           if deficient == None:
+               deficient = 0
+           else:
+               deficient = float(deficient)
+           recharge_rate = float(j["recharge_rate"])
+           deficient = deficient - (recharge_rate/60) # recharge rate is per hour
+           if deficient < 0 :
+               deficient = 0 
+           
+           self.handlers[self.eto_hash_key].hget( queue_name , deficient) 
+      
+   def determine_eto_management(self,run_time, io_list):
+      self.eto_site_data = self.app_files.load_file( "eto_site_setup.json" )
+      
+      sensor_list = self.find_queue_names( io_list )
+      if len(self.sensor_list) == 0
+        return run_time, False,None
+      run_time = find_largest_runtime(run_time,sensor_list)
+      return runtime,True,sensor_list
+      
+      
+      
+
+
+
+
+   def find_queue_names( self, io_list ):
+       print("io_list ",io_list)
+       eto_values = []
+       for j in io_list:
+           controller = j["remote"]
+           bits       = j["bits"]
+           bit        = bits[0] 
+           index = 0
+           for m in self.eto_site_data:
+
+               if (m["controller"] == controller) and (int(m["pin"]) in bits): 
+                   queue_name = controller+"|"+str(bit)
+                   eto_values.append( [index,  queue_name ] )
+               index = index +1
+       
+       return eto_values
+
+
+   def find_largest_runtime( self, run_time, sensor_list ):
+       runtime = 0
+
+       for j in sensor_list:
+           index = j[0]
+           eto_temp = self.eto_site_data[index]
+           recharge_eto = float( eto_temp["recharge_eto"] )  # minium eto for sprinkler operation
+           recharge_rate = float(eto_temp["recharge_rate"])
+           deficient = self.redis_handle.hget("ETO_RESOURCE",  queue_name )
+           if deficient == None:
+              deficient = 0
+           if float(deficient) > recharge_eto :
+               runtime_temp = (deficient  /recharge_rate)*60
+               if runtime_temp > runtime :
+                   runtime = runtime_temp
+       if runtime > run_time:
+          runtime = run_time
+       return runtime
+
+   def update_eto_queue_minute( self, sensor_list ):
+       for l in  sensor_list:
+           j_index = l[0]
+           queue_name = l[1]
+           j = self.eto_site_data[ j_index ]
+           deficient = self.redis_handle.hget("ETO_RESOURCE",  queue_name )
+           
+           if deficient == None:
+               deficient = 0
+           else:
+               deficient = float(deficient)
+           recharge_rate = float(j["recharge_rate"])
+           deficient = deficient - (recharge_rate/60) # recharge rate is per hour
+           if deficient < 0 :
+               deficient = 0 
+           
+           self.redis_handle.hset( "ETO_RESOURCE", queue_name, deficient )   
+
 
 class Irrigation_Scheduling(object):
    def __init__(self,handlers,app_files,sys_files,eto_control_field):
@@ -15,19 +137,22 @@ class Irrigation_Scheduling(object):
        self.load_step_data( queue_data["schedule_name"], int(queue_data["step"]) ,None,True )
    
    def queue_schedule_step_time(self,queue_data):
-      self.load_step_data( queue_data["schedule_name"], queue_data["schedule_step"] ,queue_data["schedule_step_time"],True ) 
+      #print("made it here",queue_data)
+      #print(queue_data["schedule_name"], queue_data['step'] ,queue_data["run_time"])
+      self.load_step_data( queue_data["schedule_name"], queue_data['step'] ,queue_data["run_time"],True ) 
        
    def queue_schedule_step_time_no_eto(self,queue_data):
-      self.load_step_data( queue_data["schedule_name"], queue_data["schedule_step"] ,queue_data["schedule_step_time"],False ) 
+      #print("made it here",queue_data)
+      self.load_step_data( queue_data["schedule_name"], queue_data['step'] ,queue_data["run_time"],False ) 
 
    def  direct_valve_control(self,queue_data):
-
+       #print("made it here",queue_data)
        json_object = {}
        json_object["type"]            =  "IRRIGATION_STEP"
        json_object["schedule_name"]   =  queue_data["controller"]
-       json_object["step"]            =  queue_data["pin"] 
-       json_object["io_setup"]        =  [{ "remote":queue_data["controller"], "bits":[queue_data["pin"]] }]
-       json_object["run_time"]        =  queue_data["run_time"] 
+       json_object["step"]            =  int(queue_data["pin"] )
+       json_object["io_setup"]        =  [{ "remote":queue_data["controller"], "bits":[int(queue_data["pin"])] }]
+       json_object["run_time"]        =  int(queue_data["run_time"] )
        json_object["elasped_time"]    =  0
        json_object["eto_enable"]      =  False
        self.handlers["IRRIGATION_PENDING"].push(json_object)
@@ -42,78 +167,96 @@ class Irrigation_Scheduling(object):
  
    def load_auto_schedule( self, schedule_name):
        schedule_control = self.app_files.load_file("sprinkler_ctrl.json")
-       print("schedule_control",type(schedule_control),schedule_control)
-       step_number      = len( schedule_control )
+       try:
+         link_data = self.get_json_data( schedule_name )["schedule"]
 
-       ###
-       ### load step data
-       ###
-       ###
-       for i in range(1,step_number+1):
-           self.load_step_data( schedule_name, i ,None,True )
-
-     
+         for schedule_step in range(1,len(link_data)+1):
+              
+             try:
+               
+                  step_data = self.get_schedule_data( link_data, schedule_name, schedule_step)
+                  schedule_step_time = step_data[1]
+                  #print( "load step data schedule name ----------------->",schedule_name, schedule_step, schedule_step_time,step_data)
+                  self.queue_step_data(step_data,schedule_name,schedule_step,schedule_step_time,eto_flag=True)
+          
+             except Exception as tst:
+                print("bad schedule ",schedule_name,schedule_step,tst)
+                details = schedule_name +"  "+str(schedule_step)+" "+str(tst)
+                self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+          
+       except Exception as tst:
+           details = "Schedule is not defined "+ str(schedule_name) +" " + str(tst)
+           print(details)
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+    
   
 
 
 
 
 
-   # note schedule_step_time can be None then use what is in the schedule
+   
    def load_step_data( self, schedule_name, schedule_step,  schedule_step_time ,eto_flag ):
-       print( "load step data schedule name ----------------->",schedule_name, schedule_step, schedule_step_time) 
+       #print(schedule_name,schedule_step,schedule_step_time)
+       try:
+           schedule_step = int(schedule_step)
+           if schedule_step_time != None:
+                schedule_step_time = int(schedule_step_time)
+           link_data = self.get_json_data( schedule_name )["schedule"] 
+           
+           step_data = self.get_schedule_data( link_data,schedule_name, schedule_step)
+           if schedule_step_time == None:
+              schedule_step_time = step_data[1]
+           #print( "load step data schedule name ----------------->",schedule_name, schedule_step, schedule_step_time,step_data)
+           self.queue_step_data(step_data,schedule_name,schedule_step,schedule_step_time,eto_flag)
+       except Exception as tst:
+           print("bad schedule ",schedule_name,schedule_step,tst)
+           details = schedule_name +"  "+str(schedule_step)+" "+tst
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+
+
+   def queue_step_data(self,step_data,schedule_name,schedule_step,schedule_step_time,eto_flag = True):
+       schedule_io = step_data[0]
+       
+
+       json_object = {}
+       json_object["type"]            = "IRRIGATION_STEP"
+       json_object["schedule_name"]   =  schedule_name
+       json_object["step"]            =  int(schedule_step)
+       json_object["io_setup"]        =  schedule_io
+       json_object["run_time"]        =  int(schedule_step_time)
+       json_object["elasped_time"]    =  0
+       json_object["eto_enable"]      =  eto_flag
+       #print("json_object",json_object)
+       self.handlers["IRRIGATION_PENDING"].push(json_object)
+
+   def get_schedule_data( self,link_data, schedule_name, schedule_step):
+       
+      schedule_step = int(schedule_step)
+      io_control = link_data[schedule_step -1] 
+      m               = io_control[0]
+      schedule_time   = m[2]
+      # format io_control
+      new_io_control = []
+      for i in io_control:
          
-       temp = self.get_schedule_data( schedule_name, schedule_step)
-       if temp != None :
-           schedule_io = temp[0]
-           schedule_time = temp[1]
-           if  schedule_step_time == None:
-               schedule_step_time = schedule_time
-           json_object = {}
-           json_object["type"]            = "IRRIGATION_STEP"
-           json_object["schedule_name"]   =  schedule_name
-           json_object["step"]            =  schedule_step
-           json_object["io_setup"]        =  schedule_io
-           json_object["run_time"]        =  schedule_step_time
-           json_object["elasped_time"]    =  0
-           json_object["eto_enable"]      =  eto_flag
-           self.handlers["IRRIGATION_PENDING"].push(json_object)
-          
-       else:
-           print("bad schedule ",schedule_name)
-           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load step data","details":"NonExisting Schedule "+schedule_name,"level":"RED"})
-           #raise  # non schedule
-
-
-
-
-   def get_schedule_data( self, schedule_name, schedule_step):
-       schedule_control = self.get_json_data( schedule_name )
-    
-       if schedule_control != None:
-           if len(schedule_control ) < schedule_step -1:
-              return None
-           io_control = schedule_control["schedule"][schedule_step -1] 
-           m               = io_control[0]
-           schedule_time   = m[2]
-           # format io_control
-           new_io_control = []
-           for i in io_control:
-         
-              temp = { }
-              temp["remote"] = i[0]
-              temp["bits"]  =  i[1]
-              new_io_control.append(temp)
-           return [ new_io_control, schedule_time ]
-       return None
+        temp = { }
+        temp["remote"] = i[0]
+        temp["bits"]  =  i[1]
+        new_io_control.append(temp)
+      return [ new_io_control, schedule_time ]
+  
  
    def get_json_data( self, schedule_name ):
       
        sprinkler_ctrl = self.app_files.load_file("sprinkler_ctrl.json")
-    
+       
        for j in sprinkler_ctrl :  
            if j["name"] == schedule_name:
                json_data=self.app_files.load_file(j["link"]) 
+               if isinstance(json_data, str):
+                     object_data = json.loads(json_data)
+               
                return json_data    
        return None
       
@@ -166,27 +309,24 @@ class Incomming_Queue_Management(object):
                data = self.handlers["IRRIGATION_JOB_SCHEDULING"].pop()
                object_data = data[1]
                if object_data != None:
-                  print(type(object_data))             
                   if isinstance(object_data, str):
                      object_data = json.loads(object_data)
-                  print("object_data",object_data)
-       
-                  if object_data["command"] in self.commands :
-                       self.commands[object_data["command"]]( object_data )
-                  else:
-                      self.alarm_queue.store_past_action_queue("Bad_Irrigation_Command","RED",object_data["command"]  )
-                      raise
+                 
+                  #print("command",object_data["command"])
+                  self.commands[object_data["command"]]( object_data )
+
               
            except Exception as tst:
+               print("IRRIGATION_CONTROLLER_EXCEPTION "+str(tst))
                self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_CONTROLLER_EXCEPTION","details":[tst,object_data["command"]],"level":"RED"})
                
-               raise
+               
       
 
    def add_chains( self, cf ):
    
        cf.define_chain( "sprinkler_command_queue", True ) 
-       cf.insert.log("sprinkler_command_queue")
+       #cf.insert.log("sprinkler_command_queue")
        cf.insert.wait_event_count(count = 1 ) # wait 1 seconds
        cf.insert.one_step(  self.dispatch_sprinkler_mode  ) 
        cf.insert.reset()
@@ -200,21 +340,22 @@ class Incomming_Queue_Management(object):
 
    def suspend( self, *args ):
        
-       self.irrigation_control.turn_off_master_valves()
-       self.irrigation_control.disable_all_sprinklers()
-       self.sprinkler_ctrl.suspend_operation()
+      
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"SUSPEND_OPERATION","level":"YELLOW"})
        self.cf.send_event("IRI_MASTER_VALVE_SUSPEND",None)
        self.handlers["IRRIGATION_CONTROL"].hset("SUSPEND",1)
 
    def resume( self, *args ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"RESUME_OPERATION","level":"YELLOW"})
-       self.sprinkler_ctrl.resume_operation()
        self.cf.send_event("IRI_MASTER_VALVE_RESUME",None)
        self.handlers["IRRIGATION_CONTROL"].hset("SUSPEND",0)
 
+
    def skip_station( self, *args ):
-       self.sprinkler_ctrl.skip_operation()
+       self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"SKIP_OPERATION","level":"YELLOW"})
+       self.cf.send_event("IRI_MASTER_VALVE_SKIP",None)
+      
+
 
    def resistance_check( self, object_data ):
         json_object = {}
@@ -260,10 +401,11 @@ class Incomming_Queue_Management(object):
 
    def  reset_system_now( self, *args ):
       self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT_NOW","level":"YELLOW"})
-      self.redis_handle.hset( "CONTROL_VARIABLES","sprinkler_ctrl_mode","RESET_SYSTEM")
+    
+      time.sleep(5)
       os.system("reboot")  
 
-   def reset_system_queue( self, object_data,chainFlowHandle, chainObj, parameters,event ):
+   def reset_system_queue( self,  *args ):
         json_object = {}
         json_object["type"]  = "RESET_SYSTEM_QUEUE"
         self.handlers["IRRIGATION_PENDING"].push(json_object)     

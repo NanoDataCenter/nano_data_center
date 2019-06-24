@@ -26,7 +26,7 @@
       <option value="SKIP_STATION">Skip Current Irrigation Step  </option>
 	     <option value="QUEUE_SCHEDULE">Queue Schedule</option>
 	     <option value="QUEUE_SCHEDULE_STEP">Queue Schedule Step</option>
-	     <option value="QUEUE_SCHEDULE_STEP_TIME_A">Queue Schedule Step Time</option>
+	     <option value="QUEUE_SCHEDULE_STEP_TIME">Queue Schedule Step Time</option>
 
 	     <option value="OPEN_MASTER_VALVE">Open Master Valve</option>
 	     <option value="CLOSE_MASTER_VALVE">Close Master Valve</option> 
@@ -37,9 +37,9 @@
       <option value="RESUME">Resume Operation  </option> 
               
 
-      <option value="RESET_SYSTEM_Queue">Reset System_Queue</option>
+      <option value="RESET_SYSTEM_QUEUE">Reset System_Queue</option>
 	 
-     <option value="RESET_SYSTEM_Now">Reset System Now</option>
+     <option value="RESET_SYSTEM_NOW">Reset System Now</option>
 	 </select>
   
 	 <div id = "schedule_div">
