@@ -123,7 +123,7 @@ class Monitoring_Base(object):
                      temp["schedule_name"]  = name
                      temp["step"]           = 0
                      temp["run_time"]       = 0
-                     self.job_queue.push( json.dumps(temp) )
+                     self.job_queue.push( temp )
                      temp = [1,time.time()+60*60 ]  # +hour prevents a race condition
                      self.completion_dictionary.hset( name,json.dumps(temp) ) 
 
@@ -138,6 +138,35 @@ class System_Monitoring(Monitoring_Base):
    def __init__(self, app_files,completion_dictionary,job_queue):
        Monitoring_Base.__init__(self,app_files,"system_actions.json",completion_dictionary,job_queue)
 
+   def check_for_active_schedule( self, *args):
+
+      temp = datetime.datetime.today()
+      dow_array = [ 1,2,3,4,5,6,0]
+      dow = datetime.datetime.today().weekday()
+      dow = dow_array[dow]
+      st_array = [temp.hour,temp.minute]
+      sprinkler_ctrl = self.app_files.load_file("system_actions.json")
+      for j in sprinkler_ctrl:
+          
+          name     = j["name"]
+          command  = j["command_string"]
+          #print( "checking schedule",name)
+          if j["dow"][dow] != 0 :
+            
+            start_time = j["start_time"]
+            end_time   = j["end_time"]
+    
+            if self.determine_start_time( start_time,end_time ):
+                 if self.check_schedule_flag( name ):
+                     print( "queue in schedule ",name )
+                     temp = {}
+                     temp["command"]        = command
+                     temp["schedule_name"]  = name
+                     temp["step"]           = 0
+                     temp["run_time"]       = 0
+                     self.job_queue.push( temp )
+                     temp = [1,time.time()+60*60 ]  # +hour prevents a race condition
+                     self.completion_dictionary.hset( name,json.dumps(temp) ) 
 
                   
   
@@ -288,7 +317,7 @@ if __name__ == "__main__":
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_terminal( query_list,relationship="IRRIGATION_CONTROL_FIELDS",label="IRRIGATION_CONTROL_FIELDS" )
     control_field, control_field_nodes = qs.match_list(query_list)
-    shut_off_list = control_field_nodes[0]['access_keys']
+    shut_off_list = control_field_nodes[0] 
 
     irrigation_control        = generate_handlers.construct_hash(data_structures["IRRIGATION_CONTROL"])
     sched        = Irrigation_Schedule_Monitoring( app_files,completion_dictionary,job_queue,irrigation_control,shut_off_list )

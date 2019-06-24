@@ -23,7 +23,7 @@ class CIMIS_SPATIAL(object):
             return
          
         ts=time.time() - 1 * ONE_DAY  # time is in seconds for desired day
-
+       
         date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
         lat_long = "lat=" + str(self.latitude) + ",lng=" + str(self.longitude)
         url = self.cimis_url + "?" + self.app_key + "&targets=" + \

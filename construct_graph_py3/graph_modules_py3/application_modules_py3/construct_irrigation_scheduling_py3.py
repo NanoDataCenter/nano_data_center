@@ -17,5 +17,6 @@ class Construct_Irrigation_Scheduling_Control(object):
       cd.add_redis_stream("IRRIGATION_PAST_ACTIONS",2000)
       cd.close_package_contruction()
       bc.add_info_node("IRRIGATION_CONTROL_FIELDS","IRRIGATION_CONTROL_FIELDS",properties={"access_keys":["RAIN_FLAG"]})
+      bc.add_info_node("IRRIGATION_ETO_CONTROL","IRRIGATION_ETO_CONTROL",properties={"access_keys":"ETO_MANAGEMENT"})
       bc.end_header_node("IRRIGIGATION_SCHEDULING_CONTROL")
 

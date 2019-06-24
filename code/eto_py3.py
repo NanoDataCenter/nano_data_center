@@ -89,21 +89,21 @@ class Eto_Management(object):
          return "DISABLE"
 
     def make_measurement(self, *parameters):
-    
+       
         for source in self.eto_sources:
-            
+            print("source",source)
             if "calculator" in source:
                 try:
                     source["calculator"].compute_previous_day()
                 except Exception as tst:
                    
-                    print("exception",source["name"])
+                    print("exception",source["name"],tst)
                     self.ds_handlers["EXCEPTION_VALUES"].hset(source["name"],str(tst))
-       
+        print("calculator done")       
              
 
     def update_eto_bins(self, *parameters):
-        
+        print(int(self.ds_handlers["ETO_CONTROL"].hget("ETO_UPDATE_FLAG")))
         if int(self.ds_handlers["ETO_CONTROL"].hget("ETO_UPDATE_FLAG")) == 1:
             return True
         self.ds_handlers["ETO_CONTROL"].hset("ETO_UPDATE_FLAG",1) 
@@ -209,7 +209,8 @@ def construct_eto_instance(qs, site_data,user_table ):
     query_list = qs.add_match_terminal( query_list, 
                                         relationship = "WS_STATION" )
                                         
-    eto_sets, eto_sources = qs.match_list(query_list)                                    
+    eto_sets, eto_sources = qs.match_list(query_list) 
+    
     
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
@@ -262,10 +263,11 @@ def add_eto_chains(eto, cf):
     cf.insert.log("enabling making_measurement")
     cf.insert.wait_tod_ge(hour=9)
     cf.insert.enable_chains(["update_eto_bins"])
+    cf.insert.log("enable_update_eto_bins")
     
     cf.insert.wait_tod_ge( hour =  23 )
-    cf.insert.disable_chains(["eto_make_measurements","update_eto_bins","log_sprinkler_data"])
-    #cf.insert.enable_chains(["log_sprinkler_data"])
+    cf.insert.disable_chains(["eto_make_measurements","update_eto_bins"])
+    
     cf.insert.wait_event_count( event = "DAY_TICK" )
     cf.insert.reset()
 
@@ -274,12 +276,7 @@ def add_eto_chains(eto, cf):
     cf.insert.log("updating eto bins")
     cf.insert.wait_function( eto.update_eto_bins )
     cf.insert.terminate()
-    
-    cf.define_chain("log_sprinkler_data", False)
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
-    cf.insert.log("logging sprinkler data")
-    
-    cf.insert.terminate()
+ 
     
     
     cf.define_chain("eto_make_measurements", False)
@@ -290,7 +287,7 @@ def add_eto_chains(eto, cf):
     #cf.insert.log("starting logging")
     #cf.insert.one_step( eto.log_sprinkler_data ) ### for debug
     #cf.insert.log("logging done")
-    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 8)
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
     cf.insert.log("Receiving 8 minute tick")
     
     cf.insert.reset()

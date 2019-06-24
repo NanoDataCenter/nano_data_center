@@ -14,7 +14,8 @@ class Construct_Weather_Stations(object):
       cd.add_redis_stream("EXCEPTION_LOG")
  
       cd.close_package_contruction()
-
+      self.add_station_cimis()
+      self.add_station_cimis_satellite()
       bc.end_header_node("WEATHER_STATIONS")
 
    def add_station_wunderground(self):
