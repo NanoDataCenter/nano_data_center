@@ -23,6 +23,7 @@ class Monitoring_Base(object):
 
    def __init__(self,app_file,file_name,completion_dictionary,job_queue,active_function=None):
        self.app_file = app_file
+       
        self.file_name = file_name
        self.completion_dictionary = completion_dictionary
        self.job_queue = job_queue
@@ -93,8 +94,7 @@ class Monitoring_Base(object):
        #print("return_value",return_value)
        return return_value
      
-
-   def check_for_active_activity( self, *args):
+   def check_for_schedule_activity( self, *args):
       if self.active_function != None:
          if self.active_function() == False:
             return  # something like rain day has occurred
@@ -127,25 +127,16 @@ class Monitoring_Base(object):
                      temp = [1,time.time()+60*60 ]  # +hour prevents a race condition
                      self.completion_dictionary.hset( name,json.dumps(temp) ) 
 
-  
 
 
-
-
-              
-class System_Monitoring(Monitoring_Base): 
-   
-   def __init__(self, app_files,completion_dictionary,job_queue):
-       Monitoring_Base.__init__(self,app_files,"system_actions.json",completion_dictionary,job_queue)
-
-   def check_for_active_schedule( self, *args):
+   def check_for_system_activity( self, *args):
 
       temp = datetime.datetime.today()
       dow_array = [ 1,2,3,4,5,6,0]
       dow = datetime.datetime.today().weekday()
       dow = dow_array[dow]
       st_array = [temp.hour,temp.minute]
-      sprinkler_ctrl = self.app_files.load_file("system_actions.json")
+      sprinkler_ctrl = self.app_file.load_file("system_actions.json")
       for j in sprinkler_ctrl:
           
           name     = j["name"]
@@ -157,7 +148,7 @@ class System_Monitoring(Monitoring_Base):
             end_time   = j["end_time"]
     
             if self.determine_start_time( start_time,end_time ):
-                 if self.check_schedule_flag( name ):
+                if self.check_flag( name ):
                      print( "queue in schedule ",name )
                      temp = {}
                      temp["command"]        = command
@@ -168,7 +159,19 @@ class System_Monitoring(Monitoring_Base):
                      temp = [1,time.time()+60*60 ]  # +hour prevents a race condition
                      self.completion_dictionary.hset( name,json.dumps(temp) ) 
 
-                  
+
+         
+class System_Monitoring(Monitoring_Base): 
+   
+   def __init__(self, app_files,completion_dictionary,job_queue):
+       
+       Monitoring_Base.__init__(self,app_files,"system_actions.json",completion_dictionary,job_queue)
+ 
+       
+   '''    
+
+
+   '''               
   
 class Irrigation_Schedule_Monitoring(Monitoring_Base):
    def __init__(self, app_files,completion_dictionary,job_queue,irrigation_control,rain_field ):
@@ -209,7 +212,8 @@ class Irrigation_Schedule_Monitoring(Monitoring_Base):
        else:
           return False
 
- 
+
+   
  
 
 class Ntpd():
@@ -224,8 +228,8 @@ def add_chains(cf,sched,action,ntpd):
 
 
    cf.define_chain( "irrigation_scheduling", True )
-   cf.insert.one_step( action.check_for_active_activity  )
-   cf.insert.one_step( sched.check_for_active_activity  )
+   cf.insert.one_step( action.check_for_system_activity  )
+   cf.insert.one_step( sched.check_for_schedule_activity  )
    cf.insert.wait_event_count( event =  "MINUTE_TICK"  )
    cf.insert.reset()
     
