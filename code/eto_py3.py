@@ -122,6 +122,7 @@ class Eto_Management(object):
            self.eto_hash_table.hset(i,new_value)
         print("logging sprinkler_data")
         self.log_sprinkler_data()
+        return True
         
 
 
@@ -275,6 +276,7 @@ def add_eto_chains(eto, cf):
     cf.insert.wait_event_count( event = "MINUTE_TICK",count = 8)
     cf.insert.log("updating eto bins")
     cf.insert.wait_function( eto.update_eto_bins )
+    cf.insert.disable_chains(["eto_make_measurements"])
     cf.insert.terminate()
  
     
