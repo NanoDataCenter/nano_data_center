@@ -91,7 +91,9 @@ class Redis_Hash_Dictionary( object ):
        for i,items in dictionary_table.items():
           self.hset(i,items)
        
-         
+
+      
+     
          
    def hget( self, field):
       
@@ -217,6 +219,13 @@ class Job_Queue_Server( object ):
        else:
           
           return True, msgpack.unpackb(pack_data,encoding='utf-8')
+
+   def push_front(self,data):
+       pack_data =  msgpack.packb(data,use_bin_type = True )
+       self.redis_handle.rpush(self.key,pack_data)
+       self.redis_handle.ltrim(self.key,0,self.depth)
+       if self.cloud_handler != None:
+           self.cloud_handler.lpush(self.data, self.depth,self.key,pack_data)
 
 
 '''  

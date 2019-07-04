@@ -56,10 +56,10 @@ class ETO_Management(object):
       self.eto_site_data = self.app_files.load_file( "eto_site_setup.json" )
       
       sensor_list = self.find_queue_names( io_list )
-      if len(self.sensor_list) == 0:
+      if len(sensor_list) == 0:
         return run_time, False,None
-      run_time = find_largest_runtime(run_time,sensor_list)
-      return runtime,True,sensor_list
+      run_time = self.find_largest_runtime(run_time,sensor_list)
+      return run_time,True,sensor_list
       
       
       
@@ -68,7 +68,7 @@ class ETO_Management(object):
 
 
    def find_queue_names( self, io_list ):
-       print("io_list ",io_list)
+       
        eto_values = []
        for j in io_list:
            controller = j["remote"]
@@ -90,6 +90,7 @@ class ETO_Management(object):
 
        for j in sensor_list:
            index = j[0]
+           queue_name = j[1]
            eto_temp = self.eto_site_data[index]
            recharge_eto = float( eto_temp["recharge_eto"] )  # minium eto for sprinkler operation
            recharge_rate = float(eto_temp["recharge_rate"])
@@ -145,6 +146,9 @@ if __name__ == "__main__":
     from   py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
     from   py_cf_new_py3.cluster_control_py3 import Cluster_Control
     from   irrigation_control_py3.Incomming_Queue_Management_py3 import Incomming_Queue_Management
+    from   irrigation_control_py3.misc_support_py3 import IO_Control
+    from   irrigation_control_py3.irrigation_queue_processing_py3 import Irrigation_Queue_Management
+    from irrigation_control_py3.master_valve_control_py3 import Master_Valve
    
     #
     #
@@ -173,18 +177,43 @@ if __name__ == "__main__":
     sys_files        =  SYS_FILES(redis_handle,redis_site)
     ds_handlers = {}
     ds_handlers["IRRIGATION_PAST_ACTIONS"] = generate_handlers.construct_redis_stream_writer(data_structures["IRRIGATION_PAST_ACTIONS"] )
-    ds_handlers["IRRIGATION_CURRENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_CURRENT"] )
+    ds_handlers["IRRIGATION_CURRENT_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_CURRENT"] )
+    ds_handlers["IRRIGATION_CURRENT_SERVER"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_CURRENT"] )
     ds_handlers["IRRIGATION_JOB_SCHEDULING"] = generate_handlers. construct_job_queue_server(data_structures["IRRIGATION_JOB_SCHEDULING"] )
-    ds_handlers["IRRIGATION_PENDING"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_PENDING"] )
+    ds_handlers["IRRIGATION_PENDING_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_PENDING"] )
+    ds_handlers["IRRIGATION_PENDING_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_PENDING"] )
     ds_handlers["IRRIGATION_CONTROL"] = generate_handlers.construct_hash(data_structures["IRRIGATION_CONTROL"])
+    ds_handlers["IRRIGATION_VALVE_TEST"] = generate_handlers.construct_hash(data_structures["IRRIGATION_VALVE_TEST"])
+    ds_handlers["IRRIGATION_TIME_HISTORY"] = generate_handlers.construct_hash(data_structures["IRRIGATION_TIME_HISTORY"])
+    ds_handlers["VALVE_JOB_QUEUE_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
+    ds_handlers["VALVE_JOB_QUEUE_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
     ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT","level":"RED"})
    
     query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_terminal( query_list,relationship="IRRIGATION_ETO_CONTROL",label="IRRIGATION_ETO_CONTROL" )
     control_field, control_field_nodes = qs.match_list(query_list)
     eto_control_field = control_field_nodes[0] 
 
-   
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_terminal( query_list,relationship="CLEANING_VALVES",label="CLEANING_VALVES" )
+    control_field, control_field_nodes = qs.match_list(query_list)
+    cleaning_valves = control_field_nodes[0] 
+
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_terminal( query_list,relationship="MASTER_VALVES",label="MASTER_VALVES" )
+    control_field, control_field_nodes = qs.match_list(query_list)
+    master_valves = control_field_nodes[0] 
+
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_terminal( query_list,relationship="MEASUREMENT_DEPTH",label="MEASUREMENT_DEPTH" )
+    control_field, control_field_nodes = qs.match_list(query_list)
+    measurement_depths = control_field_nodes[0] 
+    
+  
     remote_classes = None #construct_classes_py3.Construct_Access_Classes(io_server_ip,io_server_port)
     io_control  = None #  IO_Control(gm,remote_classes, redis_old_handle,redis_new_handle,eto_control_field)
      
@@ -192,13 +221,35 @@ if __name__ == "__main__":
     cluster_control = Cluster_Control(cf)
     eto_management = ETO_Management(redis_site,app_files)
     if ds_handlers["IRRIGATION_CONTROL"].hget(eto_control_field) == None:
-         ds_handlers["IRRIGATION_CONTROL"].hset(eto_control_field,1)    
+         ds_handlers["IRRIGATION_CONTROL"].hset(eto_control_field,1)  
+
+    ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all() # delete current job to prevent circular reboots
+    io_control = IO_Control()
+
+    Irrigation_Queue_Management(handlers=ds_handlers,
+                               cluster_id = 1, #### not sure what this is
+                               cluster_control = cluster_control,
+                               cf = cf,
+                               app_files = app_files,
+                               sys_files = sys_files,
+                               manage_eto =eto_management,
+                               irrigation_io = io_control,
+                               master_valves = master_valves,
+                               cleaning_valves = cleaning_valves,
+                               measurement_depths =measurement_depths )
+                           
     Incomming_Queue_Management( cf = cf,
                                     handlers = ds_handlers,
                                     app_files = app_files,
                                     sys_files = sys_files,
                                     eto_control_field = eto_control_field,
-                                    eto_management = eto_management)
+                                    eto_management = eto_management,
+                                     cluster_control = cluster_control,
+                                    irrigation_io = io_control )
+
+    Master_Valve("MASTER_VALVE", cf,cluster_control, io_control, ds_handlers)
+
+                            
     #
     #  Instanciate Sub modules
     #  
@@ -215,7 +266,7 @@ if __name__ == "__main__":
       #
       #Deleting current irrigation job to prevent circular reboots
       #
-      ds_handlers["IRRIGATION_CURRENT"].delete_all()
+      ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all()
       ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_CONTROLLER_EXCEPTION","details":tst,"level":"RED"})
       print("tst",tst)
       raise

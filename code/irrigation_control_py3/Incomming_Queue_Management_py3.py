@@ -6,7 +6,8 @@ class Irrigation_Scheduling(object):
        self.app_files = app_files
        self.sys_files = sys_files
        self.eto_control_field = eto_control_field
-       self.eto_management = eto_management       
+       self.eto_management = eto_management  
+              
        
    def queue_schedule(self,queue_data):
        self.load_auto_schedule(queue_data["schedule_name"])
@@ -97,7 +98,7 @@ class Irrigation_Scheduling(object):
        schedule_io = step_data[0]
        schedule_step = int(schedule_step)
        schedule_step_time = int(schedule_step_time)
-       if ( self.handlers["IRRIGATION_CONTROL"].hget(eto_control_field) != 0) and (eto_flag == True): 
+       if ( self.handlers["IRRIGATION_CONTROL"].hget(self.eto_control_field) != 0) and (eto_flag == True): 
           schedule_step_time,eto_flag,eto_list = self.eto_management.determine_eto_management(schedule_step_time, schedule_io )
        else:
           eto_flag = False
@@ -112,12 +113,13 @@ class Irrigation_Scheduling(object):
           json_object["elasped_time"]    =  0
           json_object["eto_enable"]      =  eto_flag
           json_object["eto_list"]        =  eto_list
-          #print("json_object",json_object)
-          self.handlers["IRRIGATION_PENDING"].push(json_object)
+          json_object["eto_flag"]        = eto_flag
+          print("json_object",json_object)
+          self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
        else:
-           details = "Schedule "+ schedule_name +" step "+schedule_step+" IRRIGATION_ETO_RESTRICTION"
+           details = "Schedule "+ schedule_name +" step "+str(schedule_step)+" IRRIGATION_ETO_RESTRICTION"
            print(details)
-           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLO"})
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLOW"})
        
        
    def get_schedule_data( self,link_data, schedule_name, schedule_step):
@@ -157,18 +159,20 @@ class Irrigation_Scheduling(object):
 
 
 
+
 class Incomming_Queue_Management(object):
-   def __init__(self,cf, handlers,app_files,sys_files,eto_control_field,eto_management):
+   def __init__(self,cf, cluster_control, handlers,app_files,sys_files,eto_control_field,eto_management,irrigation_io):
        self.cf = cf
        self.handlers = handlers
        self.app_files = app_files
        self.sys_files = sys_files
        self.eto_control_field = eto_control_field
        self.eto_management = eto_management 
+       self.irrigation_io = irrigation_io
+       
        self.irrigation_sched = Irrigation_Scheduling(handlers,app_files,sys_files,eto_control_field,eto_management)
        
-       
-
+                      
        self.commands = {}
 
        self.commands["CLEAR"]                     = self.clear                   
@@ -234,24 +238,24 @@ class Incomming_Queue_Management(object):
       
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"SUSPEND_OPERATION","level":"YELLOW"})
        self.cf.send_event("IRI_MASTER_VALVE_SUSPEND",None)
-       self.handlers["IRRIGATION_CONTROL"].hset("SUSPEND",1)
+      
 
    def resume( self, *args ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"RESUME_OPERATION","level":"YELLOW"})
        self.cf.send_event("IRI_MASTER_VALVE_RESUME",None)
-       self.handlers["IRRIGATION_CONTROL"].hset("SUSPEND",0)
+      
 
 
    def skip_station( self, *args ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"SKIP_OPERATION","level":"YELLOW"})
-       self.cf.send_event("IRI_MASTER_VALVE_SKIP",None)
-      
+       self.cf.send_event("RELEASE_IRRIGATION_CONTROL",None)
+           
 
 
    def resistance_check( self, object_data ):
         json_object = {}
         json_object["type"]   = "RESISTANCE_CHECK"
-        self.handlers["IRRIGATION_PENDING"].push(json_object)
+        self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
         
              
 
@@ -259,32 +263,36 @@ class Incomming_Queue_Management(object):
    def check_off( self,object_data ):
         json_object = {}
         json_object["type"]            = "CHECK_OFF"
-        self.handlers["IRRIGATION_PENDING"].push(json_object)
+        self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
        
 
    def clean_filter( self, object_data ):
         json_object = {}
         json_object["type"]  = "CLEAN_FILTER"
-        self.handlers["IRRIGATION_PENDING"].push(json_object)       
+        self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)       
 
   
  
    def clear( self, object_data ):
-        self.cf.send_event("IRI_CLEAR",None)         
+       self.clear_redis_sprinkler_data()
+       self.handlers["IRRIGATION_CURRENT_CLIENT"].delete_all()
+       self.handlers["IRRIGATION_PENDING_SERVER"].delete_all()
+       self.cf.send_event("RELEASE_IRRIGATION_CONTROL",None)
+       self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"CLEAR","level":"YELLOW"})         
 
-
-         
+   def clear_redis_sprinkler_data(self):
+       pass  ## TBD     
  
 
-   def open_master_valve( self, object_data,chainFlowHandle, chainObj, parameters,event ):
+   def open_master_valve( self, object_data ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"OPEN_MASTER_VALVE","level":"YELLOW"})
-       chainFlowHandle.send_event("IRI_OPEN_MASTER_VALVE",None)
+       self.cf.send_event("IRI_OPEN_MASTER_VALVE",None)
 
      
   
-   def close_master_valve( self, object_data,chainFlowHandle, chainObj, parameters,event ):
+   def close_master_valve( self, object_data ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"CLOSE_MASTER_VALVE","level":"YELLOW"})
-       chainFlowHandle.send_event("IRI_CLOSE_MASTER_VALVE",None)
+       self.cf.send_event("IRI_CLOSE_MASTER_VALVE",None)
       
     
  
@@ -299,7 +307,7 @@ class Incomming_Queue_Management(object):
    def reset_system_queue( self,  *args ):
         json_object = {}
         json_object["type"]  = "RESET_SYSTEM_QUEUE"
-        self.handlers["IRRIGATION_PENDING"].push(json_object)     
+        self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)     
 
 
        
