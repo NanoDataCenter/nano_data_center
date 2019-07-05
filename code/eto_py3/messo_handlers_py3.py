@@ -68,11 +68,12 @@ class Messo_ETO(object):
             
         
         print("messo calculation")
+        date_string = str(datetime.datetime.now())
         self.eto_dict.hset("messo:"+self.station+":normal_eto",
                            { "eto":self.calculate_eto.__calculate_eto__( results  =  return_value_normal, alt = self.alt,lat = self.lat ), 
-                           "priority":self.priority,"status":"OK" })
+                           "priority":self.priority,"status":"OK","time": date_string  })
         self.eto_dict.hset("messo:"+self.station+":gust_eto",
-                           { "eto":self.calculate_eto.__calculate_eto__( return_value_gust, self.alt,self.lat ), "priority":100,"status":"OK" })
+                           { "eto":self.calculate_eto.__calculate_eto__( return_value_gust, self.alt,self.lat ), "priority":100,"status":"OK","time": date_string  })
 
         
 
@@ -115,7 +116,8 @@ class Messo_Precp(object):
         station_data = station["OBSERVATIONS"]
         
         rain = float(station_data["total_precip_value_1"]) / 25.4
-        self.rain_dict.hset( "messo:"+self.station,  {"rain":rain,"priority":self.messo_data["priority"],"status":"OK"} )
+        date_string = str(datetime.datetime.now())
+        self.rain_dict.hset( "messo:"+self.station,  {"rain":rain,"priority":self.messo_data["priority"],"status":"OK","time": date_string } )
         
        
 

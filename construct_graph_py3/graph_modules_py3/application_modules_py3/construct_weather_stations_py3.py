@@ -16,6 +16,8 @@ class Construct_Weather_Stations(object):
       cd.close_package_contruction()
       self.add_station_cimis()
       self.add_station_cimis_satellite()
+      self.add_station_messo_west_sruc1_eto()
+      self.add_station_messo_west_sruc1_rain()
       bc.end_header_node("WEATHER_STATIONS")
 
    def add_station_wunderground(self):
@@ -41,7 +43,7 @@ class Construct_Weather_Stations(object):
                       "altitude":2400,
                       "priority":2 }
        self.bc.add_info_node( "WS_STATION","Station_62",properties=properties) 
-   '''
+
    def add_station_messo_west_sruc1_eto(self):
        properties = {"access_key":"MESSOWEST"  ,
                      "type":"MESSO_ETO",
@@ -63,7 +65,6 @@ class Construct_Weather_Stations(object):
  
   
        self.bc.add_info_node( "WS_STATION","SRUC1_RAIN",properties=properties)
-
-   '''           
+          
        
        

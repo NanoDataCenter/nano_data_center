@@ -36,7 +36,7 @@ class Base_Stream_Processing(object):
    def format_data_variable_title(self,stream_data,show_legend = False,
                                   title = "",title_x="",title_y="",ntick_x = 20,ntick_y=20):
       return_value = {}
-      keys = list(stream_data[0]["data"].keys())
+      keys = list(stream_data[-1]["data"].keys())
       
       for i in keys:
          new_key = i

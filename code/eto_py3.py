@@ -135,9 +135,11 @@ class Eto_Management(object):
        
        print("log data ",eto_data)
        if len(eto_data.keys()) > 0:
+          print("logging eto data")
           self.ds_handlers["ETO_HISTORY"].push(data = eto_data) 
        rain_data = self.assemble_data("rain",self.ds_handlers["RAIN_VALUES"])
-       if len(rain_data.keys()) > 0:      
+       if len(rain_data.keys()) > 0:  
+           print("loging rain data")       
            self.ds_handlers["RAIN_HISTORY"].push(data = rain_data) 
        exception_data = self.ds_handlers["EXCEPTION_VALUES"].hgetall()
        print("exception data",exception_data)
@@ -244,7 +246,7 @@ def construct_eto_instance(qs, site_data,user_table ):
 
 def add_eto_chains(eto, cf):
 
-    cf.define_chain("test_generator",False)
+    cf.define_chain("test_generator",True)
     cf.insert.log("send Day Tick")
     cf.insert.send_event("DAY_TICK")
     cf.insert.terminate()

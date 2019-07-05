@@ -90,7 +90,7 @@ class Load_ETO_Management(Base_Stream_Processing):
    
        temp_data = self.handlers["ETO_HISTORY"].revrange("+","-" , count=1000)
        temp_data.reverse()
-       print("temp_data",temp_data)
+       #print("temp_data",temp_data)
        chart_title = " ETO Log For Weather Station : "
        stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
        '''
