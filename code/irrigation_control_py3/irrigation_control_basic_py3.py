@@ -23,12 +23,21 @@ class Irrigation_Control_Basic(object):
 
    def construct_chains( self , cf ):
 
-
+       ## terminate chain  ##########################################################
+       cf.define_chain("IR_D_end_irrigation", True)
+       cf.insert.log("termination started ")
+       cf.insert.wait_event_count( event = "IR_D_END_IRRIGATION")
+       #cf.insert.one_step(self.shutdown_irrigation)
+       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
+       cf.insert.terminate()      
+  
        ## startup chain ##########################################################
        cf.define_chain("IR_D_start_irrigation_step", False ) # tested
 
       
-     
+       cf.insert.log("start irrigation ")
+       cf.insert.enable_chains( ["IR_D_end_irrigation" ])
+       cf.insert.wait_event_count( count= 2 )  # wait for termination chain going
        cf.insert.assert_function_terminate(  reset_event = "IR_D_END_IRRIGATION",
                                              reset_event_data=None,
                                              function = self.grab_json_data)      
@@ -43,7 +52,7 @@ class Irrigation_Control_Basic(object):
                                              function = self.start)
 
 
-     
+       cf.insert.log("enabling chain ")
        cf.insert.enable_chains( ["IR_D_monitor_irrigation_step" ])
        cf.insert.terminate()      
       
@@ -53,6 +62,7 @@ class Irrigation_Control_Basic(object):
 
 
        cf.define_chain("IR_D_monitor_irrigation_step", False )
+       cf.insert.log("monitor irrigation  step")
        cf.insert.wait_event_count(event = "MINUTE_TICK")
        
 
@@ -66,13 +76,7 @@ class Irrigation_Control_Basic(object):
        cf.insert.reset()      
       
       
-       ## terminate chain  ##########################################################
-       cf.define_chain("IR_D_end_irrigation", False)
-       cf.insert.wait_event_count( event = "IR_D_END_IRRIGATION")
-       #cf.insert.one_step(self.shutdown_irrigation)
-       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
-       cf.insert.terminate()      
-      
+    
 
       
       
@@ -91,10 +95,13 @@ class Irrigation_Control_Basic(object):
 
 
    def grab_json_data( self, *args ): #Transfer queue object to class
-       self.json_object = ds_handlers["IRRIGATION_PENDING_SERVER"].show_next_job()
+      
+       self.json_object = self.handlers["IRRIGATION_CURRENT_SERVER"].show_next_job()[1]
+       
        self.json_object["max_flow_time"] = 0
        self.json_object = self.convert_to_integers( self.json_object,
                                   ["run_time","step","max_flow_time"])
+       return True
 
    def convert_to_integers( self, dictionary, list_elements):
        for i in list_elements:
@@ -115,8 +122,9 @@ class Irrigation_Control_Basic(object):
      
       self.json_object["elasped_time"]  =      self.json_object["elasped_time"] +1
       self.json_object["max_flow_time"]       =  self.json_object["max_flow_time"]+1
+      print("json_object",self.json_object)
       if self.json_object["elasped_time"] <= self.json_object["run_time"]  :
-           step_monitoring.step_monitoring(json_object)       
+           self.step_monitor.step_monitoring(self.json_object)       
  
       else:
            return_value = False

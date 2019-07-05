@@ -246,7 +246,7 @@ def construct_eto_instance(qs, site_data,user_table ):
 
 def add_eto_chains(eto, cf):
 
-    cf.define_chain("test_generator",True)
+    cf.define_chain("test_generator",False)
     cf.insert.log("send Day Tick")
     cf.insert.send_event("DAY_TICK")
     cf.insert.terminate()

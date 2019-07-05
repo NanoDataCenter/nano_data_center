@@ -147,9 +147,8 @@ class Irrigation_Queue_Management(object):
            return       
            
        if json_object["type"] == "IRRIGATION_STEP":
-          print("made it here irrigation step")
-          self.cf.queue_event("RELEASE_IRRIGATION_CONTROL", 0)
-          return
+          
+ 
           json_object["restart"] =  False
           json_object["elasped_time"] = 0 
           self.handlers["IRRIGATION_CURRENT_CLIENT"].delete_all()
@@ -162,9 +161,9 @@ class Irrigation_Queue_Management(object):
                  self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLOW"})
                  return
  
-             
-          #handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
-          #self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"DIAGNOSITIC_CONTROL" )
+          
+          self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
+          self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"DIAGNOSITIC_CONTROL" )
        return "DISABLE"
 
    def clear_redis_irrigate_queue( self,*args ):

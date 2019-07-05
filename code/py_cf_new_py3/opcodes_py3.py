@@ -271,6 +271,7 @@ class Opcodes(object):
 
 
     def verify_return_code( self, cf_handle, reset_event, reset_flag ):
+        print("reset_event",reset_event,reset_flag)
         if reset_event[0] != None:
                event = {}
                event["name"] = reset_event[0]
@@ -288,7 +289,7 @@ class Opcodes(object):
         reset_event  = parameters[1]
         reset_flag   = parameters[2]
         verifyFn     = parameters[0]
-        print("made it here",cf_handle,chainObj,parameters,event)
+        
         if verifyFn (cf_handle, chainObj, parameters, event):
             returnValue = "CONTINUE"
         else:
@@ -443,7 +444,7 @@ class Opcodes(object):
             
             returnValue = self.verify_return_code( cf_handle, reset_event, reset_flag)
             
-        
+       
         return returnValue
 
 
@@ -581,16 +582,17 @@ class Opcodes(object):
         reset_event  = parameters[1]
         reset_flag   = parameters[2]
         verifyFn     = parameters[0]
- 
-              
+        if event["name"] == "INIT":
+           return "CONTINUE"
+           
         if verifyFn (cf_handle, chainObj, parameters, event):
+
             returnValue = "DISABLE"
         else:
     
-           if event["name"] != "INIT":
-               returnValue = self.verify_return_code( cf_handle, reset_event, reset_flag)
-           else:
-              returnValue = "CONTINUE" 
+          
+           returnValue = self.verify_return_code( cf_handle, reset_event, reset_flag)
+ 
         
         return returnValue
 

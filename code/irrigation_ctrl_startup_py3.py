@@ -178,7 +178,7 @@ if __name__ == "__main__":
     ds_handlers = {}
     ds_handlers["IRRIGATION_PAST_ACTIONS"] = generate_handlers.construct_redis_stream_writer(data_structures["IRRIGATION_PAST_ACTIONS"] )
     ds_handlers["IRRIGATION_CURRENT_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_CURRENT"] )
-    ds_handlers["IRRIGATION_CURRENT_SERVER"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_CURRENT"] )
+    ds_handlers["IRRIGATION_CURRENT_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_CURRENT"] )
     ds_handlers["IRRIGATION_JOB_SCHEDULING"] = generate_handlers. construct_job_queue_server(data_structures["IRRIGATION_JOB_SCHEDULING"] )
     ds_handlers["IRRIGATION_PENDING_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_PENDING"] )
     ds_handlers["IRRIGATION_PENDING_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_PENDING"] )
