@@ -12,7 +12,7 @@ from .irrigation_control_basic_py3      import   Irrigation_Control_Basic
 
 class Irrigation_Queue_Management(object):
 
-   def __init__(self,handlers,cluster_id,cluster_control,cf,app_files,sys_files,manage_eto,irrigation_io,master_valves,cleaning_valves,measurement_depths):
+   def __init__(self,handlers,cluster_id,cluster_control,cf,app_files,sys_files,manage_eto,irrigation_io,master_valves,cleaning_valves,measurement_depths,eto_management):
       self.handlers = handlers
       self.cluster_id = cluster_id
       self.cluster_ctrl = cluster_control
@@ -24,6 +24,7 @@ class Irrigation_Queue_Management(object):
       self.master_valves = master_valves
       self.cleaning_valves = cleaning_valves
       self.measurement_depths = measurement_depths
+      self.eto_management = eto_management
      
       self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers )   
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,

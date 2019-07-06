@@ -1,42 +1,44 @@
-<html>
-<head>
-	  <meta charset="utf-8">
-	  <meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=1">
-   <!link rel="icon" type="image/png" href="/static/favicon.ico"!>
+{% extends "base_template" %}
 
-   
-   
-   {% set title = 'Control Functions' %}
-   {% set header_name = 'Manage Pending Irrigation Operations' %}
-
-
-   {% set header_name = title %}
-	  <title>{{title_name}}</title>
-   {% include 'common_setup' %}
-	
-	
-	 <script type="text/javascript" >
+{% block application_javascript %}
+  <script type="text/javascript" >
        {% include "js/ajax_functions.js" %}
        {% include "js/redis_functions.js" %}
-
   </script>
 
-  <script type="text/javascript" >
-      {% include "js/irrigation_functions/edit_work_queue.js" %}
-  </script>
+  	   <script  type="text/javascript">
+            jobs = {{jobs}}    
+                       
+    </script> 
+      <script type="text/javascript">
+       {% include "js/irrigation_functions/edit_work_queue.js" %}
+     </script>    
+ 
 
-</head> 
-<body> 
+{% endblock %}
 
-   <div data-role="page"> 
 
-       
-   {% include 'menu' %}
-   <!-- /header -->
 
+{% block application %}
+  <div data-role="page"> 
+   <br><br>
    <h4>Refresh Values</h4>       
    <button type="button" id="refresh_b">Refresh</button>
+   <br><br>
    <h4>Edit Irrigation Queue</h4>
+   {% for item in jobs %}
+
+{% set id = "schedule_list"+ (loop.index -1)|string %}
+{% set label_text = "Schedule: "+item.schedule_name+ "  Step: "+item.step|string +" Run Time: "+item.run_time|string %}
+
+<div class="form-check">
+<label class="form-check-label" for="{{id}}">     	   
+
+<input type="checkbox" class="form-check-input" id={{id}} name="optradio" value={{loop.index-1}}>{{label_text}}        
+</label>
+</div>
+{% endfor %}
+
    <button type="button" id="delete_limits">Delete Selected Elements</button> 
    <div id="queue_elements">
    </div>
@@ -46,7 +48,7 @@
   
 </div>    
     
-
+{% endblock %}
 
 </div><!-- /page -->
 </html>

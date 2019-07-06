@@ -1,0 +1,84 @@
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+	<script type="text/javascript" >
+    False = false
+    True  = true
+
+     None      = ""
+     time_data = {{time_history}};
+ 
+         
+ 
+ </script>
+        
+	<script type="text/javascript" >
+     {% include '/js/irrigation_functions/display_past_actions_a.js' %}
+ </script>
+
+{% endblock %}
+
+
+
+{% block application %}
+  <div data-role="page"> 
+
+
+
+
+
+    <h3 id="title_banner"></h3>   
+    
+    <div id="list_data" ">
+    
+    <fieldset data-role="controlgroup" id="fieldset">
+        <h2>Past Event Data </h2>
+        
+        {% for i in time_history %}
+           {% set label_text = "---  Date:  "+i['time']|string + " Data: "+i["data"]|string %}
+           {% set id = "entry_"+ (loop.index -1)|string %}
+          
+           <h4 id={{id}}>{{label_text}}</h4>
+           </div>          
+          
+        
+        {% endfor %}
+     </fieldset>
+    
+    
+    
+    
+    
+    
+    </div>
+    
+ {% endblock %}   
+    
+    
+    
+    
+    
+    
+    
+   <div data-role="footer"  data-position="fixed" data-theme="b"> 
+    <a id="footer-button_1" data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       href="#change_index">Fields</a>
+      
+    </div>
+   
+    
+
+ </div>
+
+</div><!-- /page -->
+
+
+</html>
+

@@ -6,7 +6,7 @@
 */
 function load_data_success()
 {    
-  
+
   data = JSON.parse(control_data_json )
   if( typeof data.RAIN_FLAG === "undefined" ){data.RAIN_FLAG = 0}
   $("#rain_flag")[0].selectedIndex = data.RAIN_FLAG
@@ -23,6 +23,7 @@ function load_data_success()
    if( typeof data.CLEANING_INTERVAL === "undefined" ){data.CLEANING_INTERVAL = 15000}
    $("#cleaning_interval").val(data.CLEANING_INTERVAL)
    $( "#cleaning_value" ).html(data.CLEANING_INTERVAL);
+  
    cleaning_interval_change() 
            
 }

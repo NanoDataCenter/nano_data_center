@@ -46,29 +46,30 @@ function prepare_data( )
   data_length = time_data.length
  
   
-  field_keys = Object.keys(events)
-  field_keys.sort()
+  
  
   for( i= 0; i < data_length; i++ )
   {
-     let status = time_data[i].status.toUpperCase();
+     let status = time_data[i]["data"].level.toUpperCase();
+     
      if( status == "GREEN")
      {    
-        $("#radio-choice-v"+i).next('label').children('span').css('background-color', 'green');
-        $("#radio-choice-v"+i).next('label').children('span').css('color', 'yellow');
-        $("#radio-choice-v"+i).checkboxradio("refresh");    
+        $("#entry_"+i).next('label').children('span').css('background-color', 'green');
+        $("#entry_"+i).next('label').children('span').css('color', 'yellow');
+        
      }
      else if( status == "YELLOW")
      {    
-        $("#radio-choice-v"+i).next('label').children('span').css('background-color', 'yellow');
-        $("#radio-choice-v"+i).next('label').children('span').css('color', 'black');
-        $("#radio-choice-v"+i).checkboxradio("refresh");    
+        $("#entry_"+i).next('label').children('span').css('background-color', 'yellow');
+        $("#entry_"+i).next('label').children('span').css('color', 'black');
+      
      }
      else if( status == "RED")
-     {    
-        $("#radio-choice-v"+i).next('label').children('span').css('background-color', 'red');
-        $("#radio-choice-v"+i).next('label').children('span').css('color', 'white');
-        $("#radio-choice-v"+i).checkboxradio("refresh");    
+     {   
+        
+        $("#entry_"+i).css('background-color', 'red');
+        $("#entry_"+i).css('color', 'white');
+          
      }
      else
      {
@@ -83,7 +84,7 @@ function prepare_data( )
 }
 
 
-function display_data( index )
+function display_data(  )
 {
 
    
@@ -106,12 +107,9 @@ $(document).ready(
 
      
  
-   display_data(ref_field_index)
+   display_data()
    
-  $("#cancel_index_changes").bind("click",cancel_field_index);
-  $("#make_index_changes").bind("click", make_refresh );
-  $("#change_index").on("popupafteropen", change_field_index );
-  //$('input[type=radio][name=radio-choice]').change(radio_select); 
+   
 
   
   })

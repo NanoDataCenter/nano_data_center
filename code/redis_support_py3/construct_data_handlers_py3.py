@@ -108,7 +108,7 @@ class Redis_Hash_Dictionary( object ):
    def hgetall( self ):
       return_value = {}
       keys = self.redis_handle.hkeys(self.key)
-    
+      print(keys)
       for field in keys:
          try:
             new_field = field.decode('utf-8')
@@ -162,6 +162,19 @@ class Job_Queue_Client( object ):
       
    def length(self):
        return self.redis_handle.llen(self.key)   
+
+
+   def list_range(self,start,stop):
+      
+      list_data =  self.redis_handle.lrange(self.key,0,-1)
+     
+      if list_data == None:
+         return None
+      return_value = []
+      for pack_data in list_data:
+        return_value.append(msgpack.unpackb(pack_data,encoding='utf-8'))
+      return return_value
+      
       
    def push(self,data):
        pack_data =  msgpack.packb(data,use_bin_type = True )
@@ -169,6 +182,11 @@ class Job_Queue_Client( object ):
        self.redis_handle.ltrim(self.key,0,self.depth)
        if self.cloud_handler != None:
            self.cloud_handler.lpush(self.data, self.depth,self.key,pack_data)
+           
+   def delete_jobs(self,data):
+       for i in data:
+         self.redis_handle.lset(self.key,i,"__DELETE_ME__")
+       self.redis_handle.lrem(self.key,0,"__DELETE_ME__")
          
 
  
@@ -427,8 +445,9 @@ class Stream_Redis_Writer(Redis_Stream):
 
 
 
-   def push(self,id="*", data={} ):
-       store_dictionary = {}
+   def push(self,data={} ,id="*" ):
+       
+       
        if len(list(data.keys())) == 0:
            return
        packed_data  =msgpack.packb(data,use_bin_type = True )
@@ -464,6 +483,7 @@ class Stream_Redis_Reader(Redis_Stream):
        return data_list
 
    def revrange(self,start_timestamp, end_timestamp , count=100):
+       
        if isinstance(start_timestamp,str) == False:
            start_timestamp = int(start_timestamp*1000)
        if isinstance(end_timestamp,str) == False:
@@ -471,6 +491,7 @@ class Stream_Redis_Reader(Redis_Stream):
 
 
        data_list = self.xrevrange(self.key,start_timestamp,end_timestamp, count)
+       
 
        return data_list 
              

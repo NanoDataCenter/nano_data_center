@@ -49,15 +49,11 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
 
        a1 = auth.login_required( self.parameter_update )
        app.add_url_rule('/ajax/parameter_update',"get_parameter_update",a1, methods=["POST"]) 
-
-       '''
-     
        
-       a1 = auth.login_required( self.schedule_data )
-       app.add_url_rule('/ajax/schedule_data',"get_schedule_data",a1 )
+       a1 = auth.login_required( self.irrigation_job_delete )
+       app.add_url_rule('/ajax/irrigation_job_delete',"irrigation_job_delete",a1, methods=["POST"]) 
 
 
-       '''
   
    def irrigation_control(self):
        schedule_data = self.schedule_data()
@@ -90,15 +86,17 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
              controller_valve_group_json = controller_valve_group_json             )
 
    def irrigation_queue(self):
-       return self.render_template("irrigation_templates/irrigation_queue" )
+       jobs = self.get_queued_irrigation_jobs()
+      
+       return self.render_template("irrigation_templates/irrigation_queue",jobs = jobs )
 
 
    def manage_parameters(self):
-       
+      
        control_data = self.handlers["IRRIGATION_CONTROL"].hgetall()
-      
+       print("control_data",control_data.keys())
        control_data_json = json.dumps(control_data)
-      
+     
        return self.render_template("irrigation_templates/manage_parameters",
                                     title = "Manage Irrigation Parameters",
                                     control_data_json = control_data_json  )
@@ -107,28 +105,16 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
       
 
    def display_irrigation_queue(self):
+
        return self.render_template("irrigation_templates/display_irrigation_queue" )
     
    def display_past_actions( self,event):
-       fields = self.alarm_queue.get_events()
-       fields['ALL'] = time.time()
-       time_data = self.alarm_queue.get_time_data()
-       sorted_data = []
-       if event in fields:
-           if event == "ALL":
-              sorted_data = time_data
-           else:
-               for i in time_data:
-                   print(i,event)
-                   if i["event"] == event:
-                       sorted_data.append(i)   
-                             
-       
-       for i in sorted_data:
-          temp = i["time"]
-          i["time"]  = time.strftime( "%b %d %Y %H:%M:%S",time.localtime(temp))
-       return self.render_template("irrigation_templates/display_action_queue" ,time_history = sorted_data, events = fields, ref_field_index=event,
-                  header_name="Past Events"       )
+       temp_data = self.handlers["IRRIGATION_PAST_ACTIONS"].revrange("+","-" , count=1000)
+      
+       for i in temp_data:
+         i["time"] = str(datetime.fromtimestamp(i["timestamp"]))
+       return self.render_template("irrigation_templates/irrigation_history_queue" ,time_history = temp_data )
+                 
         
 
    #  
@@ -176,4 +162,24 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        return json.dumps("SUCCESS")
 
         
+   def get_queued_irrigation_jobs(self):
+      
+       results = self.handlers["IRRIGATION_PENDING"].list_range(0,-1)
+       results.reverse()
+       return_value = []
+       for i in results:
+          temp = {}
+          temp["schedule_name"] = i["schedule_name"]
+          temp["step"]   = i["step"]
+          temp["run_time"] = i["run_time"]
+          return_value.append(temp)
+       
+       return return_value
+       
+   def irrigation_job_delete(self):
+        json_object = self.request.json
+        list_index = json_object["list_indexes"]        
+       
+        self.handlers["IRRIGATION_PENDING"].delete_jobs(list_index)
+        return json.dumps("SUCCESS")
   

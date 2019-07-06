@@ -177,6 +177,7 @@ if __name__ == "__main__":
     sys_files        =  SYS_FILES(redis_handle,redis_site)
     ds_handlers = {}
     ds_handlers["IRRIGATION_PAST_ACTIONS"] = generate_handlers.construct_redis_stream_writer(data_structures["IRRIGATION_PAST_ACTIONS"] )
+   
     ds_handlers["IRRIGATION_CURRENT_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_CURRENT"] )
     ds_handlers["IRRIGATION_CURRENT_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_CURRENT"] )
     ds_handlers["IRRIGATION_JOB_SCHEDULING"] = generate_handlers. construct_job_queue_server(data_structures["IRRIGATION_JOB_SCHEDULING"] )
@@ -187,8 +188,8 @@ if __name__ == "__main__":
     ds_handlers["IRRIGATION_TIME_HISTORY"] = generate_handlers.construct_hash(data_structures["IRRIGATION_TIME_HISTORY"])
     ds_handlers["VALVE_JOB_QUEUE_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
     ds_handlers["VALVE_JOB_QUEUE_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
-    ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT","level":"RED"})
-   
+    
+  
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_terminal( query_list,relationship="IRRIGATION_ETO_CONTROL",label="IRRIGATION_ETO_CONTROL" )
@@ -236,7 +237,8 @@ if __name__ == "__main__":
                                irrigation_io = io_control,
                                master_valves = master_valves,
                                cleaning_valves = cleaning_valves,
-                               measurement_depths =measurement_depths )
+                               measurement_depths =measurement_depths,
+                               eto_management = eto_management )
                            
     Incomming_Queue_Management( cf = cf,
                                     handlers = ds_handlers,
@@ -260,7 +262,7 @@ if __name__ == "__main__":
     #         
     
     try:
-       
+       ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT","level":"RED"})
        cf.execute()
     except Exception as tst:
       #
