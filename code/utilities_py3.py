@@ -14,7 +14,7 @@ import msgpack
 from redis_support_py3.load_files_py3  import APP_FILES
 from redis_support_py3.load_files_py3  import SYS_FILES
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
-
+from irrigation_hash_control_py3 import Generate_Hash_Control_Handler
 
 
 
@@ -174,39 +174,16 @@ class System_Monitoring(Monitoring_Base):
    '''               
   
 class Irrigation_Schedule_Monitoring(Monitoring_Base):
-   def __init__(self, app_files,completion_dictionary,job_queue,irrigation_control,rain_field ):
-       Monitoring_Base.__init__(self,app_files,"sprinkler_ctrl.json",completion_dictionary,job_queue,self.rain_check_list)
+   def __init__(self, app_files,completion_dictionary,job_queue,irrigation_control ):
+       Monitoring_Base.__init__(self,app_files,"sprinkler_ctrl.json",completion_dictionary,job_queue,self.rain_check)
        self.irrigation_control = irrigation_control
        
-       self.rain_field = rain_field
-
-       
-       
-       
-   def rain_check_list(self):
-      for i in self.rain_field:
-        #print(i)
-        if self.rain_check(i) == False:
-           return False
-      #print("return true")
-      return True
-   
-   def rain_check(self,field):
-       #print("rain_check")
-       try:
-          
-          rain_day = self.irrigation_control.hget(field)
-          
-         
-          rain_day = int( rain_day )
-       except:
-          
-          rain_day = int(0)
-          self.irrigation_control.hset(field,0  )
-          
-          #print("exception")
        
 
+          
+   def rain_check(self):
+       rain_day = self.irrigation_control.get_rain_flag()
+ 
        if rain_day == 0:
           return True
        else:
@@ -271,7 +248,7 @@ if __name__ == "__main__":
     #import load_files_py3
     from redis_support_py3.graph_query_support_py3 import  Query_Support
     import datetime
-    from eto_init_py3 import User_Data_Tables
+    
 
     from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
 
@@ -313,18 +290,14 @@ if __name__ == "__main__":
     app_files = APP_FILES(redis_handle,redis_site)
     data_structures = package["data_structures"]
     job_queue = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_JOB_SCHEDULING"])
-    #job_queue.delete_all()    
+  
     completion_dictionary        = generate_handlers.construct_hash(data_structures["SYSTEM_COMPLETION_DICTIONARY"])
-    #completion_dictionary.delete_all()
-    action       = System_Monitoring( app_files,completion_dictionary,job_queue )
-    query_list = []
-    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
-    query_list = qs.add_match_terminal( query_list,relationship="IRRIGATION_CONTROL_FIELDS",label="IRRIGATION_CONTROL_FIELDS" )
-    control_field, control_field_nodes = qs.match_list(query_list)
-    shut_off_list = control_field_nodes[0] 
+    
+ 
 
-    irrigation_control        = generate_handlers.construct_hash(data_structures["IRRIGATION_CONTROL"])
-    sched        = Irrigation_Schedule_Monitoring( app_files,completion_dictionary,job_queue,irrigation_control,shut_off_list )
+    irrigation_control        = Generate_Hash_Control_Handler(redis_site)
+    sched        = Irrigation_Schedule_Monitoring( app_files,completion_dictionary,job_queue,irrigation_control )
+    action       = System_Monitoring(app_files,completion_dictionary,job_queue)
 
     ntpd = Ntpd()
     #

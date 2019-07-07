@@ -18,14 +18,15 @@ ONE_DAY = 24 * 3600
 
 
 class Eto_Management(object):
-    def __init__(self,  eto_sources, package,site_data,eto_hash_table ):
+    def __init__(self,  eto_sources, package,site_data ):
 
         self.eto_sources = eto_sources
         self.package  = package
         self.site_data = site_data
-        self.eto_hash_table = eto_hash_table
+        
        
         self.generate_redis_handlers()
+        self.eto_hash_table =  self.ds_handlers["ETO_ACCUMULATION_TABLE"]
         self.initialize_values()
         self.generate_calculators()
        
@@ -43,7 +44,7 @@ class Eto_Management(object):
         self.ds_handlers["ETO_HISTORY"] = generate_handlers.construct_stream_writer(data_structures["ETO_HISTORY"])
         self.ds_handlers["RAIN_HISTORY"] = generate_handlers.construct_stream_writer(data_structures["RAIN_HISTORY"] )
         self.ds_handlers["EXCEPTION_LOG"] = generate_handlers.construct_stream_writer(data_structures["EXCEPTION_LOG"] )
-      
+        self.ds_handlers["ETO_ACCUMULATION_TABLE"] = generate_handlers.construct_hash(data_structures["ETO_ACCUMULATION_TABLE"])
 
     def initialize_values(self):
          if self.ds_handlers["ETO_CONTROL"].hget("ETO_UPDATE_FLAG") == None:
@@ -195,7 +196,7 @@ def replace_keys( redis_site_data,elements ):
 
 
 
-def construct_eto_instance(qs, site_data,user_table ):
+def construct_eto_instance(qs, site_data ):
 
     #
     #
@@ -233,9 +234,9 @@ def construct_eto_instance(qs, site_data,user_table ):
     replace_keys(site_data, eto_sources)
     
    
-    eto_hash_table = user_table.eto_data.get_hash_table()
+   
     
-    eto = Eto_Management(eto_sources, package_sources[0],site_data ,eto_hash_table )
+    eto = Eto_Management(eto_sources, package_sources[0],site_data  )
     
     
     
@@ -333,11 +334,11 @@ if __name__ == "__main__":
     # open data stores instance
     user_table = User_Data_Tables(redis_site)
     
-    user_table.initialize()  
+    
     
     qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
     
-    eto = construct_eto_instance(qs, redis_site,user_table )
+    eto = construct_eto_instance(qs, redis_site)
     #
     # Adding chains
     #

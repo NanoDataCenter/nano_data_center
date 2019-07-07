@@ -9,6 +9,7 @@ class Construct_Weather_Stations(object):
       cd.add_hash("EXCEPTION_VALUES")
       cd.add_hash("RAIN_VALUES")
       cd.add_hash("ETO_VALUES")
+      cd.add_hash("ETO_ACCUMULATION_TABLE")   
       cd.add_redis_stream("ETO_HISTORY")
       cd.add_redis_stream("RAIN_HISTORY")
       cd.add_redis_stream("EXCEPTION_LOG")

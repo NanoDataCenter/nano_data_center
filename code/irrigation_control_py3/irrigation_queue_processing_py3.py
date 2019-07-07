@@ -12,7 +12,8 @@ from .irrigation_control_basic_py3      import   Irrigation_Control_Basic
 
 class Irrigation_Queue_Management(object):
 
-   def __init__(self,handlers,cluster_id,cluster_control,cf,app_files,sys_files,manage_eto,irrigation_io,master_valves,cleaning_valves,measurement_depths,eto_management):
+   def __init__(self,handlers,cluster_id,cluster_control,cf,app_files,sys_files,manage_eto,irrigation_io,
+                master_valves,cleaning_valves,measurement_depths,eto_management ,irrigation_hash_control ):
       self.handlers = handlers
       self.cluster_id = cluster_id
       self.cluster_ctrl = cluster_control
@@ -25,7 +26,8 @@ class Irrigation_Queue_Management(object):
       self.cleaning_valves = cleaning_valves
       self.measurement_depths = measurement_depths
       self.eto_management = eto_management
-     
+      self.irrigation_hash_control = irrigation_hash_control
+      '''
       self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers )   
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,
                                                              cluster_control = cluster_control,
@@ -61,7 +63,7 @@ class Irrigation_Queue_Management(object):
       self.clean_filter.construct_clusters( cluster_control, cluster_id,"CLEAN_FILTER" )
       
       self.irrigation_control.construct_clusters( cluster_control, cluster_id,"DIAGNOSITIC_CONTROL" )
-         
+      ''' 
   
      
 
@@ -72,7 +74,8 @@ class Irrigation_Queue_Management(object):
 
 
       cf.define_chain("QC_Check_Irrigation_Queue", True )
-      cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
+      cf.insert.log("check irrigation queue")
+      #cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)
       cf.insert.wait_event_count( count = 1 )
@@ -106,6 +109,7 @@ class Irrigation_Queue_Management(object):
        
        if int(length) > 0:
            return_value = True
+           print("queue is not empty")
        else:
            return_value = False
        

@@ -1,8 +1,8 @@
 class IO_Control(object):
 
-   def __init__(self ):
-      pass
-       
+   def __init__(self,irrigation_hash_control ):
+      self.irrigation_hash_control = irrigation_hash_control
+      self.disable_all_sprinklers()
 
 
    def read_wd_flag(self,*args ):
@@ -25,20 +25,24 @@ class IO_Control(object):
 
    def disable_all_sprinklers( self,*arg ):
        print("disable all sprinklers")
-
-              
+       self.irrigation_hash_control.set_master_valve(0)
+       self.irrigation_hash_control.set_cleaning_valve(0)       
  
    def turn_on_master_valves( self,*arg ):
+       self.irrigation_hash_control.set_master_valve(1)
        print("turn on master valve")
        
    def turn_off_master_valves( self,*arg ):
+       self.irrigation_hash_control.set_master_valve(0)
        print("turn off master valve")
 
 
    def turn_on_cleaning_valves( self,*arg ):
+       self.irrigation_hash_control.set_cleaning_valve(1)
        print("turn on cleaning valve")
             
    def turn_off_cleaning_valves( self,*arg ):
+      self.irrigation_hash_control.set_cleaning_valve(0)
       print("turn off cleaning valve")
     
 

@@ -108,7 +108,7 @@ class Redis_Hash_Dictionary( object ):
    def hgetall( self ):
       return_value = {}
       keys = self.redis_handle.hkeys(self.key)
-      print(keys)
+      
       for field in keys:
          try:
             new_field = field.decode('utf-8')

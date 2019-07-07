@@ -8,7 +8,7 @@ from  collections import OrderedDict
 class Load_Irrigation_Pages(Base_Stream_Processing):
 
    def __init__( self, app, auth, request, app_files, sys_files,
-                   render_template,redis_handle, handlers):
+                   render_template,redis_handle, handlers,irrigation_control):
        self.app      = app
        self.auth     = auth
        self.request  = request
@@ -17,6 +17,7 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        self.render_template = render_template
        self.redis_handle = redis_handle
        self.handlers = handlers
+       self.irrigation_control = irrigation_control
                                       
        a1 = auth.login_required( self.get_index_page )
        app.add_url_rule('/index.html',"get_index_page",a1) 
@@ -28,7 +29,7 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        app.add_url_rule('/diagnostics/<filename>',"get_diagnostic_page",a1 )
        
 
-       a1= auth.login_required( self.irrigation_control )
+       a1= auth.login_required( self.queue_irrigation_jobs )
        app.add_url_rule("/control/control","irrigation_control",a1)
        
        
@@ -55,7 +56,7 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
 
 
   
-   def irrigation_control(self):
+   def queue_irrigation_jobs(self):
        schedule_data = self.schedule_data()
       
        return self.render_template("irrigation_templates/irrigation_control",schedule_data = schedule_data)
@@ -93,8 +94,12 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
 
    def manage_parameters(self):
       
-       control_data = self.handlers["IRRIGATION_CONTROL"].hgetall()
-       print("control_data",control_data.keys())
+       control_data = {}
+       control_data["RAIN_FLAG"] = self.irrigation_control.get_rain_flag()
+       control_data["ETO_MANAGEMENT"] = self.irrigation_control.get_eto_management_flag()
+       control_data["FLOW_CUT_OFF"]   =    self.irrigation_control.get_flow_cutoff()
+       control_data["CLEANING_INTERVAL"] = self.irrigation_control.get_cleaning_interval()
+ 
        control_data_json = json.dumps(control_data)
      
        return self.render_template("irrigation_templates/manage_parameters",
@@ -149,7 +154,9 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
 
    def mode_change( self):
        json_object = self.request.json
+       print("json_object",json_object)
        self.handlers["IRRIGATION_JOB_SCHEDULING"].push(json_object)
+       print(self.handlers["IRRIGATION_JOB_SCHEDULING"].length())
        return json.dumps("SUCCESS")
 
    def parameter_update(self):
@@ -157,7 +164,7 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
       
        field = json_object["field"]
        data = json_object["data"]
-       self.handlers["IRRIGATION_CONTROL"].hset( field, data )
+       self.irrigation_control.set_field(field,data)
       
        return json.dumps("SUCCESS")
 

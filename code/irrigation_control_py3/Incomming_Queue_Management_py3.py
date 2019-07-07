@@ -1,11 +1,11 @@
 
 
 class Irrigation_Scheduling(object):
-   def __init__(self,handlers,app_files,sys_files,eto_control_field,eto_management ):
+   def __init__(self,handlers,app_files,sys_files,eto_management,irrigation_hash_control ):
        self.handlers = handlers
        self.app_files = app_files
        self.sys_files = sys_files
-       self.eto_control_field = eto_control_field
+       self.irrigation_hash_control = irrigation_hash_control
        self.eto_management = eto_management  
               
        
@@ -98,7 +98,7 @@ class Irrigation_Scheduling(object):
        schedule_io = step_data[0]
        schedule_step = int(schedule_step)
        schedule_step_time = int(schedule_step_time)
-       if ( self.handlers["IRRIGATION_CONTROL"].hget(self.eto_control_field) != 0) and (eto_flag == True): 
+       if ( self.irrigation_hash_control.get_eto_management_flag() != 0) and (eto_flag == True): 
           schedule_step_time,eto_flag,eto_list = self.eto_management.determine_eto_management(schedule_step_time, schedule_io )
        else:
           eto_flag = False
@@ -161,16 +161,17 @@ class Irrigation_Scheduling(object):
 
 
 class Incomming_Queue_Management(object):
-   def __init__(self,cf, cluster_control, handlers,app_files,sys_files,eto_control_field,eto_management,irrigation_io):
+   def __init__(self,cf, cluster_control, handlers,app_files,sys_files,eto_management,irrigation_io,irrigation_hash_control):
        self.cf = cf
        self.handlers = handlers
        self.app_files = app_files
        self.sys_files = sys_files
-       self.eto_control_field = eto_control_field
+       
        self.eto_management = eto_management 
        self.irrigation_io = irrigation_io
+       self.irrigation_hash_control = irrigation_hash_control
        
-       self.irrigation_sched = Irrigation_Scheduling(handlers,app_files,sys_files,eto_control_field,eto_management)
+       self.irrigation_sched = Irrigation_Scheduling(handlers,app_files,sys_files,eto_management,irrigation_hash_control)
        
                       
        self.commands = {}

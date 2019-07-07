@@ -6,14 +6,15 @@
 */
 function load_data_success()
 {    
-
+  
   data = JSON.parse(control_data_json )
+
   if( typeof data.RAIN_FLAG === "undefined" ){data.RAIN_FLAG = 0}
   $("#rain_flag")[0].selectedIndex = data.RAIN_FLAG
 
   
-  if( typeof data.ETO_MANAGE_FLAG === "undefined" ){data.ETO_MANAGE_FLAG = 1}
-  $("#eto_flag")[0].selectedIndex = data.ETO_MANAGE_FLAG;
+  if( typeof data.ETO_MANAGEMENT === "undefined" ){data.ETO_MANAGEMENT = 1}
+  $("#eto_flag")[0].selectedIndex = data.ETO_MANAGEMENT;
 
   
   if( typeof data.FLOW_CUT_OFF === "undefined" ){data.FLOW_CUT_OFF = 30}
@@ -38,7 +39,7 @@ function change_rain_day_flag(event, ui)
 
 function change_eto_flag(event, ui)
 {
-   key = "ETO_MANAGE_FLAG"
+   key = "ETO_MANAGEMENT"
    value = $("#eto_flag").val();
    general_change_function(key,value,"change eto management?")
 }

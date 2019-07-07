@@ -22,14 +22,15 @@ import time
 ##
 ## {"controller":"satellite_1", "pin": 9,  "recharge_eto": 0.216, "recharge_rate":0.245 },
 ## eto_site_data
-from redis_support_py3.user_data_tables_py3 import Generate_Table_Handlers
+from eto_init_py3 import Generate_Data_Handler
+from irrigation_hash_control_py3 import Generate_Hash_Control_Handler
 
 class ETO_Management(object):
    def __init__(self,redis_site,app_files):
  
        self.app_files = app_files
-       self.generate_handlers = Generate_Table_Handlers( redis_site )
-       self.eto_hash_table = self.generate_handlers.construct_hash("ETO","ETO_TABLE")
+       self.generate_handlers = Generate_Data_Handler( redis_site )
+       self.eto_hash_table = self.generate_handlers.get_data_handler()
    
       
       
@@ -183,19 +184,14 @@ if __name__ == "__main__":
     ds_handlers["IRRIGATION_JOB_SCHEDULING"] = generate_handlers. construct_job_queue_server(data_structures["IRRIGATION_JOB_SCHEDULING"] )
     ds_handlers["IRRIGATION_PENDING_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_PENDING"] )
     ds_handlers["IRRIGATION_PENDING_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_PENDING"] )
-    ds_handlers["IRRIGATION_CONTROL"] = generate_handlers.construct_hash(data_structures["IRRIGATION_CONTROL"])
+   
     ds_handlers["IRRIGATION_VALVE_TEST"] = generate_handlers.construct_hash(data_structures["IRRIGATION_VALVE_TEST"])
     ds_handlers["IRRIGATION_TIME_HISTORY"] = generate_handlers.construct_hash(data_structures["IRRIGATION_TIME_HISTORY"])
     ds_handlers["VALVE_JOB_QUEUE_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
     ds_handlers["VALVE_JOB_QUEUE_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
-    
+    irrigation_hash_control = Generate_Hash_Control_Handler(redis_site)  
   
-    query_list = []
-    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
-    query_list = qs.add_match_terminal( query_list,relationship="IRRIGATION_ETO_CONTROL",label="IRRIGATION_ETO_CONTROL" )
-    control_field, control_field_nodes = qs.match_list(query_list)
-    eto_control_field = control_field_nodes[0] 
-
+ 
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_terminal( query_list,relationship="CLEANING_VALVES",label="CLEANING_VALVES" )
@@ -210,22 +206,21 @@ if __name__ == "__main__":
 
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
-    query_list = qs.add_match_terminal( query_list,relationship="MEASUREMENT_DEPTH",label="MEASUREMENT_DEPTH" )
+    query_list = qs.add_match_terminal( query_list,relationship="LOGGING_DEPTH",label="LOGGING_DEPTH" )
     control_field, control_field_nodes = qs.match_list(query_list)
     measurement_depths = control_field_nodes[0] 
     
   
     remote_classes = None #construct_classes_py3.Construct_Access_Classes(io_server_ip,io_server_port)
-    io_control  = None #  IO_Control(gm,remote_classes, redis_old_handle,redis_new_handle,eto_control_field)
+    
      
     cf = CF_Base_Interpreter()
     cluster_control = Cluster_Control(cf)
     eto_management = ETO_Management(redis_site,app_files)
-    if ds_handlers["IRRIGATION_CONTROL"].hget(eto_control_field) == None:
-         ds_handlers["IRRIGATION_CONTROL"].hset(eto_control_field,1)  
+
 
     ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all() # delete current job to prevent circular reboots
-    io_control = IO_Control()
+    io_control = IO_Control(irrigation_hash_control)
 
     Irrigation_Queue_Management(handlers=ds_handlers,
                                cluster_id = 1, #### not sure what this is
@@ -238,13 +233,14 @@ if __name__ == "__main__":
                                master_valves = master_valves,
                                cleaning_valves = cleaning_valves,
                                measurement_depths =measurement_depths,
-                               eto_management = eto_management )
-                           
+                               eto_management = eto_management,
+                               irrigation_hash_control = irrigation_hash_control  )
+                    
     Incomming_Queue_Management( cf = cf,
                                     handlers = ds_handlers,
                                     app_files = app_files,
                                     sys_files = sys_files,
-                                    eto_control_field = eto_control_field,
+                                    irrigation_hash_control = irrigation_hash_control,
                                     eto_management = eto_management,
                                      cluster_control = cluster_control,
                                     irrigation_io = io_control )
@@ -271,7 +267,7 @@ if __name__ == "__main__":
       ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all()
       ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_CONTROLLER_EXCEPTION","details":tst,"level":"RED"})
       print("tst",tst)
-      raise
+      raise ValueError(tst)
      
 
 

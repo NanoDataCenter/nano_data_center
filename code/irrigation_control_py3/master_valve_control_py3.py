@@ -5,6 +5,7 @@ class Master_Valve(object):
        self.cf = cf
        self.cluster_ctrl  = cluster_control
        self.irrigation_io = irrigation_io
+       
        self.handlers  = handlers
        self.cluster_id    = cluster_id
        self.state_list    = ["MV_time_cycle","MV_monitor_valve","MV_OFF"]

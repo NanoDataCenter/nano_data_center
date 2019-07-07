@@ -20,6 +20,7 @@ from bootstrap_web_py3.load_redis_access_py3     import  Load_Redis_Access
 from redis_support_py3.graph_query_support_py3 import  Query_Support
 from eto_init_py3 import User_Data_Tables
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
+from irrigation_hash_control_py3 import Generate_Hash_Control_Handler
 from redis_support_py3.load_files_py3  import APP_FILES
 from redis_support_py3.load_files_py3  import SYS_FILES
 from bootstrap_web_py3.load_app_sys_files_py3 import Load_App_Sys_Files
@@ -135,7 +136,7 @@ class PI_Web_Server(object):
        self.ds_handlers["ETO_HISTORY"] = generate_handlers.construct_redis_stream_reader(data_structures["ETO_HISTORY"])
        self.ds_handlers["RAIN_HISTORY"] = generate_handlers.construct_redis_stream_reader(data_structures["RAIN_HISTORY"] )
        self.ds_handlers["EXCEPTION_LOG"] = generate_handlers.construct_redis_stream_reader(data_structures["EXCEPTION_LOG"] )
-      
+       self.ds_handlers["ETO_ACCUMULATION_TABLE"] = generate_handlers.construct_hash(data_structures["ETO_ACCUMULATION_TABLE"])
        
        self.redis_access.add_access_handlers("ETO_VALUES",self.ds_handlers["ETO_VALUES"],"Redis_Hash_Dictionary") 
 
@@ -144,7 +145,7 @@ class PI_Web_Server(object):
 
 
        
-       eto_update_table = self.user_table.eto_data.get_hash_table()
+       eto_update_table = self.ds_handlers["ETO_ACCUMULATION_TABLE"]
        self.redis_access.add_access_handlers("eto_update_table",eto_update_table,"Redis_Hash_Dictionary") 
   
        
@@ -188,10 +189,10 @@ class PI_Web_Server(object):
        ds_handlers = {}
        ds_handlers["IRRIGATION_JOB_SCHEDULING"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_JOB_SCHEDULING"])
        ds_handlers["IRRIGATION_PENDING"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_PENDING"])
-       ds_handlers["IRRIGATION_CONTROL"] =  generate_handlers.construct_hash(data_structures["IRRIGATION_CONTROL"])
        ds_handlers["IRRIGATION_PAST_ACTIONS"] = generate_handlers.construct_redis_stream_reader(data_structures["IRRIGATION_PAST_ACTIONS"])
+       irrigation_control = Generate_Hash_Control_Handler(self.redis_site_data)
        Load_Irrigation_Pages(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
-                  render_template=render_template, redis_handle= self.redis_handle, handlers= ds_handlers )
+                  render_template=render_template, redis_handle= self.redis_handle, handlers= ds_handlers ,irrigation_control=irrigation_control)
        
    def assemble_controller_handlers(self,label ):
        query_list = []
