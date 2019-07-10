@@ -22,14 +22,20 @@ class IO_Control(object):
        return 1
        
      
-
+   def get_master_valve_setup(self):
+       return self.irrigation_hash_control.get_master_valve_setup()
+       
+       
    def disable_all_sprinklers( self,*arg ):
        print("disable all sprinklers")
        self.irrigation_hash_control.set_master_valve(0)
        self.irrigation_hash_control.set_cleaning_valve(0)       
- 
+       self.irrigation_hash_control.set_master_valve_setup(0)
+       
+       
    def turn_on_master_valves( self,*arg ):
        self.irrigation_hash_control.set_master_valve(1)
+       self.irrigation_hash_control.set_master_valve_setup(1)
        print("turn on master valve")
        
    def turn_off_master_valves( self,*arg ):

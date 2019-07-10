@@ -129,15 +129,15 @@ class Eto_Management(object):
 
     def log_sprinkler_data(self,*parameters):
        if int(self.ds_handlers["ETO_CONTROL"].hget("ETO_LOG_FLAG")) == 1:
-            return
-       self.ds_handlers["ETO_CONTROL"].hset("ETO_LOG_FLAG",1) 
-    
+            return  
        eto_data = self.assemble_data("eto",self.ds_handlers["ETO_VALUES"])
-       
-       print("log data ",eto_data)
-       if len(eto_data.keys()) > 0:
-          print("logging eto data")
-          self.ds_handlers["ETO_HISTORY"].push(data = eto_data) 
+       if len(eto_data.keys()) == 0:
+          return       
+
+       self.ds_handlers["ETO_CONTROL"].hset("ETO_LOG_FLAG",1) 
+
+       print("logging eto data")
+       self.ds_handlers["ETO_HISTORY"].push(data = eto_data) 
        rain_data = self.assemble_data("rain",self.ds_handlers["RAIN_VALUES"])
        if len(rain_data.keys()) > 0:  
            print("loging rain data")       
@@ -252,6 +252,10 @@ def add_eto_chains(eto, cf):
     cf.insert.send_event("DAY_TICK")
     cf.insert.terminate()
 
+    cf.insert.wait_tod_le( hour =  1 )
+    cf.insert.send_event("DAY_TICK")
+    cf.insert.wait_tod_ge( hour =  2 )
+    cf.insert.reset()
 
     cf.define_chain("eto_time_window", True)
     cf.insert.log("Waiting for day tick")
@@ -288,12 +292,9 @@ def add_eto_chains(eto, cf):
     cf.insert.log("starting make measurement")
     
     cf.insert.one_step( eto.make_measurement )
-    #cf.insert.wait_event_count( event = "MINUTE_TICK",count = 2)
-    #cf.insert.log("starting logging")
-    #cf.insert.one_step( eto.log_sprinkler_data ) ### for debug
-    #cf.insert.log("logging done")
+
     cf.insert.wait_event_count( event = "MINUTE_TICK",count = 1)
-    cf.insert.log("Receiving 8 minute tick")
+    cf.insert.log("Receiving minute tick")
     
     cf.insert.reset()
 

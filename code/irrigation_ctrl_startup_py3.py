@@ -218,10 +218,12 @@ if __name__ == "__main__":
     cluster_control = Cluster_Control(cf)
     eto_management = ETO_Management(redis_site,app_files)
 
-
+    ##
+    ## log entry that go removed
+    ##
     ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all() # delete current job to prevent circular reboots
     io_control = IO_Control(irrigation_hash_control)
-
+   
     Irrigation_Queue_Management(handlers=ds_handlers,
                                cluster_id = 1, #### not sure what this is
                                cluster_control = cluster_control,
@@ -235,7 +237,7 @@ if __name__ == "__main__":
                                measurement_depths =measurement_depths,
                                eto_management = eto_management,
                                irrigation_hash_control = irrigation_hash_control  )
-                    
+                  
     Incomming_Queue_Management( cf = cf,
                                     handlers = ds_handlers,
                                     app_files = app_files,
@@ -258,15 +260,14 @@ if __name__ == "__main__":
     #         
     
     try:
-       ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT","level":"RED"})
+       ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT STARTUP","level":"RED"})
        cf.execute()
     except Exception as tst:
       #
       #Deleting current irrigation job to prevent circular reboots
       #
-      ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all()
-      ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_CONTROLLER_EXCEPTION","details":tst,"level":"RED"})
       print("tst",tst)
+      ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Exception","details":str(tst),"level":"RED"})
       raise ValueError(tst)
      
 

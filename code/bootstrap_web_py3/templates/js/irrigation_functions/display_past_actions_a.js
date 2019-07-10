@@ -59,18 +59,20 @@ function prepare_data( )
         
      }
      else if( status == "YELLOW")
-     {    
-        $("#entry_"+i).next('label').children('span').css('background-color', 'yellow');
-        $("#entry_"+i).next('label').children('span').css('color', 'black');
-      
-     }
-     else if( status == "RED")
      {   
-        
-        $("#entry_"+i).css('background-color', 'red');
-        $("#entry_"+i).css('color', 'white');
+        alert("yello")
+        $("#entry_"+i).css('background-color', 'yellow');
+        $("#entry_"+i).css('color', 'black');
           
      }
+     else if( status == "RED")
+     { 
+        alert("redi")
+        $("#entry_"+i).next('label').children('span').css('background-color', 'RED');
+        $("#entry_"+i).next('label').children('span').css('color', 'white');
+      
+     }
+
      else
      {
          alert("this should not happen")
@@ -103,11 +105,11 @@ $(document).ready(
  {  
    
    
-   prepare_data( )
+   //prepare_data( )
 
      
  
-   display_data()
+   //display_data()
    
    
 

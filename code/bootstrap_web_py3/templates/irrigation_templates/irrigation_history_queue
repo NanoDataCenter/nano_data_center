@@ -34,7 +34,7 @@
 
     <h3 id="title_banner"></h3>   
     
-    <div id="list_data" ">
+    <div id="list_data" >
     
     <fieldset data-role="controlgroup" id="fieldset">
         <h2>Past Event Data </h2>
@@ -42,8 +42,16 @@
         {% for i in time_history %}
            {% set label_text = "---  Date:  "+i['time']|string + " Data: "+i["data"]|string %}
            {% set id = "entry_"+ (loop.index -1)|string %}
-          
-           <h4 id={{id}}>{{label_text}}</h4>
+           {% set level = i["data"].level|upper %}
+           {% if level == "RED" %}
+                <h7 id={{id}}><font color="red">{{label_text}}</h7></font><br>
+           {% endif %}
+           {% if level == "YELLOW" %}
+                <h7 id={{id}}><font color="orange">{{label_text}}</h7></font><br>
+           {% endif %}
+           {% if level == "GREEN" %}
+                <h7 id={{id}}><font color="green">{{label_text}}</h7></font><br>
+           {% endif %}
            </div>          
           
         

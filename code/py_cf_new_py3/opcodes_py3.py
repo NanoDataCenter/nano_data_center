@@ -271,7 +271,7 @@ class Opcodes(object):
 
 
     def verify_return_code( self, cf_handle, reset_event, reset_flag ):
-        print("reset_event",reset_event,reset_flag)
+        
         if reset_event[0] != None:
                event = {}
                event["name"] = reset_event[0]

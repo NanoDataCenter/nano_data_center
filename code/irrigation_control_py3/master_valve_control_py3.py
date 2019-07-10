@@ -107,7 +107,7 @@ class Master_Valve(object):
 
    def master_valve_off(self, cf_handle, chainObj, parameters, event):
        
-       if self.handlers["IRRIGATION_CONTROL"].hget("MASTER_VALVE_SETUP") == 1:
+       if self.irrigation_io.get_master_valve_setup() == 1:
           return_value = False
        else:
           return_value = True

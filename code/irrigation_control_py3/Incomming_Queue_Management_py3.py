@@ -197,7 +197,7 @@ class Incomming_Queue_Management(object):
 
    def dispatch_sprinkler_mode(self,chainFlowHandle, chainObj, parameters,event):
 
-
+           
            try: 
                length = self.handlers["IRRIGATION_JOB_SCHEDULING"].length()
              
@@ -214,7 +214,7 @@ class Incomming_Queue_Management(object):
               
            except Exception as tst:
                print("IRRIGATION_CONTROLLER_EXCEPTION "+str(tst))
-               self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_CONTROLLER_EXCEPTION","details":[tst,object_data["command"]],"level":"RED"})
+               self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_CONTROLLER_EXCEPTION","details":[str(tst),object_data["command"]],"level":"RED"})
                
                
       
@@ -256,6 +256,9 @@ class Incomming_Queue_Management(object):
    def resistance_check( self, object_data ):
         json_object = {}
         json_object["type"]   = "RESISTANCE_CHECK"
+        json_object["schedule_name"] ="RESISTANCE_CHECK"
+        json_object["step"] = 1
+        json_object["run_time"] = 0
         self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
         
              
@@ -264,12 +267,18 @@ class Incomming_Queue_Management(object):
    def check_off( self,object_data ):
         json_object = {}
         json_object["type"]            = "CHECK_OFF"
+        json_object["schedule_name"] ="CHECK_OFF"
+        json_object["step"] = 1
+        json_object["run_time"] = 0
         self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
        
 
    def clean_filter( self, object_data ):
         json_object = {}
         json_object["type"]  = "CLEAN_FILTER"
+        json_object["schedule_name"] ="CLEAN_FILTER"
+        json_object["step"] = 1
+        json_object["run_time"] = 0
         self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)       
 
   
@@ -300,16 +309,20 @@ class Incomming_Queue_Management(object):
 
 
    def  reset_system_now( self, *args ):
-      self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT_NOW","level":"YELLOW"})
+      self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT_NOW","level":"RED"})
     
-      time.sleep(5)
-      os.system("reboot")  
+      #time.sleep(5)
+      #os.system("reboot")  
 
    def reset_system_queue( self,  *args ):
         json_object = {}
         json_object["type"]  = "RESET_SYSTEM_QUEUE"
-        self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)     
-
+        json_object["schedule_name"] ="RESET_QUEUE"
+        json_object["step"] = 1
+        json_object["run_time"] = 0
+        self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)       
+      
+       
 
        
 

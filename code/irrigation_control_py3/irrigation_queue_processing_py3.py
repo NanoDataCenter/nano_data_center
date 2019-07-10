@@ -27,7 +27,7 @@ class Irrigation_Queue_Management(object):
       self.measurement_depths = measurement_depths
       self.eto_management = eto_management
       self.irrigation_hash_control = irrigation_hash_control
-      '''
+
       self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers )   
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,
                                                              cluster_control = cluster_control,
@@ -63,7 +63,7 @@ class Irrigation_Queue_Management(object):
       self.clean_filter.construct_clusters( cluster_control, cluster_id,"CLEAN_FILTER" )
       
       self.irrigation_control.construct_clusters( cluster_control, cluster_id,"DIAGNOSITIC_CONTROL" )
-      ''' 
+
   
      
 
@@ -100,7 +100,7 @@ class Irrigation_Queue_Management(object):
    def check_queue( self, cf_handle, chainObj, parameters, event):
    
    
-   
+       
        if event["name"] == "INIT":
           return False
 
