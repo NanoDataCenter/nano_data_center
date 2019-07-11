@@ -66,7 +66,7 @@ class Generate_Hash_Control_Handler():
        except:
          self.set_field("RUN_TIME",0)
        try:
-         self.set_field("ELASPED_TIME",json_object["run_time"])
+         self.set_field("ELASPED_TIME",json_object["elasped_time"])
        except:
          self.set_field("ELASPED_TIME",0)     
          

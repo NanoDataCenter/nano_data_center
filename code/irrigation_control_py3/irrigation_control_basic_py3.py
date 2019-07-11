@@ -101,7 +101,7 @@ class Irrigation_Control_Basic(object):
        
        self.json_object["max_flow_time"] = 0
        self.json_object = self.convert_to_integers( self.json_object,
-                                  ["run_time","step","max_flow_time"])
+                                  ["run_time","step","elasped_time"])
        return True
 
    def convert_to_integers( self, dictionary, list_elements):
@@ -122,8 +122,8 @@ class Irrigation_Control_Basic(object):
            return True
      
       self.json_object["elasped_time"]  =      self.json_object["elasped_time"] +1
-      self.json_object["max_flow_time"]       =  self.json_object["max_flow_time"]+1
-      print("json_object",self.json_object)
+      
+      self.irrigation_hash_control.update_json_object(self.json_object)
       if self.json_object["elasped_time"] <= self.json_object["run_time"]  :
            self.step_monitor.step_monitoring(self.json_object)       
  

@@ -15,7 +15,7 @@ function status_update( data )
        var temp_1
        var tempDate
        
-       alert(JSON.stringify(data))
+       //alert(JSON.stringify(data))
        var date = new Date( data["TIME_STAMP"]  * 1000);
        tempDate = new Date()
        
