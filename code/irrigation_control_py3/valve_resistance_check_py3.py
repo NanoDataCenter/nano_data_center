@@ -27,6 +27,7 @@ class Valve_Resistance_Check(object):
        cf.insert.enable_chains(["test_each_valve"])
        cf.insert.wait_event_count( event = "IR_V_Valve_Check_Done" )
        cf.insert.log("event IR_V_Valve_Check_Done")
+       cf.insert.one_step(self.log_valve_check)
        cf.insert.send_event("RELEASE_IRRIGATION_CONTROL" ) 
        cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)
        cf.insert.terminate() 
@@ -117,7 +118,7 @@ class Valve_Resistance_Check(object):
        if length > 0:
            return_value = True
        else:
-           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"valve_check","details":{},"level":"YELLOW"})
+           
            return_value = False
        
        return return_value
@@ -127,7 +128,7 @@ class Valve_Resistance_Check(object):
        json_object = self.handlers["VALVE_JOB_QUEUE_SERVER"].pop()
        if json_object[0] == True:
           json_object = json_object[1]
-          print("setup step",json_object)
+          
           self.io_control.load_duration_counters( 1  ) 
           self.io_control.turn_on_valve(  [{"remote": json_object[0], "bits":[int(json_object[1])]}] ) #  {"remote":xxxx,"bits":[] } 
           self.remote = json_object[0]
@@ -142,7 +143,9 @@ class Valve_Resistance_Check(object):
        self.hash_logging.log_value(self.remote+":"+str(self.output),coil_current )
        self.io_control.disable_all_sprinklers()
                
-
+   def log_valve_check( self,*args):
+        
+     self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"valve resistance","details":{},"level":"GREEN"})
  
        
 

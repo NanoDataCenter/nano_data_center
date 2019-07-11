@@ -1,5 +1,5 @@
 
-
+import time
 class Irrigation_Scheduling(object):
    def __init__(self,handlers,app_files,sys_files,eto_management,irrigation_hash_control ):
        self.handlers = handlers
@@ -114,11 +114,11 @@ class Irrigation_Scheduling(object):
           json_object["eto_enable"]      =  eto_flag
           json_object["eto_list"]        =  eto_list
           json_object["eto_flag"]        = eto_flag
-          print("json_object",json_object)
+         
           self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
        else:
            details = "Schedule "+ schedule_name +" step "+str(schedule_step)+" IRRIGATION_ETO_RESTRICTION"
-           print(details)
+           
            self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLOW"})
        
        
@@ -173,7 +173,7 @@ class Incomming_Queue_Management(object):
        
        self.irrigation_sched = Irrigation_Scheduling(handlers,app_files,sys_files,eto_management,irrigation_hash_control)
        
-                      
+       self.irrigation_hash_control.clear_json_object()              
        self.commands = {}
 
        self.commands["CLEAR"]                     = self.clear                   
@@ -225,6 +225,7 @@ class Incomming_Queue_Management(object):
        #cf.insert.log("sprinkler_command_queue")
        cf.insert.wait_event_count(count = 1 ) # wait 1 seconds
        cf.insert.one_step(  self.dispatch_sprinkler_mode  ) 
+       cf.insert.one_step( self.update_time_stamp)       
        cf.insert.reset()
 
   
@@ -232,16 +233,18 @@ class Incomming_Queue_Management(object):
 
 
       
-
+   def update_time_stamp(self,*args):
+       self.irrigation_hash_control.set_time_stamp(time.time())
 
    def suspend( self, *args ):
        
-      
+       self.irrigation_hash_control.set_suspend(1)
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"SUSPEND_OPERATION","level":"YELLOW"})
        self.cf.send_event("IRI_MASTER_VALVE_SUSPEND",None)
       
 
    def resume( self, *args ):
+       self.irrigation_hash_control.set_suspend(0)
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"RESUME_OPERATION","level":"YELLOW"})
        self.cf.send_event("IRI_MASTER_VALVE_RESUME",None)
       

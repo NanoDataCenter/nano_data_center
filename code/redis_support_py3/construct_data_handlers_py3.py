@@ -175,7 +175,18 @@ class Job_Queue_Client( object ):
         return_value.append(msgpack.unpackb(pack_data,encoding='utf-8'))
       return return_value
       
-      
+   def pop(self):
+       pack_data = self.redis_handle.rpop(self.key)
+        
+       if self.cloud_handler != None:
+          if pack_data != None:
+              self.cloud_handler.rpop(self.data ,self.key)
+
+       if pack_data == None:
+          return False, None
+       else:
+         
+          return True,msgpack.unpackb(pack_data,encoding='utf-8')     
    def push(self,data):
        pack_data =  msgpack.packb(data,use_bin_type = True )
        self.redis_handle.lpush(self.key,pack_data)

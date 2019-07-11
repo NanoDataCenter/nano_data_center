@@ -1,36 +1,38 @@
  
-function status_request()
+function status_request_function()
 {
-            hash_name    = "CONTROL_VARIABLES"
-            error_message = "redis_hget ajax call not successful"
-            redis_hgetall( hash_name, status_update, error_message)          
-}
+   json_object = {}
+
+   
+   ajax_get( '/ajax/status_update', "Data Not Fetched", status_update )
  
+   
+}
+       
 function status_update( data )
 {
        var temp
        var temp_1
        var tempDate
        
-
-       var date = new Date( data.sprinkler_time_stamp  * 1000);
+       alert(JSON.stringify(data))
+       var date = new Date( data["TIME_STAMP"]  * 1000);
        tempDate = new Date()
        
        $("#time_stamp").html("Time:  "+tempDate.toLocaleDateString() + "   " + tempDate.toLocaleTimeString() )
 
        $("#controller_time_stamp").html("Ctr Time: "+ date.toLocaleDateString() + "   " + date.toLocaleTimeString() )
-       $("#flow_rate").html("GPM:  "+parseFloat(data.global_flow_sensor_corrected).toFixed(2));
-       $("#op_mode_a").html("Mode: "+data.sprinkler_ctrl_mode)
-       $("#schedule").html("Schedule: "+data.schedule_name)
-       $("#step").html("Step:   "+data.schedule_step)
-       $("#time").html("Step Time:  "+data.schedule_time_max)
-       $("#duration").html("Duration: "+parseFloat(data.schedule_time_count).toFixed(2)) 
-       $("#rain_day").html("Rain Day: "+data.rain_day)
-       $("#coil_current").html("Coil ma: "+parseFloat(data.coil_current).toFixed(2))
+       //$("#flow_rate").html("GPM:  "+parseFloat(data.global_flow_sensor_corrected).toFixed(2));
+       
+       $("#schedule").html("Schedule: "+data["SCHEDULE_NAME"])
+       $("#step").html("Step:   "+data["STEP"])
+       $("#time").html("Step Time:  "+data["RUN_TIME"])
+       $("#duration").html("ELASPED_TIME: "+ data["ELASPED_TIME"]) 
+       $("#rain_day").html("Rain Day: "+data["RAIN_FLAG"])
+       //$("#coil_current").html("Coil ma: "+parseFloat(data.coil_current).toFixed(2))
        $("#master_valve").html("Master Valve: "+data.MASTER_VALVE_SETUP )
-       $("#eto_management").html("ETO Management: "+data.ETO_MANAGE_FLAG )
-       $("#suspend").html("Suspension State:  "+data.SUSPEND )
-       $("clean_filter_limit").html("Suspension State:  "+data.SUSPEND )
+       $("#eto_management").html("ETO Management: "+data.ETO_MANAGEMENT )
+ 
        $("#suspend").html("Suspension State:  "+data.SUSPEND )
        $("#clean_filter_limit").html("Filter Cleaning Limit (Gallon):  "+parseFloat(data.CLEANING_INTERVAL).toFixed(2) )
        $("#clean_filter_value").html("Filter Cleaning Accumulation (GPM):  "+parseFloat(data.cleaning_sum).toFixed(2 ))
@@ -54,9 +56,10 @@ function system_state_init()
  
     
 
-   $( "#status_panel"  ).bind({ popupafteropen: status_request })
-
+   $( "#status_panel"  ).bind({ popupafteropen: status_request_function })
+   
+   
 
   } 
-system_state_init()
+
 

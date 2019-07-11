@@ -1,6 +1,6 @@
 
 
-
+import time
 import redis
 import json
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
@@ -32,11 +32,19 @@ class Generate_Hash_Control_Handler():
        self.access_handler["MASTER_VALVE"]   =  self.set_master_valve
        self.access_handler["CLEANING_VALVE"]   = self.set_cleaning_valve
        self.access_handler["MASTER_VALVE_SETUP"]   = self.set_master_valve_setup
+       self.access_handler["SCHEDULE_NAME"]   = self.set_schedule_name
+       self.access_handler["STEP"]   =        self.set_step_number
+       self.access_handler["RUN_TIME"]   =   self.set_run_time
+       self.access_handler["ELASPED_TIME"]  = self.set_elasped_time
+       self.access_handler["TIME_STAMP"]  = self.set_time_stamp
+       self.access_handler["SUSPEND"]    = self.set_suspend
        
        
    def get_redis_handle(self):
       return self.redis_handle
-      
+ 
+   def get_all(self):
+      return self.handler.hgetall()   
       
    def set_field(self,field,data):
        try:
@@ -44,7 +52,24 @@ class Generate_Hash_Control_Handler():
        except:
            raise ValueError("Unrecognized field "+field)
 
-       
+   def clear_json_object(self):
+       self.set_field("SCHEDULE_NAME","OFFLINE")
+       self.set_field("STEP",0)
+       self.set_field("RUN_TIME",0)
+       self.set_field("ELASPED_TIME",0)
+   
+   def update_json_object(self,json_object):   
+       self.set_field("SCHEDULE_NAME",json_object["schedule_name"])
+       self.set_field("STEP",json_object["step"])
+       try:
+         self.set_field("RUN_TIME",json_object["run_time"])
+       except:
+         self.set_field("RUN_TIME",0)
+       try:
+         self.set_field("ELASPED_TIME",json_object["run_time"])
+       except:
+         self.set_field("ELASPED_TIME",0)     
+         
    def get_rain_flag(self):
        temp = self.handler.hget("RAIN_FLAG")
        if (temp == 0) or (temp == 1 ):
@@ -164,4 +189,101 @@ class Generate_Hash_Control_Handler():
         
        else:
            self.handler.hset("MASTER_VALVE_SETUP",0)
-       return   
+       return  
+
+   def get_run_time(self):
+       temp = self.handler.hget("RUN_TIME")
+       try:
+          temp = int(temp)
+       except:
+          temp = 0
+          self.handler.hset("RUN_TIME",temp)     
+       return temp   
+       
+   def set_run_time(self,data):
+ 
+       data = int(data)
+       self.handler.hset("RUN_TIME",data) 
+       return  
+
+   def get_step_number(self):
+       temp = self.handler.hget("STEP")
+       try:
+          temp = int(temp)
+       except:
+          temp = 0
+          self.handler.hset("STEP",temp)     
+       return temp
+        
+   def set_step_number(self,data):
+  
+       data = int(data)
+       self.handler.hset("STEP",data) 
+       return  
+
+   def get_schedule_name(self):
+       temp = self.handler.hget("SCHEDULE_NAME")
+       if temp != None:
+         return str(temp)
+       else:
+         return ""
+       
+       
+        
+   def set_schedule_name(self,data):
+       if data != None:
+             self.handler.hset("SCHEDULE_NAME",str(data))
+       else:
+           self.handler.hset("SCHEDULE_NAME","OFFLINE")
+       return  
+
+
+   def get_elasped_time(self):
+       temp = self.handler.hget("STEP")
+       try:
+          temp = int(temp)
+       except:
+          temp = 0
+          self.handler.hset("ELASPED_TIME",temp)     
+       return temp
+        
+   def set_elasped_time(self,data):
+  
+       data = int(data)
+       self.handler.hset("ELASPED_TIME",data) 
+       return  
+
+   def get_time_stamp(self):
+       temp = self.handler.hget("TIME_STAMP")
+       try:
+          temp = float(temp)
+       except:
+          temp = time.time()
+          self.handler.hset("TIME_STAMP",temp)     
+       return temp
+        
+   def set_time_stamp(self,data):
+  
+       data = float(data)
+       self.handler.hset("TIME_STAMP",data) 
+       return      
+       
+       
+   def get_suspend(self):
+       temp = self.handler.hget("SUSPEND")
+       if (temp == 0) or (temp == 1 ):
+         return temp
+       self.handler.hset("SUSPEND",0)
+       return 0
+        
+   
+   def set_suspend(self,data):
+       data = int(data)
+       if (data == 0) or (data == 1 ):
+             self.handler.hset("SUSPEND",data)
+        
+       else:
+           self.handler.hset("SUSPEND",0)
+       return  
+  
+   

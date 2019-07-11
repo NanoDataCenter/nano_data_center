@@ -5,7 +5,7 @@ from .irrigation_step_monitoring_py3 import Irrigation_Step_Monitoring
 class Irrigation_Control_Basic(object):
 
    def __init__( self,   cf,cluster_control,io_control,handlers,
-                        app_files, sys_files, manage_eto,measurement_depths):
+                        app_files, sys_files, manage_eto,measurement_depths,irrigation_hash_control):
                         
        self.cf = cf
        self.cluster_ctrl   = cluster_control 
@@ -15,6 +15,7 @@ class Irrigation_Control_Basic(object):
        
        self.app_files     = app_files
        self.sys_files     = sys_files
+       self.irrigation_hash_control = irrigation_hash_control
 
        self.step_monitor = Irrigation_Step_Monitoring(handlers,manage_eto,io_control,cf)
 

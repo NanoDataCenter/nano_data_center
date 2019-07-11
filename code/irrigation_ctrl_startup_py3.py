@@ -220,7 +220,13 @@ if __name__ == "__main__":
 
     ##
     ## log entry that go removed
-    ##
+    ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT STARTUP","level":"RED"})
+   
+    status = ds_handlers["IRRIGATION_CURRENT_CLIENT"].pop()
+    irrigation_hash_control.set_suspend(0)
+    if status[0] == True:
+       temp = status[1]
+       ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Deleting_Irrigation_Job","details":{"schedule_name":temp["schedule_name"],"step":temp["step"]},"level":"RED"})
     ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all() # delete current job to prevent circular reboots
     io_control = IO_Control(irrigation_hash_control)
    
@@ -260,7 +266,7 @@ if __name__ == "__main__":
     #         
     
     try:
-       ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT STARTUP","level":"RED"})
+       
        cf.execute()
     except Exception as tst:
       #

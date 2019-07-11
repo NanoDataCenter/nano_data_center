@@ -39,14 +39,14 @@
            </div>
     </div>
 </div>   
+<script type="text/javascript" >
+ {% include "js/status_request.js" %}   
 
-    
-<script>
 
 $(document).ready(function(){
     $("#status_panel").click(function(){
         $("#status_modal").modal("show");
-       
+        status_request_function()
     });
     $("#myModal").on('shown.bs.modal', function () {
             alert('The modal is fully shown.');

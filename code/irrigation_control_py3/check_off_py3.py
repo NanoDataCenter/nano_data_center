@@ -8,6 +8,7 @@ class Check_Off(object):
        self.handlers = handlers
        
        
+       
    
 
 
@@ -16,16 +17,14 @@ class Check_Off(object):
            return
 
         temp = float(self.io_control.get_corrected_flow_rate())
-        self.handlers["IRRIGATION_CONTROL"].hset("check_off",temp )
+        
         if temp   > 1.:
            
 
            self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"check_off","details":{"flow_rate":temp },"level":"RED"})           
            return_value = "DISABLE"
         else:
-           self.handlers["IRRIGATION_CONTROL"].hset("SUSPEND","OFF")
-           
-           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"check_off","details":{"flow_rate":temp },"level":"YELLOW"})   
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"check_off","details":{"flow_rate":temp },"level":"GREEN"})   
            return_value = "DISABLE"
         return return_value
  

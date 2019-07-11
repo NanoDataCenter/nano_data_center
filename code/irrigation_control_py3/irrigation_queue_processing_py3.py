@@ -39,7 +39,7 @@ class Irrigation_Queue_Management(object):
                                                              cleaning_valves = cleaning_valves,
                                                              measurement_depths = measurement_depths )
                                                              
-      self.clean_filter = Clean_Filter(cf,cluster_control,irrigation_io, handlers )
+      self.clean_filter = Clean_Filter(cf,cluster_control,irrigation_io, handlers,irrigation_hash_control )
       self.irrigation_control  =  Irrigation_Control_Basic(cf = cf,
                                                            cluster_control=cluster_control,
                                                            io_control = irrigation_io,
@@ -47,7 +47,8 @@ class Irrigation_Queue_Management(object):
                                                            app_files = app_files,
                                                            sys_files=sys_files,
                                                            manage_eto = manage_eto,
-                                                           measurement_depths = measurement_depths )
+                                                           measurement_depths = measurement_depths,
+                                                           irrigation_hash_control = irrigation_hash_control )
 
       self.chain_list    = []
       self.chain_list.extend(self.check_off.construct_chains(cf))
@@ -82,8 +83,10 @@ class Irrigation_Queue_Management(object):
       cf.insert.log( "Checking Irrigation Queue" )
       cf.insert.wait_function( self.check_queue)
       cf.insert.one_step( self.dispatch_entry )
-      #cf.insert.send_event("RELEASE_IRRIGATION_CONTROL") # for diagnostics
+      cf.insert.wait_event_count( count = 1 )
+      
       cf.insert.wait_event_count( event = "RELEASE_IRRIGATION_CONTROL" ,count = 1)
+      cf.insert.one_step( self.delete_queue_entry )
       cf.insert.wait_event_count( count = 1 )
       cf.insert.log("RELEASE_IRRIGATION_CONTROL event received")
       cf.insert.reset()
@@ -109,13 +112,16 @@ class Irrigation_Queue_Management(object):
        
        if int(length) > 0:
            return_value = True
-           print("queue is not empty")
+          
        else:
            return_value = False
        
        return return_value 
        
-       
+   def delete_queue_entry(self,cf_handle, chainObj, parameters, event):
+        self.handlers["IRRIGATION_CURRENT_CLIENT"].pop()
+        self.irrigation_hash_control.clear_json_object()
+        
    def dispatch_entry(self , cf_handle, chainObj, parameters, event ): 
  
  
@@ -126,22 +132,25 @@ class Irrigation_Queue_Management(object):
        json_object = json_object[1]
        if isinstance(json_object,str):
           json_object = json.loads(json_object)
-       print("dispatch_entry",json_object)
+      
+       self.irrigation_hash_control.update_json_object(json_object)
        
        
        if json_object["type"] == "CHECK_OFF":
+           self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
            self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id, "CHECK_OFF" )
            return
        
        if json_object["type"] == "RESISTANCE_CHECK":
-           print("made it here resistance check")
+           self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
            self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"MEASURE_RESISTANCE" )
            return
        
  
 
        if json_object["type"] == "CLEAN_FILTER":
-          
+           self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
+           
            self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"CLEAN_FILTER" )
            return
        if json_object["type"] == "RESET_SYSTEM_QUEUE":
@@ -164,7 +173,8 @@ class Irrigation_Queue_Management(object):
                  details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+" IRRIGATION_ETO_RESTRICTION"
                  print(details)
                  self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLOW"})
-                 return
+                 self.cf.queue_event("RELEASE_IRRIGATION_CONTROL", 0)
+                 return 
  
           
           self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)

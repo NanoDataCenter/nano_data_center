@@ -53,8 +53,9 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        
        a1 = auth.login_required( self.irrigation_job_delete )
        app.add_url_rule('/ajax/irrigation_job_delete',"irrigation_job_delete",a1, methods=["POST"]) 
-
-
+ 
+       a1 = auth.login_required( self.irrigation_status_update )
+       app.add_url_rule('/ajax/status_update',"status_update",a1, methods=["GET"])
   
    def queue_irrigation_jobs(self):
        schedule_data = self.schedule_data()
@@ -190,3 +191,6 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
         self.handlers["IRRIGATION_PENDING"].delete_jobs(list_index)
         return json.dumps("SUCCESS")
   
+   def irrigation_status_update(self):
+       temp = self.irrigation_control.get_all()
+       return json.dumps(temp)

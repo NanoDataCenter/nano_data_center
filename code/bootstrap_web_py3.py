@@ -193,6 +193,7 @@ class PI_Web_Server(object):
        irrigation_control = Generate_Hash_Control_Handler(self.redis_site_data)
        Load_Irrigation_Pages(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
                   render_template=render_template, redis_handle= self.redis_handle, handlers= ds_handlers ,irrigation_control=irrigation_control)
+                  
        
    def assemble_controller_handlers(self,label ):
        query_list = []
