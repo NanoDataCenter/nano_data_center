@@ -28,7 +28,7 @@ class Generate_Hash_Control_Handler():
        self.access_handler["RAIN_FLAG"]   = self.set_rain_flag
        self.access_handler["ETO_MANAGEMENT"]   = self.set_eto_management_flag
        self.access_handler["FLOW_CUT_OFF"]   = self.set_flow_cutoff
-       self.access_handler["CLEANING_VALVE"]   =   self.set_cleaning_interval
+       self.access_handler["CLEANING_INTERVAL"]   =   self.set_cleaning_interval
        self.access_handler["MASTER_VALVE"]   =  self.set_master_valve
        self.access_handler["CLEANING_VALVE"]   = self.set_cleaning_valve
        self.access_handler["MASTER_VALVE_SETUP"]   = self.set_master_valve_setup

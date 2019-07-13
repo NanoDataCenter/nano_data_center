@@ -321,21 +321,23 @@ class MQTT_Monitor(object):
 
 
    def on_message(self, client, userdata, msg):
-       
-       topic = msg.topic
-       data = msgpack.unpackb(msg.payload)
-       process_topic = topic.split("/")
-       search_key = "/".join(process_topic[:3])
-       if self.ds_handlers["MQTT_DEVICES" ].hexists(search_key) == True:
-          temp = self.ds_handlers["MQTT_DEVICES"].hget(search_key)
-          data["timestamp"] = time.time()
-          data["device_id"] = search_key
-          self.mqtt_handlers[temp["type"] ].process_message(data)
-       else:
-          print(search_key_no_match)
-          data["timestamp"] = time.time()
-          self.ds_handlers["MQTT_UNKNOWN_CONTACTS"].hset(search_key,data)
- 
+       try:
+          topic = msg.topic
+          data = msgpack.unpackb(msg.payload)
+          process_topic = topic.split("/")
+          search_key = "/".join(process_topic[:3])
+          if self.ds_handlers["MQTT_DEVICES" ].hexists(search_key) == True:
+             temp = self.ds_handlers["MQTT_DEVICES"].hget(search_key)
+             data["timestamp"] = time.time()
+             data["device_id"] = search_key
+             self.mqtt_handlers[temp["type"] ].process_message(data)
+          else:
+            print(search_key_no_match)
+            data["timestamp"] = time.time()
+            self.ds_handlers["MQTT_UNKNOWN_CONTACTS"].hset(search_key,data)
+       except:
+         print("data",type(data),data)
+         print("topic",topic)         
 
       
 if __name__ == "__main__":
