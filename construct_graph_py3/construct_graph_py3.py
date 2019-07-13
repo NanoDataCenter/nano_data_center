@@ -12,7 +12,7 @@ from  construct_data_structures_py3 import Construct_Data_Structures
 from  graph_modules_py3.construct_applications_py3 import Construct_Applications
 from  graph_modules_py3.construct_controller_py3 import Construct_Controllers
 from  graph_modules_py3.construct_redis_monitor_py3 import Construct_Redis_Monitoring
-
+from  graph_modules_py3.construct_mqtt_devices_py3  import  Construct_MQTT_Devices
 
 if __name__ == "__main__" :
 
@@ -45,6 +45,7 @@ if __name__ == "__main__" :
    Construct_Applications(bc,cd)
    Construct_Controllers(bc,cd)
    Construct_Redis_Monitoring(bc,cd)
+   Construct_MQTT_Devices(bc,cd)
 
 
    bc.end_header_node("SITE")

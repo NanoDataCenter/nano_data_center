@@ -134,7 +134,10 @@ class Redis_Hash_Dictionary( object ):
        if self.cloud_handler != None:
            self.cloud_handler.hdel(self.data,self.key,field)
           
-       
+   def delete_all( self ):
+       self.redis_handle.delete(self.key)
+       if self.cloud_handler != None:
+          self.cloud_handler.delete(self.data, self.key)          
 
   
        

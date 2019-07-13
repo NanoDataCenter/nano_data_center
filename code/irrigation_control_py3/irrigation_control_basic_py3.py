@@ -52,7 +52,7 @@ class Irrigation_Control_Basic(object):
                                              reset_event_data=None,
                                              function = self.start)
 
-
+       cf.insert.wait_event_count(event = "MINUTE_TICK")
        cf.insert.log("enabling chain ")
        cf.insert.enable_chains( ["IR_D_monitor_irrigation_step" ])
        cf.insert.terminate()      
@@ -114,20 +114,30 @@ class Irrigation_Control_Basic(object):
    def start_logging(self,*args):
        pass
    def start(self,*args):
+      self.io_control.load_duration_counters(self.json_object['run_time'])
+      self.io_control.turn_on_valve(self.json_object['io_setup'])
+      self.irrigation_hash_control.update_json_object(self.json_object)
       return True
 
    def monitor_irrigation( self, cf_handle, chainObj, parameters, event):
       return_value = True
       if event["name"] == "INIT":
            return True
-     
+      #turn on io
       self.json_object["elasped_time"]  =      self.json_object["elasped_time"] +1
-      
+      self.io_control.turn_on_valve(self.json_object['io_setup'])
       self.irrigation_hash_control.update_json_object(self.json_object)
+      
       if self.json_object["elasped_time"] <= self.json_object["run_time"]  :
            self.step_monitor.step_monitoring(self.json_object)       
  
       else:
+           details = {}
+           details["schedule_name"] = self.json_object["schedule_name"]
+           details["step"]          = self.json_object["step"]
+           details["run_time"]      = self.json_object["run_time"]
+           details["io_setup"]      = self.json_object["io_setup"]
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_STEP_COMPLETE","details":details,"level":"GREEN"})
            return_value = False
       return return_value
 
