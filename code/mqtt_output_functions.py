@@ -21,3 +21,7 @@
     
      mqtt_ctrl_register_subscription("OUTPUTS/PWM/CHANGE_DUTY", app_pwm_change_duty );
        mqtt_ctrl_register_subscription("OUTPUTS/PWM/REQUEST_DUTY", app_pwm_read_duty );
+           gpio_message.write_gpio_pins([25,26,27],[1,1,1])
+    time.sleep(5)
+    gpio_message.write_gpio_pins([25,26,27],[0,0,0])
+    time.sleep(2)

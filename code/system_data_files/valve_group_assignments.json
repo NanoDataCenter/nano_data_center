@@ -1,1 +1,191 @@
-[{"valves": ["Flowers along side walk", "Well Water Drip Line", "Barbecue Clover Area", "Well Clover Area", "Triangle Pool Area", "Dragon Fruit \u2014 Fruit Tree Drip Line", "Pool Fence Area"], "io": [{"controller": "satellite_1", "pin": 20}, {"controller": "satellite_1", "pin": 19}, {"controller": "satellite_1", "pin": 14}, {"controller": "satellite_1", "pin": 18}, {"controller": "satellite_1", "pin": 15}, {"controller": "satellite_1", "pin": 17}, {"controller": "satellite_1", "pin": 16}], "name": "valve group 1"}, {"valves": ["Lemon Tree Drip Line near Steps", "Middle Clover Near Well", "Middle Clover Near Barbecue", "Drip Line along garage"], "io": [{"controller": "satellite_1", "pin": 13}, {"controller": "satellite_1", "pin": 25}, {"controller": "satellite_1", "pin": 12}, {"controller": "satellite_1", "pin": 11}], "name": "valve group 2"}, {"valves": ["Flowers Toward Garage", "Flowers on Opposite Side of Garage", "Grass Zone Away From Door", "Grass Toward Door"], "io": [{"controller": "satellite_1", "pin": 24}, {"controller": "satellite_1", "pin": 21}, {"controller": "satellite_1", "pin": 22}, {"controller": "satellite_1", "pin": 23}], "name": "valve group 3"}, {"valves": ["Upper area Near Property Line", "On Property Side of Valve #3", "Next to Valve 4", "Spray Area Next to Remote", "Sprayers along Drive Way", "Lower area near Property Line"], "io": [{"controller": "satellite_2", "pin": 2}, {"controller": "satellite_2", "pin": 4}, {"controller": "satellite_2", "pin": 3}, {"controller": "satellite_2", "pin": 1}, {"controller": "satellite_2", "pin": 5}, {"controller": "satellite_2", "pin": 6}], "name": "valve group 4"}, {"valves": ["Fruit Trees on Block #9", "Waters Bank Closest to House", "#3/#4  Valves are tied together Spray area away from house", "#3/#4  Valves are tied together Spray area away from house", "Avocado Block 6"], "io": [{"controller": "satellite_1", "pin": 9}, {"controller": "satellite_1", "pin": 1}, {"controller": "satellite_1", "pin": 2}, {"controller": "satellite_1", "pin": 2}, {"controller": "satellite_1", "pin": 6}], "name": "valve group 5"}, {"valves": ["Avocado Block #4", "Avocado Block #10", "No Connection", "Drip Line and Sprayers along Road", "No Connection", "No Connection", "No Connection"], "io": [{"controller": "satellite_2", "pin": 13}, {"controller": "satellite_2", "pin": 14}, {"controller": "satellite_2", "pin": 21}, {"controller": "satellite_2", "pin": 17}, {"controller": "satellite_2", "pin": 21}, {"controller": "satellite_2", "pin": 21}, {"controller": "satellite_2", "pin": 21}], "name": "valve group 6"}, {"valves": ["Bank Sprayers Down Hill", "Bank Sprayers Down Hill", "Avocado Block 5", " Bank Sprayers Down Hill", "Avocado Block 11", "Bank Sprayers Up Hill"], "io": [{"controller": "satellite_3", "pin": 4}, {"controller": "satellite_3", "pin": 3}, {"controller": "satellite_3", "pin": 1}, {"controller": "satellite_3", "pin": 6}, {"controller": "satellite_3", "pin": 5}, {"controller": "satellite_3", "pin": 3}], "name": "valve group 7"}, {"valves": ["Avocado Block #1", "Avocado Block #2", "Sprayers Down Hill", "Sprayers Up Hill From Valve #3", "No Connection", "Avocado Block #3", "Top Most Sprayers"], "io": [{"controller": "satellite_3", "pin": 13}, {"controller": "satellite_3", "pin": 14}, {"controller": "satellite_3", "pin": 18}, {"controller": "satellite_3", "pin": 17}, {"controller": "satellite_3", "pin": 21}, {"controller": "satellite_3", "pin": 15}, {"controller": "satellite_3", "pin": 19}], "name": "valve group 8"}, {"valves": ["Bottom Hill on Cindys House Side", "Bottom Hill on the opposite site of drive way"], "io": [{"controller": "satellite_3", "pin": 11}, {"controller": "satellite_3", "pin": 12}], "name": "valve group 9"}, {"valves": ["Not Connected", "Drip line along side of Road", "Avocado Bank 7", "Avocado Bank 8"], "io": [{"controller": "satellite_1", "pin": 42}, {"controller": "satellite_1", "pin": 3}, {"controller": "satellite_1", "pin": 7}, {"controller": "satellite_1", "pin": 8}], "name": "valve group 10"}]
+[
+   { "name":"valve group 1", "valves":
+      [
+           "Flowers along side walk",
+           "Well Water Drip Line",
+           "Barbecue Clover Area",
+           "Well Clover Area",
+           "Triangle Pool Area",
+           "Dragon Fruit — Fruit Tree Drip Line",
+           "Pool Fence Area"
+       ],
+       "io":
+        [  
+          { "controller":"satellite_1"   ,"pin":20  },
+          { "controller":"satellite_1"   ,"pin":19 },
+          { "controller":"satellite_1"   ,"pin":14 },
+          { "controller":"satellite_1"   ,"pin":18 },
+          { "controller":"satellite_1"   ,"pin":15 },
+          { "controller":"satellite_1"   ,"pin":17 },
+          { "controller":"satellite_1"   ,"pin":16 }
+       ]
+     },
+     { "name":"valve group 2", "valves":
+      [
+           "Lemon Tree Drip Line near Steps",
+           "Middle Clover Near Well",
+           "Middle Clover Near Barbecue",
+           "Drip Line along garage"
+       ],
+       "io":
+        [  
+          { "controller":"satellite_1"   ,"pin":13  },
+          { "controller":"satellite_1"   ,"pin":25  },
+          { "controller":"satellite_1"   ,"pin":12 },
+          { "controller":"satellite_1"   ,"pin":11 }
+       ]
+     },
+     { "name":"valve group 3", "valves":
+      [
+           "Flowers Toward Garage",
+           "Flowers on Opposite Side of Garage",
+           "Grass Zone Away From Door",
+           "Grass Toward Door"
+           
+       ],
+       "io":
+        [  
+          { "controller":"satellite_1"   ,"pin":24  },
+          { "controller":"satellite_1"   ,"pin":21  },
+          { "controller":"satellite_1"   ,"pin":22 },
+          { "controller":"satellite_1"   ,"pin":23 }
+       ]
+     },
+     { "name":"valve group 4", "valves":
+      [
+           "Upper area Near Property Line",
+           "On Property Side of Valve #3",
+           "Next to Valve 4",
+           "Spray Area Next to Remote",
+           "Sprayers along Drive Way",
+           "Lower area near Property Line"
+
+       ],
+       "io":
+        [  
+          { "controller":"satellite_2"   ,"pin":2  },
+          { "controller":"satellite_2"   ,"pin":4  },
+          { "controller":"satellite_2"   ,"pin":3 },
+          { "controller":"satellite_2"   ,"pin":1 },
+          { "controller":"satellite_2"   ,"pin":5 },
+          { "controller":"satellite_2"   ,"pin":6 }
+
+       ]
+     },  
+     { "name":"valve group 5", "valves":
+      [
+           "Fruit Trees on Block #9",
+           "Waters Bank Closest to House",
+           "#3/#4  Valves are tied together Spray area away from house",
+           "#3/#4  Valves are tied together Spray area away from house",
+           "Avocado Block 6"
+       ],
+       "io":
+        [ 
+          { "controller":"satellite_1"   ,"pin":9  }, 
+          { "controller":"satellite_1"   ,"pin":1  },
+          { "controller":"satellite_1"   ,"pin":2  },
+          { "controller":"satellite_1"   ,"pin":2 },
+           { "controller":"satellite_1"   ,"pin":6  }
+       ]
+     },
+     { "name":"valve group 6", "valves":
+      [
+           "Avocado Block #4",
+           "Avocado Block #10",
+           "No Connection",
+           "Drip Line and Sprayers along Road",
+           "No Connection",
+           "No Connection",
+           "No Connection"
+       ],
+       "io":
+        [  
+          { "controller":"satellite_2"   ,"pin":13  },
+          { "controller":"satellite_2"   ,"pin":14  },
+          { "controller":"satellite_2"   ,"pin":21 },
+          { "controller":"satellite_2"   ,"pin":17 },
+          { "controller":"satellite_2"   ,"pin":21 },
+          { "controller":"satellite_2"   ,"pin":21 },
+          { "controller":"satellite_2"   ,"pin":21 }
+
+       ]
+     },  
+     { "name":"valve group 7", "valves":
+      [
+           "Bank Sprayers Down Hill",
+           "Bank Sprayers Down Hill",
+           "Avocado Block 5",
+           " Bank Sprayers Down Hill",
+           "Avocado Block 11",
+           "Bank Sprayers Up Hill"
+
+       ],
+       "io":
+        [  
+          { "controller":"satellite_3"   ,"pin":4  },
+          { "controller":"satellite_3"   ,"pin":3  },
+          { "controller":"satellite_3"   ,"pin":1 },
+          { "controller":"satellite_3"   ,"pin":6 },
+          { "controller":"satellite_3"   ,"pin":5 },
+          { "controller":"satellite_3"   ,"pin":3 }
+         
+
+       ]
+     },  
+
+     { "name":"valve group 8", "valves":
+      [
+           "Avocado Block #1",
+           "Avocado Block #2",
+           "Sprayers Down Hill",
+           "Sprayers Up Hill From Valve #3",
+           "No Connection",
+           "Avocado Block #3",
+           "Top Most Sprayers"
+       ],
+       "io":
+        [  
+          { "controller":"satellite_3"   ,"pin":13  },
+          { "controller":"satellite_3"   ,"pin":14  },
+          { "controller":"satellite_3"   ,"pin":18 },
+          { "controller":"satellite_3"   ,"pin":17 },
+          { "controller":"satellite_3"   ,"pin":21 },
+          { "controller":"satellite_3"   ,"pin":15 },
+          { "controller":"satellite_3"   ,"pin":19 }
+
+       ]
+     },  
+     { "name":"valve group 9", "valves":
+      [
+           "Bottom Hill on Cindy's House Side",
+           "Bottom Hill on the opposite site of drive way"
+        ],
+       "io":
+        [  
+          { "controller":"satellite_3"   ,"pin":11  },
+          { "controller":"satellite_3"   ,"pin":12  }
+      
+       ]
+     },  
+     { "name":"valve group 10", "valves":
+      [
+           "Not Connected",
+           "Drip line along side of Road",
+           "Avocado Bank 7",
+           "Avocado Bank 8"
+
+        ],
+       "io":
+        [  
+          { "controller":"satellite_1"   ,"pin":42  },
+          { "controller":"satellite_1"   ,"pin":3  },
+          { "controller":"satellite_1"   ,"pin":7  },
+          { "controller":"satellite_1"   ,"pin":8  }
+
+      
+       ]
+     }
+
+]   
+

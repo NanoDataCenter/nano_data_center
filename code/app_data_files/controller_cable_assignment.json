@@ -1,0 +1,130 @@
+[
+   { "name":"satellite_1", "pins":
+      [
+         { "cable_bundle":"N/A","wire_color":"bank above garage" },
+         { "cable_bundle":"N/A","wire_color":"bank above garage" },
+         { "cable_bundle":"N/A","wire_color":"bank above garage" },
+         { "cable_bundle":"N/A","wire_color":"no connection"},
+         { "cable_bundle":"N/A","wire_color":"no connection" },
+
+         { "cable_bundle":"N/A","wire_color":"avocado #6 " },
+         { "cable_bundle":"N/A","wire_color":"avocado #7" },
+         { "cable_bundle":"N/A","wire_color":"avocado #8 " },
+         { "cable_bundle":"N/A","wire_color":"fruit trees #9" },
+         { "cable_bundle":"N/A","wire_color":"no connection" },
+
+         { "cable_bundle":"N/A", "wire_color":"drip line around well" },
+         { "cable_bundle":"N/A", "wire_color":"middle cover #1" },
+         { "cable_bundle":"N/A", "wire_color":"lemon tree garage" },
+         { "cable_bundle":"N/A", "wire_color":"barbaque cover area" },
+         { "cable_bundle":"N/A", "wire_color":"pool area" },
+
+         { "cable_bundle":"N/A", "wire_color":"pool area outside" },
+         { "cable_bundle":"N/A", "wire_color":"drip line around fence and dragon fruit" },
+         { "cable_bundle":"N/A", "wire_color":"well water clover" },
+         { "cable_bundle":"N/A", "wire_color":"well water drip" },
+         { "cable_bundle":"N/A", "wire_color":"flower along side walk" },
+
+         { "cable_bundle":"N/A", "wire_color":"front yard sprinkler bedroom" },
+         { "cable_bundle":"N/A", "wire_color":"front yard grass #1 " },
+         { "cable_bundle":"N/A", "wire_color":"front yard grass #2  " },
+         { "cable_bundle":"N/A", "wire_color":"front sprinkler garage" },
+         { "cable_bundle":"N/A", "wire_color":"middle clover 2"},
+
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 26"},
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 27"},
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 28"},
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 29" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 30" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 31" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 32" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 33" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 34"},
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 35"},
+         {"cable_bundle":"N/A",  "wire_color":"no connection        -- pin 36" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 37" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 38" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 39" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 40"},
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 41" },
+         { "cable_bundle":"N/A", "wire_color":"no connection      -- pin 42" },
+         { "cable_bundle":"special", "wire_color":"master turn/on      -- pin 43" },
+         { "cable_bundle":"special", "wire_color":"filter flush turn/on     -- pin 44" } 
+			
+     
+      ]
+    },
+   { "name":"satellite_2", "pins":
+      [
+         { "cable_bundle":1, "wire_color":"grey" }, 
+         { "cable_bundle":1, "wire_color":"purple" },  
+         { "cable_bundle":1, "wire_color":"yellow" },  
+
+         { "cable_bundle":1, "wire_color":"orange" }, 
+         { "cable_bundle":1, "wire_color":"red" },  
+         { "cable_bundle":1, "wire_color":"black" }, 
+
+         { "cable_bundle":1, "wire_color":"tan" }, 
+         { "cable_bundle":1, "wire_color":"ltBlue" }, 
+         { "cable_bundle":1, "wire_color":"Blue" }, 
+
+         { "cable_bundle":1, "wire_color":"green" }, 
+         { "cable_bundle":1, "wire_color":"pink" }, 
+         { "cable_bundle":1, "wire_color":"brown" },    
+
+         { "cable_bundle":2, "wire_color":"yellow" },  
+         { "cable_bundle":2, "wire_color":"orange" }, 
+         { "cable_bundle":2, "wire_color":"red" },
+  
+         { "cable_bundle":2, "wire_color":"black" }, 
+         { "cable_bundle":2, "wire_color":"tan" }, 
+         { "cable_bundle":2, "wire_color":"ltBlue" },
+ 
+         { "cable_bundle":2, "wire_color":"Blue" }, 
+         { "cable_bundle":2, "wire_color":"green" }, 
+         { "cable_bundle":2, "wire_color":"pink" }, 
+         
+         { "cable_bundle":2, "wire_color":"brown" } 
+ 
+      ]
+    } ,
+
+
+   { "name":"satellite_3", "pins":
+      [
+         { "cable_bundle":1, "wire_color":"blue" }, 
+         { "cable_bundle":1, "wire_color":"red" },  
+         { "cable_bundle":1, "wire_color":"brown" },  
+
+         { "cable_bundle":1, "wire_color":"green" }, 
+         { "cable_bundle":1, "wire_color":"orange" },  
+         { "cable_bundle":1, "wire_color":"yellow" }, 
+
+         { "cable_bundle":1, "wire_color":"not connected" }, 
+         { "cable_bundle":1, "wire_color":"not connected" }, 
+         { "cable_bundle":1, "wire_color":"not connected" }, 
+
+         { "cable_bundle":1, "wire_color":"not connected" }, 
+         { "cable_bundle":1, "wire_color":"gate 1" }, 
+         { "cable_bundle":1, "wire_color":"gate 2" },    
+
+         { "cable_bundle":2, "wire_color":"blue" },
+         { "cable_bundle":2, "wire_color":"orange" },
+         { "cable_bundle":2, "wire_color":"brown" },
+         { "cable_bundle":2, "wire_color":"black" },
+         { "cable_bundle":2, "wire_color":"green" },
+
+         { "cable_bundle":2, "wire_color":"yellow" },
+         { "cable_bundle":2, "wire_color":"red" },
+         { "cable_bundle":2, "wire_color":"pink" },
+         { "cable_bundle":2, "wire_color":"not connected" },
+         { "cable_bundle":2, "wire_color":"not connected" }
+
+			
+     
+      ]
+    } 
+
+
+   
+]

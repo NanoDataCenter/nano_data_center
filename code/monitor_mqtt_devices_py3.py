@@ -67,8 +67,8 @@ current monitor
 '''
 class Base_Manager(object):
    def __init__(self):
-       self.topic_dispatch_table[b"REBOOT"] = self.handle_reboot
-       self.topic_dispatch_table[b"HEART_BEAT"] = self.handle_presence
+       self.topic_dispatch_table["REBOOT"] = self.handle_reboot
+       self.topic_dispatch_table["HEART_BEAT"] = self.handle_presence
  
    def handle_presence(self,data):     
       #print("presence",data)
@@ -86,45 +86,61 @@ class Base_Manager(object):
       self.ds_handlers["MQTT_REBOOT_LOG"].hset(data["device_id"],data)
 
    def process_message(self,data):
+      
        if data[b"TOPIC"] in self.topic_dispatch_table:
           self.topic_dispatch_table[data[b"TOPIC"]](data)
        else:
          key = data["device_id"] +"/"+str(data[b"TOPIC"])
          print("unrecognized command",key)
-         print(self.topic_dispatch_table.keys())
-         #self.ds_handlers["MQTT_UNRECOGNIZEvD_COMMANDS"].hset(key,data)
+        
+         self.ds_handlers["MQTT_UNRECOGNIZED_COMMANDS"].hset(key,data)
          
-         
+   def null_command(self,data):
+      print("null_command",data)         
          
 class Security_Monitor(Base_Manager):
    def __init__(self,ds_handlers):
       self.topic_dispatch_table = {}
       self.ds_handlers = ds_handlers
       Base_Manager.__init__(self)
-      self.topic_dispatch_table[b'INPUT/GPIO/CHANGE'] = self.gpio_change
-      
+      self.topic_dispatch_table['INPUT/GPIO/CHANGE'] = self.gpio_change
+      self.topic_dispatch_table["INPUT/GPIO/VALUE"]  = self.gpio_read
+      self.topic_dispatch_table["OUTPUTS/GPIO/SET"] = self.null_command
+      self.topic_dispatch_table["OUTPUTS/GPIO/SET_PULSE"] = self.null_command
+      self.topic_dispatch_table["INPUT/GPIO/READ"] = self.null_command
+   
+
+   def gpio_read(self,data):
+       print("gpio_read",data)
+       
    def gpio_change(self,data):
         results = {}
+        flag = False
         if data[b"PIN"] == 5:
             results["topic"] = "SECURITY_INPUT"
             results["device"] = "RADAR_SENSOR"        
             results["level"] = data[b"INPUT"]
+            flag = True
         if data[b"PIN"] == 17:
             results["topic"] = "SECURITY_INPUT"
             results["device"] = "PIR_SENSOR"        
             results["level"] = data[b"INPUT"]
-        if data[b"PIN"] == 23:
+            flag = True
+        if data[b"PIN"] == 22:
             results["topic"] = "SIGNALING_INPUT"
             results["device"] = "BUTTON_1"        
             results["level"] = data[b"INPUT"]
         if data[b"PIN"] == 23:
+            flag = True
             results["topic"] = "SIGNALING_INPUT"
             results["device"] = "BUTTON_2"        
             results["level"] = data[b"INPUT"]
+        if flag == False:
+           return
         results["timestamp"] = time.time()
         results["device_id"] = data["device_id"]
         print(results)
-        #self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)              
+        self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)              
    
    
 class Current_Monitor(Base_Manager):
@@ -132,33 +148,98 @@ class Current_Monitor(Base_Manager):
       self.topic_dispatch_table = {}
       self.ds_handlers = ds_handlers
       Base_Manager.__init__(self)
-      self.topic_dispatch_table[b'INPUT/AD1/VALUE'] = self.manage_device_currents
-      self.topic_dispatch_table[b"OUTPUT/MQTT_CURRENT/EQUIPMENT_RELAY_TRIP/RESPONSE"]  = self.equipment_relay_trip
-      self.topic_dispatch_table[b"OUTPUT/MQTT_CURRENT/IRRIGATION_RELAY_TRIP/RESPONSE"] = self.irrigation_current_trip
-      self.topic_dispatch_table[b"INPUT/MQTT_CURRENT/GET_LIMIT_CURRENTS/REPONSE"] = self.get_limit_current
-      self.topic_dispatch_table[b"INPUT/MQTT_CURRENT/MAX_CURRENTS/RESPONSE"]   = self.get_max_currents
-      self.topic_dispatch_table[b"INPUT/MQTT_CURRENT/CURRENTS/RESPONSE"]      = self.get_currents
-      self.topic_dispatch_table[b"OUTPUT/MQTT_CURRENT/RELAY_STATE/RESPONSE"]  = self.relay_state
+    
+      self.topic_dispatch_table['INPUT/AD1/VALUE/RESPONSE'] = self.manage_device_currents
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/EQUIPMENT_RELAY_TRIP/RESPONSE"]  = self.equipment_relay_trip
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/IRRIGATION_RELAY_TRIP/RESPONSE"] = self.irrigation_current_trip
+      self.topic_dispatch_table["INPUT/MQTT_CURRENT/GET_LIMIT_CURRENTS/REPONSE"] = self.get_limit_current
+      self.topic_dispatch_table["INPUT/MQTT_CURRENT/MAX_CURRENTS/RESPONSE"]   = self.get_max_currents
+      self.topic_dispatch_table["INPUT/MQTT_CURRENT/CURRENTS/RESPONSE"]      = self.get_currents
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/RELAY_STATE/RESPONSE"]  = self.relay_state
       
+      
+      self.topic_dispatch_table["INPUT/MQTT_CURRENT/GET_LIMIT_CURRENTS"] = self.null_command
+      self.topic_dispatch_table["INPUT/MQTT_CURRENT/GET_MAX_CURRENTS"] = self.null_command
+      self.topic_dispatch_table["INPUT/MQTT_CURRENT/READ_CURRENT"] = self.null_command
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/READ_RELAY_STATES"] = self.null_command
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/CLEAR_MAX_CURRENTS"] = self.null_command
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/ENABLE_EQUIPMENT_RELAY"] = self.null_command
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/ENABLE_IRRIGATION_RELAY"] = self.null_command
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/DISABLE_EQUIPMENT_RELAY"] = self.null_command
+      self.topic_dispatch_table["OUTPUT/MQTT_CURRENT/DISABLE_IRRIGATION_RELAY"] = self.null_command
+      
+    
+
+       
    def equipment_relay_trip(self,data):
-          print("data",data)
+       results = {}
+       results["timestamp"] = time.time()
+       results["topic"] = "SLAVE_EQUIPMENT_RELAY_TRIP"
+       results["device_id"] = data["device_id"]
+       results["status"] = {}
+       results["status"]["CURRENT_VALUE"] = data[b"CURRENT_VALUE"]
+       results["status"]["LIMIT_VALUE"] = data[b"LIMIT_VALUE"]
+       print(results)
+       self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)   
           
           
    def irrigation_current_trip(self,data):
-          print("data",data)
-          
-          
+       results = {}
+       results["timestamp"] = time.time()
+       results["topic"] = "SLAVE_IRRIGATION_RELAY_TRIP"
+       results["device_id"] = data["device_id"]
+       results["status"] = {}
+       results["status"]["CURRENT_VALUE"] = data[b"CURRENT_VALUE"]
+       results["status"]["LIMIT_VALUE"] = data[b"LIMIT_VALUE"]
+       print(results)
+       self.ds_handlers["MQTT_INPUT_QUEUE"].push(results) 
+
    def get_limit_current(self,data):
-          print("data",data)
+          results = {}
+          results["timestamp"] = time.time()
+          results["topic"] = "SLAVE_CURRENT_LIMITS"
+          results["device_id"] = data["device_id"]
+          results["limits"] = {}
+          results["limits"]['EQUIPMENT_CURRENT_LIMIT'] = data[b'EQUIPMENT_CURRENT_LIMIT']
+          results["limits"]['IRRIGATION_CURRENT_LIMIT'] = data[b'IRRIGATION_CURRENT_LIMIT']
+          print(results)
+          self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)    
           
    def get_max_currents(self,data):
-          print("data",data)
+          results = {}
+          results["timestamp"] = time.time()
+          results["topic"] = "SLAVE_MAX_CURRENT"
+          results["device_id"] = data["device_id"]
+          results["currents"] = {}
+          results["currents"]['MAX_EQUIPMENT_CURRENT'] = data[b'MAX_EQUIPMENT_CURRENT']
+          results["currents"]['MAX_IRRIGATION_CURRENT'] = data[b'MAX_IRRIGATION_CURRENT']
+          #print(results)
+          self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)    
+
+        
           
    def get_currents(self,data):
-          print("data",data)
+          results = {}
+          results["timestamp"] = time.time()
+          results["topic"] = "SLAVE_GET_CURRENT"
+          results["device_id"] = data["device_id"]
+          results["currents"] = {}
+          results["currents"]['EQUIPMENT_CURRENT'] = data[b'EQUIPMENT_CURRENT']
+          results["currents"]['IRRIGATION_CURRENT'] = data[b'IRRIGATION_CURRENT']
+          #print(results)
+          self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)    
+
           
    def relay_state(self,data):
-          print("data",data)
+          results = {}
+          results["timestamp"] = time.time()
+          results["topic"] = "SLAVE_RELAY_STATE"
+          results["device_id"] = data["device_id"]
+          results["relay_state"] = {}
+          results["relay_state"]['EQUIPMENT_STATE'] = data[b'EQUIPMENT_STATE']
+          results["relay_state"]['IRRIGATION_STATE'] = data[b'IRRIGATION_STATE']
+          #print(results)
+          self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)    
       
       
    def manage_device_currents(self,data):
@@ -174,16 +255,16 @@ class Current_Monitor(Base_Manager):
        results["topic"] = "SLAVE_CURRENTS"
        results["device_id"] = data["device_id"]
        #print(results)
-       #self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)              
+       self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)              
       
 class Well_Monitor(Base_Manager):
    def __init__(self,ds_handlers):
       self.topic_dispatch_table = {}
       self.ds_handlers = ds_handlers
       Base_Manager.__init__(self)
-      self.topic_dispatch_table[b'INPUT/AD1/VALUE'] = self.manage_well_data
-      self.topic_dispatch_table[b'INPUT/PULSE_COUNT/VALUE'] = self.manage_well_flow_meters
-      print(self.topic_dispatch_table.keys())
+      self.topic_dispatch_table['INPUT/AD1/VALUE/RESPONSE'] = self.manage_well_data
+      self.topic_dispatch_table['INPUT/PULSE_COUNT/VALUE'] = self.manage_well_flow_meters
+      
       
    def manage_well_data(self,data):
        
@@ -214,7 +295,7 @@ class Well_Monitor(Base_Manager):
        results["topic"] = "PUMP_CURRENTS"
        results["device_id"] = data["device_id"]
        #print(results)
-       #self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)         
+       self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)         
 
    def manage_well_flow_meters(self,data): 
        temp = data[b"DATA"]
@@ -229,7 +310,7 @@ class Well_Monitor(Base_Manager):
        results["topic"] = "FLOW_METERS"
        results["device_id"] = data["device_id"]
        #print(results)
-       #self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)
+       self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)
        
        
 class MQTT_Monitor(object):
@@ -249,7 +330,7 @@ class MQTT_Monitor(object):
 
         self.build_device_table()
         self.validate_handlers()
-        self.register_subscriptions()
+        
         self.process_messages()
 
 
@@ -287,8 +368,7 @@ class MQTT_Monitor(object):
            raise ValueError("unknown type",item["type"])
 
    
-   def register_subscriptions(self):
-       pass
+
        
    def process_messages(self):
        self.client = mqtt.Client(client_id="", clean_session=True, userdata=None,  transport="tcp")
@@ -301,6 +381,8 @@ class MQTT_Monitor(object):
        self.client.tls_set( cert_reqs=ssl.CERT_NONE )
        self.client.on_connect = self.on_connect
        self.client.on_message = self.on_message
+       self.client.on_disconnect = self.on_disconnect
+       
        self.connection_flag = False
        print("connection attempting")
        while self.connection_flag == False:
@@ -319,25 +401,35 @@ class MQTT_Monitor(object):
        print("Connected with result code "+str(rc),)
        self.client.subscribe(self.mqtt_server_data["BASE_TOPIC"]+"/#")
 
-
+   def on_disconnect(self, client, userdata, rc):
+          raise ValueError("MQTT Client Disconnected")
+          
    def on_message(self, client, userdata, msg):
-       try:
+       #try:
           topic = msg.topic
+         
           data = msgpack.unpackb(msg.payload)
+    
           process_topic = topic.split("/")
           search_key = "/".join(process_topic[:3])
+          if  isinstance(data,dict) == False:
+             data = {}
+          
+         
+          data[b"TOPIC"] = "/".join(process_topic[3:])
+          
           if self.ds_handlers["MQTT_DEVICES" ].hexists(search_key) == True:
              temp = self.ds_handlers["MQTT_DEVICES"].hget(search_key)
              data["timestamp"] = time.time()
              data["device_id"] = search_key
              self.mqtt_handlers[temp["type"] ].process_message(data)
           else:
-            print(search_key_no_match)
+            print("search_key_no_match",search_key)
             data["timestamp"] = time.time()
             self.ds_handlers["MQTT_UNKNOWN_CONTACTS"].hset(search_key,data)
-       except:
-         print("data",type(data),data)
-         print("topic",topic)         
+        #except:
+        #  print("data",type(data),data)
+        #  print("topic",topic)         
 
       
 if __name__ == "__main__":

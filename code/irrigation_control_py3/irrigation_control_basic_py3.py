@@ -96,13 +96,15 @@ class Irrigation_Control_Basic(object):
 
 
    def grab_json_data( self, *args ): #Transfer queue object to class
-      
-       self.json_object = self.handlers["IRRIGATION_CURRENT_SERVER"].show_next_job()[1]
+       try:
+          self.json_object = self.handlers["IRRIGATION_CURRENT_SERVER"].show_next_job()[1]
        
-       self.json_object["max_flow_time"] = 0
-       self.json_object = self.convert_to_integers( self.json_object,
+          self.json_object["max_flow_time"] = 0
+          self.json_object = self.convert_to_integers( self.json_object,
                                   ["run_time","step","elasped_time"])
-       return True
+          return True
+       except:
+          return False
 
    def convert_to_integers( self, dictionary, list_elements):
        for i in list_elements:

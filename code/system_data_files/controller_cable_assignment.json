@@ -1,5 +1,5 @@
 [
-{ "name":"satellite_1", "pins":
+   { "name":"satellite_1", "pins":
       [
          "valve_group:5  valve:2   Waters Bank Closest to House",
          "valve_group:5  valve:3   #3/#4  Valves are tied together Spray area away from house",
@@ -114,7 +114,7 @@
          "valve_group:NC valve:NC ", 
 
          "valve_group:NC valve:NC ", 
-         "valve_group:9 valve:1 Bottom Hill on Cindys House Side", 
+         "valve_group:9 valve:1 Bottom Hill on Cindy's House Side", 
          "valve_group:9 valve:2 Bottom Hill on the opposite site of drive way",    
 
          "valve_group:8 valve:1 Avocado Block #1",
@@ -160,5 +160,9 @@
 			
      
       ]
-    }
+    }  
+   
+
+
+   
 ]

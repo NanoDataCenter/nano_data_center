@@ -1,0 +1,4 @@
+{
+   "set_switches":   [ ["satellite_1","X002"] ],
+   "reset_switches": [ ["satellite_1","X003"] ]
+}
