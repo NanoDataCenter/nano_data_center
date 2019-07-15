@@ -15,7 +15,11 @@
  
          
  
-
+ </script>
+        
+	<script type="text/javascript" >
+     {% include '/js/irrigation_functions/display_past_actions_a.js' %}
+ </script>
 
 {% endblock %}
 
@@ -33,13 +37,23 @@
     <div id="list_data" >
     
     <fieldset data-role="controlgroup" id="fieldset">
-        <h2>MQTT Seconds </h2>
+        <h2>Past Event Data </h2>
         
-        {% for i in reboot_data %}
-           {% set label_text = "--- Device Id: "+i['device_id']|string + "Last Reboot: "  +i["time']|string    %}
- 
-           <h7 id={{id}}><font color="red">{{label_text}}</h7></font><br>
-        
+        {% for i in time_history %}
+           {% set label_text = "---  Date:  "+i['time']|string + " Data: "+i["data"]|string %}
+           {% set id = "entry_"+ (loop.index -1)|string %}
+           {% set level = i["data"].level|upper %}
+           {% if level == "RED" %}
+                <h7 id={{id}}><font color="red">{{label_text}}</h7></font><br>
+           {% endif %}
+           {% if level == "YELLOW" %}
+                <h7 id={{id}}><font color="orange">{{label_text}}</h7></font><br>
+           {% endif %}
+           {% if level == "GREEN" %}
+                <h7 id={{id}}><font color="green">{{label_text}}</h7></font><br>
+           {% endif %}
+           </div>          
+          
         
         {% endfor %}
      </fieldset>

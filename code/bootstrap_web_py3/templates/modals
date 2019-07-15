@@ -195,7 +195,34 @@
 </div>  
 
 
-
+ <!– MQTT DEVICES –>     
+<div class="modal fade" id="mqtt_controller" tabindex="-1" role="dialog" aria-labelledby="accountModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="accountModalLabel">MQTT Controllers </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                 
+            </div>
+            <div class="modal-body">
+                <ul >
+                
+           <li><a href ='/mqtt/device_status' , target="_self">Device Status</a></li>
+           <li><a href ='/mqtt/reboot_status' , target="_self">Reboot Sataus</a></li>
+           <li><a href ='/mqtt/unknow devices' , target="_self">Unknown Devices</a></li>
+           <li><a href ='/mqtt/unknown_commands, target ="_self">Unknown Commands <a/></li>
+       
+                </ul>
+            </div>
+            <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    
+            </div>
+        </div>
+    </div>
+</div>   
 
  
  <!–Linux Controller –>     

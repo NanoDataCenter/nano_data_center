@@ -10,13 +10,16 @@ class Construct_MQTT_Devices(object):
       bc.add_header_node("MQTT_DEVICES")
       
       cd.construct_package("MQTT_DEVICES_DATA")
-      cd.add_redis_stream("MQTT_INPUT_QUEUE",2000)
+      cd.add_redis_stream("MQTT_INPUT_QUEUE",50000)
+      cd.add_redis_stream("MQTT_SENSOR_QUEUE",10000)
+      
+      cd.add_hash("MQTT_SENSOR_STATUS")
       cd.add_hash("MQTT_DEVICES")
+      cd.add_hash("MQTT_SUBSCRIPTIONS")
       cd.add_hash("MQTT_CONTACT_LOG")
-      cd.add_hash("MQTT_UNKNOWN_CONTACTS")
+      cd.add_hash("MQTT_UNKNOWN_DEVICES")
+      cd.add_hash("MQTT_UNKNOWN_SUBSCRIPTIONS")
       cd.add_hash("MQTT_REBOOT_LOG")
-      cd.add_hash("PRESENCE_LOG")
-      cd.add_hash("MQTT_UNRECOGNIZED_COMMANDS")
       cd.close_package_contruction()
       properties = {}
       properties["HOST"] = "farm_control.fios-router.home"

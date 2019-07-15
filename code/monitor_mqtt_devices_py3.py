@@ -4,67 +4,12 @@ import time
 
 import paho.mqtt.client as mqtt
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
-'''
-msg_dict_pack_string(&msg_pack[0],"TOPIC","INPUT/GPIO/CHANGE");      
-   msg_dict_pack_unsigned_integer(&msg_pack[1],"PIN",pin );
-   msg_dict_pack_unsigned_integer(&msg_pack[2],"INPUT",value);
-   pack_buffer = msg_dict_stream( &pack_buffer_size,3,msg_pack);
-   mqtt_clt_publish("INPUT/GPIO/CHANGE", pack_buffer,pack_buffer_size );
-   
-     mqtt_ctrl_register_subscription("OUTPUTS/GPIO/SET", app_ouput_set_pin_data );
-   return CF_DISABLE;      
-} 
-   
+
+      
+      
+      
 
 
-current monitor
-       msg_dict_pack_string(&msg_pack[0],"TOPIC","OUTPUT/MQTT_CURRENT/EQUIPMENT_RELAY_TRIP");      
-        msg_dict_pack_float(&msg_pack[1],"CURRENT_VALUE",average_currents[EQUIPMENT_CHANNEL] );
-        msg_dict_pack_float(&msg_pack[2],"LIMIT_VALUE",mqtt_current_get_equipment_level());
-        pack_buffer = msg_dict_stream( &pack_buffer_size,3,msg_pack);
-        mqtt_clt_publish("OUTPUT/MQTT_CURRENT/EQUIPMENT_RELAY_TRIP/RESPONSE", pack_buffer,pack_buffer_size );
- mqtt_relay_set_irrigation_inactive();
-        msg_dict_pack_string(&msg_pack[0],"TOPIC","OUTPUT/MQTT_CURRENT/IRRIGATION_RELAY_TRIP");      
-        msg_dict_pack_float(&msg_pack[1],"CURRENT_VALUE",average_currents[IRRIGATION_CHANNEL] );
-        msg_dict_pack_float(&msg_pack[2],"LIMIT_VALUE",mqtt_current_get_irrigation_level());
-        pack_buffer = msg_dict_stream( &pack_buffer_size,3,msg_pack);
-        mqtt_clt_publish("OUTPUT/MQTT_CURRENT/IRRIGATION_RELAY_TRIP/RESPONSE", pack_buffer,pack_buffer_size );        
-  msg_dict_pack_string(&msg_pack[0],"TOPIC","INPUT/MQTT_CURRENT/GET_LIMIT_CURRENTS");      
-   msg_dict_pack_float(&msg_pack[1],"EQUIPMENT_CURRENT_LIMIT", mqtt_current_get_equipment_level() );
-   msg_dict_pack_float(&msg_pack[2],"IRRIGATION_CURRENT_LIMIT", mqtt_current_get_irrigation_level());
-   pack_buffer = msg_dict_stream( &pack_buffer_size,3,msg_pack);
-   mqtt_clt_publish("INPUT/MQTT_CURRENT/GET_LIMIT_CURRENTS/REPONSE", pack_buffer,pack_buffer_size );
-   free(pack_buffer);
-    
-}
- msg_dict_pack_string(&msg_pack[0],"TOPIC","INPUT/MQTT_CURRENT/MAX_CURRENTS");      
-   msg_dict_pack_float(&msg_pack[1],"MAX_EQUIPMENT_CURRENT", max_equipment_current );
-   msg_dict_pack_float(&msg_pack[2],"MAX_IRRIGATION_CURRENT", max_irrigation_current);
-   pack_buffer = msg_dict_stream( &pack_buffer_size,3,msg_pack);
-   mqtt_clt_publish("INPUT/MQTT_CURRENT/MAX_CURRENTS/RESPONSE", pack_buffer,pack_buffer_size );
-   free(pack_buffer);
-
- msg_dict_pack_string(&msg_pack[0],"TOPIC","INPUT/MQTT_CURRENT/CURRENTS");      
-   msg_dict_pack_float(&msg_pack[1],"EQUIPMENT_CURRENT", average_currents[EQUIPMENT_CHANNEL] );
-   msg_dict_pack_float(&msg_pack[2],"IRRIGATION_CURRENT", average_currents[IRRIGATION_CHANNEL]);
-   pack_buffer = msg_dict_stream( &pack_buffer_size,3,msg_pack);
-   mqtt_clt_publish("INPUT/MQTT_CURRENT/CURRENTS/RESPONSE", pack_buffer,pack_buffer_size );
-   free(pack_buffer);
-    
-   mqtt_current_get_relay_states( &equipment_state_value, &irrigation_state_value);
-   msg_dict_pack_string(&msg_pack[0],"TOPIC","OUTPUT/MQTT_CURRENT/RELAY_STATE");      
-   msg_dict_pack_boolean(&msg_pack[1],"EQUIPMENT_STATE", equipment_state_value );
-   msg_dict_pack_boolean(&msg_pack[2],"IRRIGATION_STATE",irrigation_state_value);
-   pack_buffer = msg_dict_stream( &pack_buffer_size,3,msg_pack);
-   mqtt_clt_publish("OUTPUT/MQTT_CURRENT/RELAY_STATE/RESPONSE", pack_buffer,pack_buffer_size );
-   free(pack_buffer);
-}
-    
-  
-
-18 5
-/REMOTES/GARAGE_MONITOR_1/b'INPUT/GPIO/CHANGE'
-'''
 class Base_Manager(object):
    def __init__(self):
        self.topic_dispatch_table["REBOOT"] = self.handle_reboot
@@ -72,6 +17,8 @@ class Base_Manager(object):
  
    def handle_presence(self,data):     
       #print("presence",data)
+      data["time"] = time.time()
+      data["status"] = True
       self.ds_handlers["MQTT_CONTACT_LOG"].hset(data["device_id"],data) 
        
    def handle_reboot(self,data):
@@ -93,7 +40,7 @@ class Base_Manager(object):
          key = data["device_id"] +"/"+str(data[b"TOPIC"])
          print("unrecognized command",key)
         
-         self.ds_handlers["MQTT_UNRECOGNIZED_COMMANDS"].hset(key,data)
+         self.ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"].hset(key,data)
          
    def null_command(self,data):
       print("null_command",data)         
@@ -333,8 +280,9 @@ class MQTT_Monitor(object):
         
         self.process_messages()
 
-
+       
       
+
    def generate_data_handlers(self):
         self.handlers = {}
         data_structures = self.package["data_structures"]
@@ -342,25 +290,25 @@ class MQTT_Monitor(object):
         self.ds_handlers = {}
         self.ds_handlers["MQTT_INPUT_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_INPUT_QUEUE"])
         self.ds_handlers["MQTT_DEVICES"] = generate_handlers.construct_hash(data_structures["MQTT_DEVICES"])
+        self.ds_handlers["MQTT_SUBSCRIPTIONS"] = generate_handlers.construct_hash(data_structures["MQTT_SUBSCRIPTIONS"])
         self.ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
-        self.ds_handlers["MQTT_UNKNOWN_CONTACTS"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_CONTACTS"])
         self.ds_handlers["MQTT_REBOOT_LOG"]       = generate_handlers.construct_hash(data_structures["MQTT_REBOOT_LOG"])
-        self.ds_handlers["PRESENCE_LOG"] = generate_handlers.construct_hash(data_structures["PRESENCE_LOG"])
-        self.ds_handlers["MQTT_UNRECOGNIZED_COMMANDS"] = generate_handlers.construct_hash(data_structures["MQTT_UNRECOGNIZED_COMMANDS"])
+        self.ds_handlers["MQTT_UNKNOWN_DEVICES"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_DEVICES"])
+        self.ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_SUBSCRIPTIONS"])
 
    def build_device_table(self):
        self.ds_handlers["MQTT_DEVICES"].delete_all()
-       self.ds_handlers["PRESENCE_LOG"].delete_all()
+       self.ds_handlers["MQTT_CONTACT_LOG"].delete_all()
        base_topic = self.mqtt_server_data["BASE_TOPIC"]
        for i,item in self.mqtt_devices.items():   
           
           item["device_topic"] = base_topic+"/"+item["topic"]
          
           self.ds_handlers["MQTT_DEVICES"].hset(item["device_topic"],item)
-          self.ds_handlers["PRESENCE_LOG"].hset(item["device_topic"],time.time())
-          if self.ds_handlers["MQTT_UNKNOWN_CONTACTS"].hexists(item["device_topic"]) == True:
+          self.ds_handlers["MQTT_CONTACT_LOG"].hset(item["device_topic"],{ "time":time.time(),"status":True})
+          if self.ds_handlers["MQTT_UNKNOWN_DEVICES"].hexists(item["device_topic"]) == True:
               print("deleteing contact",item["device_topic"])
-              self.ds_handlers["MQTT_UNKNOWN_CONTACTS"].hdelete(item["device_topic"])
+              self.ds_handlers["MQTT_UNKNOWN_DEVICES"].hdelete(item["device_topic"])
  
    def validate_handlers(self):
       for i,item in self.mqtt_devices.items():
@@ -426,7 +374,7 @@ class MQTT_Monitor(object):
           else:
             print("search_key_no_match",search_key)
             data["timestamp"] = time.time()
-            self.ds_handlers["MQTT_UNKNOWN_CONTACTS"].hset(search_key,data)
+            self.ds_handlers["MQTT_UNKNOWN_DEVICES"].hset(search_key,data)
         #except:
         #  print("data",type(data),data)
         #  print("topic",topic)         
