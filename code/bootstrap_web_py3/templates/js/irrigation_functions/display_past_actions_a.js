@@ -59,20 +59,18 @@ function prepare_data( )
         
      }
      else if( status == "YELLOW")
-     {   
-        alert("yello")
-        $("#entry_"+i).css('background-color', 'yellow');
-        $("#entry_"+i).css('color', 'black');
-          
-     }
-     else if( status == "RED")
-     { 
-        alert("redi")
-        $("#entry_"+i).next('label').children('span').css('background-color', 'RED');
-        $("#entry_"+i).next('label').children('span').css('color', 'white');
+     {    
+        $("#entry_"+i).next('label').children('span').css('background-color', 'yellow');
+        $("#entry_"+i).next('label').children('span').css('color', 'black');
       
      }
-
+     else if( status == "RED")
+     {   
+        
+        $("#entry_"+i).css('background-color', 'red');
+        $("#entry_"+i).css('color', 'white');
+          
+     }
      else
      {
          alert("this should not happen")
