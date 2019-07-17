@@ -41,7 +41,7 @@ class Load_MQTT_Pages(Base_Stream_Processing):
        app.add_url_rule("/mqtt/mqtt_past_actions","mqtt_past_actions",a1)
 
        a1= auth.login_required( self.mqtt_device_reset )
-       app.add_url_rule('/mqtt/mqtt_device_reset',"mqtt_device_reset",a1,methods=["POST"])
+       app.add_url_rule('/mqtt/mqtt_device_reset',"mqtt_device_reset",a1)
 
        a1= auth.login_required( self.mqtt_ajax_reset )
        app.add_url_rule('/mqtt/mqtt_ajax_reset',"mqtt_ajax_reset",a1,methods=["POST"])
@@ -98,7 +98,7 @@ class Load_MQTT_Pages(Base_Stream_Processing):
        return self.render_template("mqtt_templates/mqtt_past_actions_template" ,time_history = temp_data,title="PAST ACTIONS" )
 
    def mqtt_device_reset( self):
-      return self.render_template("mqtt_templates/mqtt_reset_devices" )
+      return self.render_template("mqtt_templates/mqtt_reset_device" )
 
    def mqtt_ajax_reset( self):
        # reset MQTT Devices

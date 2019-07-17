@@ -1,0 +1,29 @@
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+
+     <script type="text/javascript">
+       {% include 'js/mqtt_functions/mode_control.js'  %}
+     </script>
+
+{% endblock %}
+
+
+
+{% block application %}
+  <div data-role="page"> 
+ 
+        
+   <h4><br>Reset MQTT Devices: </h4> 
+
+   <br>
+   <button type="button" id="reset_mqtt_device">Reset MQTT Devices </button>
+   
+
+</div><!-- /page -->
+{% endblock %}
