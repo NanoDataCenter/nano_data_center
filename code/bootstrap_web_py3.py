@@ -30,7 +30,7 @@ from bootstrap_web_py3.load_site_map_py3   import Load_Site_Data
 from bootstrap_web_py3.load_process_control_py3 import Load_Process_Management
 from bootstrap_web_py3.load_configuration_py3 import Load_Configuration_Data
 from bootstrap_web_py3.load_irrigation_control_py3 import Load_Irrigation_Pages
-
+from bootstrap_web_py3.load_mqtt_management_py3 import Load_MQTT_Pages
 class PI_Web_Server(object):
 
    def __init__(self , name, redis_site_data ):
@@ -74,7 +74,7 @@ class PI_Web_Server(object):
        self.load_process_management()
        self.load_configuration_management()
        self.load_irrigation_control()
-
+       self.load_mqtt_management()
       
  
 
@@ -171,6 +171,34 @@ class PI_Web_Server(object):
           ds_handlers.append(self.assemble_controller_handlers(i))
        Load_Linux_Management(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
                   render_template=render_template, handlers=ds_handlers, controllers = controller_names ) 
+
+
+
+   def load_mqtt_management(self):
+                             
+    
+       query_list = []
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+
+       query_list = self.qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"MQTT_DEVICES_DATA"} )
+                                           
+       package_sets, package_sources = self.qs.match_list(query_list)  
+     
+       package = package_sources[0] 
+       data_structures = package["data_structures"]
+       generate_handlers = Generate_Handlers(package,self.redis_site_data)
+       ds_handlers = {}
+       ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
+       ds_handlers["MQTT_REBOOT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_REBOOT_LOG"])
+       ds_handlers["MQTT_UNKNOWN_DEVICES"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_DEVICES"])
+       ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_SUBSCRIPTIONS"])
+       ds_handlers["MQTT_PAST_ACTION_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["MQTT_PAST_ACTION_QUEUE"])
+ 
+       Load_MQTT_Pages(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
+                  render_template=render_template, redis_handle= self.redis_handle, handlers= ds_handlers )
+                  
+
 
    def load_irrigation_control(self):
                              

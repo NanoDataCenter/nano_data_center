@@ -1,0 +1,72 @@
+{% extends "base_template" %}
+
+{% block application_javascript %}
+
+
+ </script>
+        
+	<script type="text/javascript" >
+     {% include '/js/mqtt_functions/basic_functions.js' %}
+ </script>
+
+ 
+
+{% endblock %}
+
+
+
+{% block application %}
+  <div data-role="page"> 
+
+
+
+
+    <h3 id="title_banner"></h3>   
+    
+    <div id="list_data" >
+    
+    <fieldset data-role="controlgroup" id="fieldset">
+        <h2>{{title}} </h2>
+        
+        {% for i in time_history %}
+           
+           {% set label_text = i["detail"] %}
+           {% set id = "entry_"+ (loop.index -1)|string %}
+           <h7 id={{id}}>{{label_text}}</h7><br>
+          
+        
+        {% endfor %}
+     </fieldset>
+    
+    
+    
+    
+    
+    
+    </div>
+    
+ {% endblock %}   
+    
+    
+    
+    
+    
+    
+    
+   <div data-role="footer"  data-position="fixed" data-theme="b"> 
+    <a id="footer-button_1" data-icon="bars"  
+       style="margin-top:10px;"data-rel="popup" 
+       data-position-to="window" 
+       href="#change_index">Fields</a>
+      
+    </div>
+   
+    
+
+ </div>
+
+</div><!-- /page -->
+
+
+</html>
+

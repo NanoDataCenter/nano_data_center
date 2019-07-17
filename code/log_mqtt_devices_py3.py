@@ -175,6 +175,7 @@ class MQTT_Log(object):
         reference_time = time.time()
         for i in keys:
            x = self.ds_handlers["MQTT_CONTACT_LOG"].hget(i)
+           old_status = x["status"]
            diff = reference_time - float(x["timestamp"])
           
            if diff > 60*2:
@@ -183,7 +184,8 @@ class MQTT_Log(object):
               x["status"] = True
            
            self.ds_handlers["MQTT_CONTACT_LOG"].hset(i,x)
-                
+           if old_status != x["status"] :
+              self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Change","device_id":x["device_topic"],"status":x["status"]})          
              
    def generate_data_handlers(self):
         self.handlers = {}
@@ -191,6 +193,7 @@ class MQTT_Log(object):
         generate_handlers = Generate_Handlers(self.package,self.site_data)
         self.ds_handlers = {}
         self.ds_handlers["MQTT_INPUT_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["MQTT_INPUT_QUEUE"])
+        self.ds_handlers["MQTT_PAST_ACTION_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_PAST_ACTION_QUEUE"])
         self.ds_handlers["MQTT_SENSOR_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_SENSOR_QUEUE"])
         self.ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
         self.ds_handlers["MQTT_SENSOR_STATUS"] = generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])

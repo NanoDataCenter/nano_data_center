@@ -141,13 +141,13 @@ if __name__ == "__main__":
   
    load_file( files,sys_files, key+"SYS]",cloud_handler_tx )
 
-
+   '''
    # load limit files
 
    files = [ f for f in listdir(limit_files)  ]
   
    load_file( files,limit_files,key+"LIMITS]",cloud_handler_tx )
-   
+   '''
 
 else:
    pass

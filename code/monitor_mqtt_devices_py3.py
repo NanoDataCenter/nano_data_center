@@ -31,6 +31,7 @@ class Base_Manager(object):
          data["delta_t"] = 0.
          
       self.ds_handlers["MQTT_REBOOT_LOG"].hset(data["device_id"],data)
+      self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Reboot","device_id":x["device_id"],"status":True}) 
 
    def process_message(self,data):
       
@@ -288,6 +289,7 @@ class MQTT_Monitor(object):
         data_structures = self.package["data_structures"]
         generate_handlers = Generate_Handlers(self.package,self.site_data)
         self.ds_handlers = {}
+        self.ds_handlers["MQTT_PAST_ACTION_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_PAST_ACTION_QUEUE"])
         self.ds_handlers["MQTT_INPUT_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_INPUT_QUEUE"])
         self.ds_handlers["MQTT_DEVICES"] = generate_handlers.construct_hash(data_structures["MQTT_DEVICES"])
         self.ds_handlers["MQTT_SUBSCRIPTIONS"] = generate_handlers.construct_hash(data_structures["MQTT_SUBSCRIPTIONS"])
