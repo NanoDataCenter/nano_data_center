@@ -13,11 +13,36 @@
                  
      </script>
     
+<script type="text/javascript">
 
+$("#controller_select").val( {{ controller_id|int  }});
+
+$("#controller_select").bind('change',change_controller)
+ 
+function change_controller(event,ui)
+{
+  
+  current_page = window.location.href
+  
+ 
+  current_page = current_page.slice(0,-2)
+  
+  current_page = current_page+"/"+$("#controller_select")[0].selectedIndex
+  window.location.href = current_page
+}
+ 
+</script>
 
 
 {% endblock %}
 {% block application_header %}
+
+<div style="margin-top:20px"></div>
+
+
+{% endblock %}
+{% block application %}
+
 <div style="margin-top:20px"></div>
 <div id="controller_tag">
 <center>
@@ -34,29 +59,6 @@
 </select>
 </center>
 </div>
-<div style="margin-top:20px"></div>
-
-<script type="text/javascript">
-
-$("#controller_select").val( {{ controller_id|int  }});
-
-$("#controller_select").bind('change',change_controller)
- 
-function change_controller(event,ui)
-{
-  current_page = window.location.href
-  
- 
-  current_page = current_page.slice(0,-2)
-  
-  current_page = current_page+"/"+$("#controller_select")[0].selectedIndex
-  window.location.href = current_page
-}
- 
-</script>
-{% endblock %}
-{% block application %}
-
 {% for i in stream_range %}
 
 <div style="margin-top:50px"></div>
@@ -64,7 +66,7 @@ function change_controller(event,ui)
 
 
 
-<div id="{{title[i].replace(".","_").replace("-","_")}}" style="width:1200px;height:600px;"></div>
+<div id="{{title[i].replace(".","_").replace("-","_")}}" style="width:100%;height:600pts;"></div>
 
  <script>
 

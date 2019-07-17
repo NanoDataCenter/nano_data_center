@@ -164,7 +164,10 @@ class MQTT_Log(object):
           summarized_data = self.summarize_data()
           
           self.reset_composite_record()
+         
           self.ds_handlers["MQTT_SENSOR_QUEUE"].push({"timestamp":time.time(),"data":summarized_data })
+
+         
           for key,data in summarized_data.items():
              self.ds_handlers["MQTT_SENSOR_STATUS"].hset(key,data)
           self.check_slave_devices()  
@@ -174,7 +177,9 @@ class MQTT_Log(object):
         keys = self.ds_handlers["MQTT_CONTACT_LOG"].hkeys()
         reference_time = time.time()
         for i in keys:
+            
            x = self.ds_handlers["MQTT_CONTACT_LOG"].hget(i)
+           
            old_status = x["status"]
            diff = reference_time - float(x["timestamp"])
           
@@ -185,7 +190,7 @@ class MQTT_Log(object):
            
            self.ds_handlers["MQTT_CONTACT_LOG"].hset(i,x)
            if old_status != x["status"] :
-              self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Change","device_id":x["device_topic"],"status":x["status"]})          
+              self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Change","device_id":x[ 'device_id'],"status":x["status"]})          
              
    def generate_data_handlers(self):
         self.handlers = {}

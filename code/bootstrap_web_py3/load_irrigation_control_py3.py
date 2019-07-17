@@ -56,6 +56,36 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
  
        a1 = auth.login_required( self.irrigation_status_update )
        app.add_url_rule('/ajax/status_update',"status_update",a1, methods=["GET"])
+       
+       a1 = auth.login_required( self.irrigation_sensor_stream)
+       app.add_url_rule("/control/sensor_stream","control_sensor_stream",a1)
+       
+       
+   def irrigation_sensor_stream(self):
+
+       temp_data = self.handlers["MQTT_SENSOR_QUEUE"].revrange("+","-" , count=10000)
+       temp_data.reverse()
+       filtered_data = []
+       for i in temp_data:
+          temp = i["data"]
+          temp["timestamp"] = i["timestamp"]
+          filtered_data.append(temp)
+          
+       chart_title = ""
+       
+       stream_keys,stream_range,stream_data = self.format_data_variable_title(filtered_data,title=chart_title,title_y="",title_x="Date")
+       stream_keys.sort()      
+       
+       return self.render_template( "streams/base_stream",
+                                     stream_data = stream_data,
+                                     stream_keys = stream_keys,
+                                     title = stream_keys,
+                                     stream_range = stream_range ,
+                                     max_value = 10000000.,
+                                     min_value = -10000000,)
+                                
+
+
   
    def queue_irrigation_jobs(self):
        schedule_data = self.schedule_data()

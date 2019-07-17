@@ -218,6 +218,18 @@ class PI_Web_Server(object):
        ds_handlers["IRRIGATION_JOB_SCHEDULING"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_JOB_SCHEDULING"])
        ds_handlers["IRRIGATION_PENDING"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_PENDING"])
        ds_handlers["IRRIGATION_PAST_ACTIONS"] = generate_handlers.construct_redis_stream_reader(data_structures["IRRIGATION_PAST_ACTIONS"])
+       query_list = []
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+
+       query_list = self.qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"MQTT_DEVICES_DATA"} )
+                                           
+       package_sets, package_sources = self.qs.match_list(query_list)
+       package = package_sources[0]
+       generate_handlers = Generate_Handlers(package,self.redis_site_data)
+       data_structures = package["data_structures"]
+       ds_handlers["MQTT_SENSOR_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["MQTT_SENSOR_QUEUE"])
+    
        irrigation_control = Generate_Hash_Control_Handler(self.redis_site_data)
        Load_Irrigation_Pages(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
                   render_template=render_template, redis_handle= self.redis_handle, handlers= ds_handlers ,irrigation_control=irrigation_control)

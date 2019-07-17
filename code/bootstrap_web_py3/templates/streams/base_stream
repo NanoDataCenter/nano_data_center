@@ -28,7 +28,7 @@
 
 
 
-<div id="{{title[i].replace(".","_").replace("-","_")}}" style="width:1200px;height:600px;"></div>
+<div id="{{title[i].replace(".","_").replace("-","_")}}" style="width:100%;height:600pt;"></div>
 
  <script>
 
@@ -51,7 +51,7 @@
  { 
     trace.x[i] = new Date(trace.x[i]*1000)
  } 
-
+ 
  Plotly.newPlot("{{title[i].replace(".","_").replace("-","_")}}", [trace],layout);
     
 </script>
