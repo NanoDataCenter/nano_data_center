@@ -35,9 +35,9 @@
       <option value="CHECK_OFF">Check Off Condition</option>
       <option value="SUSPEND">Suspend Operation </option> 
       <option value="RESUME">Resume Operation  </option> 
-              
+             "RESET_SYSTEM_QUEUE" 
 
-      <option value="RESET_SYSTEM_QUEUE">Reset System_Queue</option>
+      <option value="RESET_SYSTEM_QUEUE">Reset System Queue</option>
 	 
      <option value="RESET_SYSTEM_NOW">Reset System Now</option>
 	 </select>

@@ -210,7 +210,7 @@
                 <ul >
                 
            <li><a href ='/mqtt/mqtt_device_status' , target="_self">Device Status</a></li>
-           <li><a href ='/mqtt/mqtt_reboot_status' , target="_self">Reboot Sataus</a></li>
+           <li><a href ='/mqtt/mqtt_reboot_status' , target="_self">Reboot Status</a></li>
            <li><a href ='/mqtt/mqtt_unknown_devices' , target="_self">Unknown Devices</a></li>
            <li><a href ='/mqtt/mqtt_unknown_commands', target ="_self">Unknown Commands </a></li>
            <li><a href ='/mqtt/mqtt_past_actions', target ="_self">MQTT Past Actions </a></li>

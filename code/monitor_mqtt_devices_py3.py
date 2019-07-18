@@ -16,10 +16,16 @@ class Base_Manager(object):
        self.topic_dispatch_table["HEART_BEAT"] = self.handle_presence
  
    def handle_presence(self,data):     
-      #print("presence",data)
+      
+      old_data = self.ds_handlers["MQTT_CONTACT_LOG"].hget(data["device_id"])
+      
       data["time"] = time.time()
       data["status"] = True
-      self.ds_handlers["MQTT_CONTACT_LOG"].hset(data["device_id"],data) 
+      self.ds_handlers["MQTT_CONTACT_LOG"].hset(data["device_id"],data)
+          
+      if old_data["status"] != data["status"] :
+        
+        self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Change","device_id":data[ 'device_id'],"status":data["status"]})   
        
    def handle_reboot(self,data):
       #print("reboot",data)
@@ -87,7 +93,7 @@ class Security_Monitor(Base_Manager):
            return
         results["timestamp"] = time.time()
         results["device_id"] = data["device_id"]
-        print(results)
+       
         self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)              
    
    
@@ -282,7 +288,7 @@ class MQTT_Monitor(object):
         self.process_messages()
 
        
-      
+     
 
    def generate_data_handlers(self):
         self.handlers = {}
@@ -307,7 +313,7 @@ class MQTT_Monitor(object):
           item["device_topic"] = base_topic+"/"+item["topic"]
          
           self.ds_handlers["MQTT_DEVICES"].hset(item["device_topic"],item)
-          self.ds_handlers["MQTT_CONTACT_LOG"].hset(item["device_topic"],{ "time":time.time(),"status":True})
+          self.ds_handlers["MQTT_CONTACT_LOG"].hset(item["device_topic"],{ "time":time.time(),"status":False})
           if self.ds_handlers["MQTT_UNKNOWN_DEVICES"].hexists(item["device_topic"]) == True:
               print("deleteing contact",item["device_topic"])
               self.ds_handlers["MQTT_UNKNOWN_DEVICES"].hdelete(item["device_topic"])

@@ -14,7 +14,7 @@ import msgpack
 from redis_support_py3.load_files_py3  import APP_FILES
 from redis_support_py3.load_files_py3  import SYS_FILES
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
-from irrigation_hash_control_py3 import Generate_Hash_Control_Handler
+from core_libraries.irrigation_hash_control_py3 import Generate_Hash_Control_Handler
 
 
 

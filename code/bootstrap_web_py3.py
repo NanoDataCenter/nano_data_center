@@ -20,7 +20,7 @@ from bootstrap_web_py3.load_redis_access_py3     import  Load_Redis_Access
 from redis_support_py3.graph_query_support_py3 import  Query_Support
 from eto_init_py3 import User_Data_Tables
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
-from irrigation_hash_control_py3 import Generate_Hash_Control_Handler
+from core_libraries.irrigation_hash_control_py3 import Generate_Hash_Control_Handler
 from redis_support_py3.load_files_py3  import APP_FILES
 from redis_support_py3.load_files_py3  import SYS_FILES
 from bootstrap_web_py3.load_app_sys_files_py3 import Load_App_Sys_Files

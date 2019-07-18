@@ -1,5 +1,6 @@
 
 import time
+import os
 class Irrigation_Scheduling(object):
    def __init__(self,handlers,app_files,sys_files,eto_management,irrigation_hash_control ):
        self.handlers = handlers
@@ -314,8 +315,8 @@ class Incomming_Queue_Management(object):
    def  reset_system_now( self, *args ):
       self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT_NOW","level":"RED"})
     
-      #time.sleep(5)
-      #os.system("reboot")  
+      time.sleep(5)
+      os.system("reboot")  
 
    def reset_system_queue( self,  *args ):
         json_object = {}

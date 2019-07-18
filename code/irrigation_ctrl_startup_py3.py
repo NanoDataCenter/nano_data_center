@@ -23,7 +23,7 @@ import time
 ## {"controller":"satellite_1", "pin": 9,  "recharge_eto": 0.216, "recharge_rate":0.245 },
 ## eto_site_data
 from eto_init_py3 import Generate_Data_Handler
-from irrigation_hash_control_py3 import Generate_Hash_Control_Handler
+from core_libraries.irrigation_hash_control_py3 import Generate_Hash_Control_Handler
 
 class ETO_Management(object):
    def __init__(self,redis_site,app_files):

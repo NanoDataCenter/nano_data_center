@@ -179,17 +179,18 @@ class MQTT_Log(object):
         for i in keys:
             
            x = self.ds_handlers["MQTT_CONTACT_LOG"].hget(i)
-           
+          
            old_status = x["status"]
-           diff = reference_time - float(x["timestamp"])
+           diff = reference_time - float(x["time"])
           
            if diff > 60*2:
               x["status"] = False
            else:
               x["status"] = True
-           
+         
            self.ds_handlers["MQTT_CONTACT_LOG"].hset(i,x)
            if old_status != x["status"] :
+              
               self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Change","device_id":x[ 'device_id'],"status":x["status"]})          
              
    def generate_data_handlers(self):

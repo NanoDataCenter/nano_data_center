@@ -269,7 +269,7 @@ def add_eto_chains(eto, cf):
     cf.insert.wait_tod_ge( hour =  8 )
     cf.insert.enable_chains(["eto_make_measurements"])
     cf.insert.log("enabling making_measurement")
-    cf.insert.wait_tod_ge(hour=9)
+    cf.insert.wait_tod_ge(hour=11)
     cf.insert.enable_chains(["update_eto_bins"])
     cf.insert.log("enable_update_eto_bins")
     

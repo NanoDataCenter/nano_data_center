@@ -92,10 +92,13 @@ class Load_MQTT_Pages(Base_Stream_Processing):
    def mqtt_past_actions( self):
        temp_data = self.handlers["MQTT_PAST_ACTION_QUEUE"].revrange("+","-" , count=1000)
       
-       for  i in temp_data:
-         
-         i["detail"] = "--- Action: "+x["action"]+"  Device Id: "+x["device_topic"] +" Status: "+str(x["status"] )
-       return self.render_template("mqtt_templates/mqtt_past_actions_template" ,time_history = temp_data,title="PAST ACTIONS" )
+       collated_data = []
+       for  j in temp_data:
+         i= j["data"]
+         i["time"] = str(datetime.fromtimestamp(j["timestamp"]))
+         i["detail"] = "---Date: "+i["time"]+"  Action: "+i["action"]+"  Device Id: "+i["device_id"] +" Status: "+str(i["status"] )
+         collated_data.append(i)
+       return self.render_template("mqtt_templates/mqtt_past_actions_template" ,time_history = collated_data,title="PAST ACTIONS" )
 
    def mqtt_device_reset( self):
       return self.render_template("mqtt_templates/mqtt_reset_device" )

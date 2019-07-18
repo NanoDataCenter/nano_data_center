@@ -1,6 +1,6 @@
 
 
-
+import time
 import json
 import os
 from .valve_resistance_check_py3  import   Valve_Resistance_Check
@@ -155,9 +155,9 @@ class Irrigation_Queue_Management(object):
            return
        if json_object["type"] == "RESET_SYSTEM_QUEUE":
            print("reset system")
-           self.cf.queue_event("RELEASE_IRRIGATION_CONTROL", 0)
-    
-           #os.system("reset")
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"RESET_SYSTEM_QUEUE","level":"RED"})
+           time.sleep(5)
+           os.system("reboot")
            return       
            
        if json_object["type"] == "IRRIGATION_STEP":
