@@ -50,11 +50,11 @@ class Load_MQTT_Pages(Base_Stream_Processing):
 
    def mqtt_device_status( self):
        temp_data = self.handlers["MQTT_CONTACT_LOG"].hgetall()
-      
-       for key in temp_data.keys():
-        
-         temp_data[key]["time"] = str(datetime.fromtimestamp(temp_data[key]["timestamp"]))
-         temp_data[key]["detail"] = "--- Device Id: "+ temp_data[key]["device_id"]+"  Date:  "+temp_data[key]['time'] + " Status "+str(temp_data[key]["status"])
+       
+       for key,item in temp_data.items():
+ 
+         item["time"] = str(datetime.fromtimestamp(item["time"]))
+         item["detail"] = "--- Device Id: "+ item["device_id"]+"  Date:  "+item['time'] + " Status "+str(item["status"])
        
        return self.render_template("mqtt_templates/mqtt_status_template" ,time_history = temp_data ,title = "Device Status"  )
 

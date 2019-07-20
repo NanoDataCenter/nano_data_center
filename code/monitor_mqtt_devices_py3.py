@@ -37,7 +37,7 @@ class Base_Manager(object):
          data["delta_t"] = 0.
          
       self.ds_handlers["MQTT_REBOOT_LOG"].hset(data["device_id"],data)
-      self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Reboot","device_id":x["device_id"],"status":True}) 
+      self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Reboot","device_id":data["device_id"],"status":True}) 
 
    def process_message(self,data):
       
@@ -313,7 +313,7 @@ class MQTT_Monitor(object):
           item["device_topic"] = base_topic+"/"+item["topic"]
          
           self.ds_handlers["MQTT_DEVICES"].hset(item["device_topic"],item)
-          self.ds_handlers["MQTT_CONTACT_LOG"].hset(item["device_topic"],{ "time":time.time(),"status":False})
+          self.ds_handlers["MQTT_CONTACT_LOG"].hset(item["device_topic"],{ "time":time.time(),"status":False,"device_id":item["device_topic"]})
           if self.ds_handlers["MQTT_UNKNOWN_DEVICES"].hexists(item["device_topic"]) == True:
               print("deleteing contact",item["device_topic"])
               self.ds_handlers["MQTT_UNKNOWN_DEVICES"].hdelete(item["device_topic"])

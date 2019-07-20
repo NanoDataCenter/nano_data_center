@@ -76,7 +76,7 @@ class Irrigation_Queue_Management(object):
 
       cf.define_chain("QC_Check_Irrigation_Queue", True )
       cf.insert.log("check irrigation queue")
-      #cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
+      cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)
       cf.insert.wait_event_count( count = 1 )
@@ -90,14 +90,36 @@ class Irrigation_Queue_Management(object):
       cf.insert.wait_event_count( count = 1 )
       cf.insert.log("RELEASE_IRRIGATION_CONTROL event received")
       cf.insert.reset()
+      
+      cf.define_chain("accumulate_cleaning_filter", True )
+      cf.insert.log("accumulate_cleaning_filer")      
+      cf.insert.one_step(self.accumulate_cleaning_filer) 
+      cf.insert.wait_event_count(event = "MINUTE_TICK")
+      cf.insert.reset()
 
+      cf.define_chain("check_excessive_current", True )
+      cf.insert.log("check_excessive_current")  
+      cf.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )    
+      cf.insert.wait_function(self.check_excessive_current)
+      cf.send_event("IRI_CLOSE_MASTER_VALVE",None)
+      cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
+      cf.insert.one_step(irrigation_io.disable_all_sprinklers )
+      cf.insert.wait_event_count( count = 1 )
+      cf.insert.reset()
  
+      cf.define_chain("check_excessive_flow", True )
+      cf.insert.log("check_excessive_current")
+      cf.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )
+      cf.insert.wait_function(self.monitor_excessive_flow)
+      cf.send_event("IRI_CLOSE_MASTER_VALVE",None)
+      cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
+      cf.insert.one_step(irrigation_io.disable_all_sprinklers )
+      cf.insert.wait_event_count( count = 1 )
+      cf.insert.reset()
       
       
       
            
-
-
 
        
    def check_queue( self, cf_handle, chainObj, parameters, event):
@@ -127,7 +149,19 @@ class Irrigation_Queue_Management(object):
  
        if event["name"] == "INIT":
           return
- 
+       #
+       #
+       #Checking to clean filter by accumulation
+       #
+       #cleaning_interval = io_control.get_cleaning_interval()
+       #cleaning_sum      = io_control.get_cleaning_accumulation()
+       #if cleaning_sum < cleaning_interval:
+       #   self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
+       #   self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"CLEAN_FILTER" )
+       #    return
+       #
+       #
+       #
        json_object = self.handlers["IRRIGATION_PENDING_SERVER"].pop()
        json_object = json_object[1]
        if isinstance(json_object,str):
@@ -207,4 +241,27 @@ class Irrigation_Queue_Management(object):
 
    def skip_operation( self,*args ):
        self.cf.send_event("RELEASE_IRRIGATION_CONTROL",None)       
-      
+ 
+
+#
+#
+#
+#
+#
+#
+ 
+
+
+
+   def accumulate_cleaning_filter(self,cf_handle, chainObj, parameters, event):
+       cleaning_interval = io_control.get_cleaning_interval()
+       cleaning_sum      = io_control.get_cleaning_accumulation()
+       gpm               = io_control.get_gpm()
+       cleaning_sum += gpm
+       io_control.set_cleaning_accumulation(cleaning_sum)
+
+  def check_excessive_current(self,cf_handle, chainObj, parameters, event):
+       return True
+
+  def monitor_excessive_flow(self,cf_handle, chainObj, parameters, event):
+      return True

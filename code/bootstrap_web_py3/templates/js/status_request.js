@@ -8,7 +8,8 @@ function status_request_function()
  
    
 }
-       
+  
+                   
 function status_update( data )
 {
        var temp
@@ -16,26 +17,30 @@ function status_update( data )
        var tempDate
        
        //alert(JSON.stringify(data))
+       
        var date = new Date( data["TIME_STAMP"]  * 1000);
        tempDate = new Date()
        
        $("#time_stamp").html("Time:  "+tempDate.toLocaleDateString() + "   " + tempDate.toLocaleTimeString() )
 
        $("#controller_time_stamp").html("Ctr Time: "+ date.toLocaleDateString() + "   " + date.toLocaleTimeString() )
-       //$("#flow_rate").html("GPM:  "+parseFloat(data.global_flow_sensor_corrected).toFixed(2));
-       
+       $("#flow_rate").html("Current Flow Rate: "+parseFloat(data.MAIN_FLOW_METER).toFixed(2));
+       $("#cleaning_rate").html("Cleaning Flow Rate:  "+parseFloat(data.CLEANING_FLOW_METER).toFixed(2));
        $("#schedule").html("Schedule: "+data["SCHEDULE_NAME"])
        $("#step").html("Step:   "+data["STEP"])
        $("#time").html("Step Time:  "+data["RUN_TIME"])
        $("#duration").html("ELASPED_TIME: "+ data["ELASPED_TIME"]) 
        $("#rain_day").html("Rain Day: "+data["RAIN_FLAG"])
-       //$("#coil_current").html("Coil ma: "+parseFloat(data.coil_current).toFixed(2))
+       $("#irrigation_current").html("Irrigation  Current:"+parseFloat(data.IRRIGATION_CURRENT).toFixed(2))
+       $("#equipment_current").html("Equipment  Current:  "+parseFloat(data.EQIPMENT_CURRENT).toFixed(2))
+       $("#pump_input_current").html("Pump Input Current: "+parseFloat(data.INPUT_PUMP_CURRENT).toFixed(2))
+       $("#pump_output_current").html("Pump Output Current: "+parseFloat(data.OUTPUT_PUMP_CURRENT).toFixed(2))
        $("#master_valve").html("Master Valve: "+data.MASTER_VALVE_SETUP )
        $("#eto_management").html("ETO Management: "+data.ETO_MANAGEMENT )
  
        $("#suspend").html("Suspension State:  "+data.SUSPEND )
        $("#clean_filter_limit").html("Filter Cleaning Limit (Gallon):  "+parseFloat(data.CLEANING_INTERVAL).toFixed(2) )
-       $("#clean_filter_value").html("Filter Cleaning Accumulation (GPM):  "+parseFloat(data.cleaning_sum).toFixed(2 ))
+       $("#clean_filter_value").html("Filter Cleaning Accumulation (GPM):  "+parseFloat(data.CLEANING_ACCUMULATION).toFixed(2 ))
 
 
 }

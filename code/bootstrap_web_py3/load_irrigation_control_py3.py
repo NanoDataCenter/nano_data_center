@@ -65,6 +65,7 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
 
        temp_data = self.handlers["MQTT_SENSOR_QUEUE"].revrange("+","-" , count=10000)
        temp_data.reverse()
+       
        filtered_data = []
        for i in temp_data:
           temp = i["data"]

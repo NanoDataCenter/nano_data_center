@@ -32,9 +32,12 @@
            
            {% set label_text = i["detail"] %}
            {% set id = "entry_"+ (loop.index -1)|string %}
-           <h7 id={{id}}>{{label_text}}</h7><br>
-          
-        
+           {% if i["status"]|string == "False"           %}
+               <h7>--</h7>
+              <h7 id={{id}}><font color=red>{{label_text}}</font></h7><br>
+           {% else %}
+               <h7 id={{id}}>{{label_text}}</h7><br>
+           {% endif %}
         {% endfor %}
      </fieldset>
     

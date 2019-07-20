@@ -30,7 +30,7 @@ class Generate_Hash_Control_Handler():
        self.access_handler["FLOW_CUT_OFF"]   = self.set_flow_cutoff
        self.access_handler["CLEANING_INTERVAL"]   =   self.set_cleaning_interval
        self.access_handler["MASTER_VALVE"]   =  self.set_master_valve
-       self.access_handler["CLEANING_VALVE"]   = self.set_cleaning_valve
+       self.access_handler["CLEANING_ACCUMULATION"]   = self.set_cleaning_accumulation
        self.access_handler["MASTER_VALVE_SETUP"]   = self.set_master_valve_setup
        self.access_handler["SCHEDULE_NAME"]   = self.set_schedule_name
        self.access_handler["STEP"]   =        self.set_step_number
@@ -38,6 +38,17 @@ class Generate_Hash_Control_Handler():
        self.access_handler["ELASPED_TIME"]  = self.set_elasped_time
        self.access_handler["TIME_STAMP"]  = self.set_time_stamp
        self.access_handler["SUSPEND"]    = self.set_suspend
+      
+       self.access_handler["EQUIPMENT_CURRENT"] = self.set_equipment_current
+       self.access_handler["IRRIGATION_CURRENT"] = self.set_irrigation_valves
+       self.access_handler["MAIN_FLOW_METER"] = self.set_main_flow_meter
+       self.access_handler["CLEANING_FLOW_METER"] = self.set_cleaning_flow_meter
+       self.access_handler["INPUT_PUMP_CURRENT"] = self.set_input_pump_current
+       self.access_handler["OUTPUT_PUMP_CURRENT"] = self.set_output_pump_current
+       self.access_handler["SLAVE_EQUIPMENT_RELAY_TRIP"] = self.set_equipment_relay
+       self.access_handler["SLAVE_IRRIGATION_RELAY_TRIP"] = self.set_irrigation_relay
+       self.access_handler["SLAVE_MAX_CURRENT"] = self.set_max_currents
+       self.access_handler["SLAVE_RELAY_STATE"] = self.set_relay_state
        
        
    def get_redis_handle(self):
@@ -159,21 +170,18 @@ class Generate_Hash_Control_Handler():
            self.handler.hset("MASTER_VALVE",0)
        return 
  
-   def get_cleaning_valve(self):
-       temp = self.handler.hget("CLEANING_VALVE")
-       if (temp == 0) or (temp == 1 ):
-         return temp
+   def get_cleaning_accumulation(self):
+       temp = self.handler.hget("CLEANING_ACCUMULATION")
+       if temp != None:
+         return float(temp)
        self.handler.hset("CLEANING_VALVE",0)
        return 0
  
-   def set_cleaning_valve(self,data):
-       data = int(data)
-       if (data == 0) or (data == 1 ):
-             self.handler.hset("CLEANING_VALVE",data)
-        
-       else:
-           self.handler.hset("CLEANING_VALVE",0)
-       return 
+   def set_cleaning_accumulation(self,data):
+       data = float(data)
+ 
+       self.handler.hset("CLEANING_VALVE","CLEANING_ACCUMULATION")
+ 
 
    def get_master_valve_setup(self):
        temp = self.handler.hget("MASTER_VALVE_SETUP")
@@ -286,4 +294,102 @@ class Generate_Hash_Control_Handler():
            self.handler.hset("SUSPEND",0)
        return  
   
-   
+
+
+   def get_equipment_current(self):      
+       temp = self.handler.hget("EQIPMENT_CURRENT")
+       try:
+          temp = float(temp)
+       except:
+          temp = 0
+       return temp
+       
+       return    
+   def set_equipment_current(self,data):    
+       data = float(data)
+       self.handler.hset("EQIPMENT_CURRENT",data) 
+       
+       
+   def get_irrigation_valves(self):      
+       temp = self.handler.hget("IRRIGATION_CURRENT")
+       try:
+          temp = float(temp)
+       except:
+          temp = 0
+       return temp
+       
+   def set_irrigation_valves(self,data):    
+       data = float(data)
+       self.handler.hset("IRRIGATION_CURRENT",data) 
+
+   def get_main_flow_meter(self):
+      temp = self.handler.hget("MAIN_FLOW_METER")
+      
+      try:
+          temp = float(temp)
+      except:
+          temp = 0
+
+      return temp
+      
+   def set_main_flow_meter(self,data):
+  
+       data = float(data)
+       self.handler.hset("MAIN_FLOW_METER",data) 
+       return      
+
+
+       
+
+ 
+       
+      
+      
+   def get_cleaning_flow_meter(self):
+      temp = self.handler.hget("CLEANING_FLOW_METER")
+      
+      try:
+          temp = float(temp)
+      except:
+          temp = 0
+
+      return temp
+      
+   def set_cleaning_flow_meter(self,data):
+  
+       data = float(data)
+       self.handler.hset("CLEANING_FLOW_METER",data) 
+       return   
+
+       
+   def get_input_pump_current(self):
+      temp = self.handler.hget("INPUT_PUMP_CURRENT")
+      
+      try:
+          temp = float(temp)
+      except:
+          temp = 0
+
+      return temp
+      
+   def set_input_pump_current(self,data):
+  
+       data = float(data)
+       self.handler.hset("INPUT_PUMP_CURRENT",data) 
+       return      
+       
+   def get_output_pump_current(self):
+      temp = self.handler.hget("OUTPUT_PUMP_CURRENT")
+      
+      try:
+          temp = float(temp)
+      except:
+          temp = 0
+
+      return temp
+      
+   def set_output_pump_current(self,data):
+  
+       data = float(data)
+       self.handler.hset("OUTPUT_PUMP_CURRENT",data) 
+       return      

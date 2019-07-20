@@ -1,0 +1,10 @@
+July 19
+irrigation startup
+   subtract eto from operation
+irrigation_bootstrap
+  irrigation_streaming   
+irrigation_bootstrap
+   device_status
+   
+    
+get cloud web interface going
