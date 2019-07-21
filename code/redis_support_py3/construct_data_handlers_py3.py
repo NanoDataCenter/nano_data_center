@@ -59,8 +59,135 @@ class RPC_Server(object):
         self.redis_handle.lpush( id, msgpack.packb(response))        
         self.redis_handle.expire(id, 30)
 
+class String_Field(object):
+   def __init__(self,handler):
+       self.handler = handler
+       
+   def hget(self,setup,field):
+      result = self.handler.hget( field)
+      if result == None:
+        result = setup["init_value"]
+      return str(result)
       
+   def hset(self,setup,field,data):
+       self.handler.hset(field,str(data))
+       
+class Float_Field(object):
+   def __init__(self,handler):
+       self.handler = handler
+       
+   def hget(self,setup,field):
+      result = self.handler.hget(field)
+      if result == None:
+        result = setup["init_value"]
+      return float(result)
       
+   def hset(self,setup,field,data):
+
+       self.handler.hset(field,float(data))
+        
+class Binary_Field(object):
+   def __init__(self,handler):
+       self.handler = handler
+       
+   def hget(self,setup,field):
+      result = self.handler.hget(field)
+      if result == None:
+         result = setup["init_value"]
+      return bool(result) 
+      
+   def hset(self,setup,field,data):
+       if data == 0:
+          data = False
+       if data == 1:
+          data = True
+       if isinstance(data,bool):
+           self.handler.hset(field,data)
+       else:
+         raise ValueError("not a boolean type "+str(data))
+       
+class Dictionary_Field(object):
+   def __init__(self,handler):
+       self.handler = handler
+       
+   def hget(self,setup,field):
+      temp = self.handler.hget(field)
+      if temp == None:
+        result = setup["fields"]
+      else:
+         result = {}
+         for i in setup["fields"].keys():
+            if i in temp:
+               result[i] = temp[i]
+            else:
+               result[i] = setup["field"][i]
+               
+      return result
+      
+   def hset(self,setup,field,data):
+       temp = {}
+       for i in setup["fields"].keys():
+         if i in data:
+            temp[i] = data[i]
+         else:
+            raise ValueError("key: "+str(i)+" not in "+str(data))
+       self.handler.hset(field,temp)
+
+                 
+class Managed_Redis_Hash(object):
+   def __init__(self,redis_handle,data, key,cloud_handler):
+        self.handler = Redis_Hash_Dictionary(redis_handle,data, key,cloud_handler)
+        self.fields = data["fields"]
+        self.field_handlers = {}
+        self.field_handlers["string"] = String_Field(self.handler)
+        self.field_handlers["float"] = Float_Field(self.handler)
+        self.field_handlers["binary"] = Binary_Field(self.handler)
+        self.field_handlers["dictionary"] = Dictionary_Field(self.handler)      
+        self.validate_graph_data()
+        self.sanitize_keys()
+ 
+
+   def get_rid_of_bad_keys(self):
+       keys = self.handler.hkeys()
+       for i in keys:
+         if i not in self.fields:
+            print("key "+str(i)+" doesnot belong")
+            self.handler.hdelete(i)
+            
+   def sanitize_keys(self):
+       
+       for key,item in self.fields.items():
+         temp = self.hget(key)
+         self.hset(key,temp)
+                
+       
+   def validate_graph_data(self):
+       for i,item in self.fields.items():
+
+          instance_type = item["type"]
+          if instance_type not in self.field_handlers:
+             raise ValueError("improper type:  "+str(key)+"  "+str(item))          
+       
+   def hget(self,field):
+       if field in self.fields:
+          item = self.fields[field]
+          return self.field_handlers[item["type"]].hget(item,field)
+       else:
+          raise ValueError("field is not registered:  "+field)
+          
+   def hget_all(self):
+      result = {}
+      for i,item in self.fields.items():
+         result[i] = self.field_handlers[item["type"]].hget(item,i)
+      return result
+      
+   def hset(self,field,data):
+      if field in self.fields:
+          item = self.fields[field]
+          self.field_handlers[item["type"]].hset(item,field,data)
+      else:
+          raise ValueError("field is not registered:  "+field)
+           
  
 class Redis_Hash_Dictionary( object ):
  
@@ -542,6 +669,13 @@ class Generate_Handlers(object):
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          
          return  Redis_Hash_Dictionary( self.redis_handle,data,key,self.cloud_handler )
+
+   def construct_managed_hash(self,data):
+         assert(data["type"] == "MANAGED_HASH")
+         key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
+         
+         return  Managed_Redis_Hash( self.redis_handle,data,key,self.cloud_handler)
+   
 
 
    def construct_stream_writer(self,data):
