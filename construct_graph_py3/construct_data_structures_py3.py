@@ -24,6 +24,14 @@ class Construct_Data_Structures(object):
         self.bc.add_info_node("PACKAGE",self.name,self.properties)
         
         
+   def add_managed_hash(self,name,fields,forward=False):
+       assert(name not in self.properties )
+       properties = {}
+       properties["name"] = name
+       properties["type"]  = "MANAGED_HASH"
+       properties["forward"] =forward
+       properties["fields"] = fields
+       self.properties["data_structures"][name] = properties 
 
       
    def add_hash(self,name,forward=False):

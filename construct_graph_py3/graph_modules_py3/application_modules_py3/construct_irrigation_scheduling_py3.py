@@ -1,5 +1,5 @@
 import json
-
+import time
 
 class Construct_Irrigation_Scheduling_Control(object):
 
@@ -24,10 +24,43 @@ class Construct_Irrigation_Scheduling_Control(object):
       bc.add_info_node("CLEANING_VALVES","CLEANING_VALVES",properties= {"CLEANING_VALVES":[ {"remote":"satellite_1","pins":[44] } ]} )
       bc.add_info_node("LOGGING_DEPTH","LOGGING_DEPTH",properties = {"valve_depth":20} )
       
+
+
+      
+      
+   
       bc.add_header_node("IRRIGATION_CONTROL_MANAGEMENT")
       cd.construct_package("IRRIGATION_CONTROL_MANAGEMENT")
-      cd.add_hash("IRRIGATION_CONTROL")
+      fields = {}
+      fields["RAIN_FLAG"]   = { "type":"binary","init_value":False }
+      fields["ETO_MANAGEMENT"]   = { "type":"binary","init_value":True}
+      fields["FLOW_CUT_OFF"]   = { "type":"float","init_value":30 }
+      fields["CLEANING_INTERVAL"]   =   { "type":"float","init_value":25000 }
+      fields["MASTER_VALVE"]   =  { "type":"binary","init_value":False }
+      fields["CLEANING_ACCUMULATION"]   = { "type":"float","init_value":0 }
+      fields["MASTER_VALVE_SETUP"]   = { "type":"binary","init_value":False }
+      fields["SCHEDULE_NAME"]   = { "type":"string","init_value":"" }
+      fields["STEP"]   =        { "type":"float","init_value":0 }
+      fields["RUN_TIME"]   =   { "type":"float","init_value":0 }
+      fields["ELASPED_TIME"]  = { "type":"float","init_value":0 }
+      fields["TIME_STAMP"]  = { "type":"float" ,"init_value":time.time()}
+      fields["SUSPEND"]    = { "type":"binary","init_value":False }
+      
+      fields["EQUIPMENT_CURRENT"] = { "type":"float","init_value":0 }
+      fields["IRRIGATION_CURRENT"] = { "type":"float","init_value":0 }
+      fields["MAIN_FLOW_METER"] =    { "type":"float","init_value":0 }
+      fields["CLEANING_FLOW_METER"] ={ "type": "float","init_value":0 }
+      fields["INPUT_PUMP_CURRENT"] = { "type":"float","init_value":0 }
+      fields["OUTPUT_PUMP_CURRENT"] = { "type":"float","init_value":0 }
+      fields["SLAVE_EQUIPMENT_RELAY_TRIP"] = { "type":"dictionary", "fields":{"status":True,"CURRENT_VALUE":0,"LIMIT_VALUE":0,"device_id":""} }
+      fields["SLAVE_IRRIGATION_RELAY_TRIP"] = { "type":"dictionary", "fields":{"status":True,"CURRENT_VALUE":0,"LIMIT_VALUE":0,"device_id":""} }
+      fields["SLAVE_MAX_CURRENT"] = { "type":"dictionary", "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"device_id":""} }
+      fields["SLAVE_RELAY_STATE"] = { "type":"dictionary", "fields":{'EQUIPMENT_STATE':True,'IRRIGATION_STATE':True,"device_id":""} }
+   
+      cd.add_managed_hash(name = "IRRIGATION_CONTROL",fields= fields)
       cd.close_package_contruction()
+
+
       bc.end_header_node("IRRIGATION_CONTROL_MANAGEMENT")
       bc.end_header_node("IRRIGIGATION_SCHEDULING_CONTROL")
 
