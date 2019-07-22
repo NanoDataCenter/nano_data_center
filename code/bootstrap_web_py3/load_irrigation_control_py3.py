@@ -127,10 +127,10 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
    def manage_parameters(self):
       
        control_data = {}
-       control_data["RAIN_FLAG"] = self.irrigation_control.get_rain_flag()
-       control_data["ETO_MANAGEMENT"] = self.irrigation_control.get_eto_management_flag()
-       control_data["FLOW_CUT_OFF"]   =    self.irrigation_control.get_flow_cutoff()
-       control_data["CLEANING_INTERVAL"] = self.irrigation_control.get_cleaning_interval()
+       control_data["RAIN_FLAG"] = self.irrigation_control.hget("RAIN_FLAG")
+       control_data["ETO_MANAGEMENT"] = self.irrigation_control.hget("ETO_MANAGEMENT")
+       control_data["FLOW_CUT_OFF"]   =    self.irrigation_control.hget("FLOW_CUT_OFF")
+       control_data["CLEANING_INTERVAL"] = self.irrigation_control.hget("CLEANING_INTERVAL")
  
        control_data_json = json.dumps(control_data)
      
@@ -186,9 +186,9 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
 
    def mode_change( self):
        json_object = self.request.json
-       print("json_object",json_object)
+       
        self.handlers["IRRIGATION_JOB_SCHEDULING"].push(json_object)
-       print(self.handlers["IRRIGATION_JOB_SCHEDULING"].length())
+      
        return json.dumps("SUCCESS")
 
    def parameter_update(self):
@@ -196,7 +196,8 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
       
        field = json_object["field"]
        data = json_object["data"]
-       self.irrigation_control.set_field(field,data)
+       data = float(data)
+       self.irrigation_control.hset(field,data)
       
        return json.dumps("SUCCESS")
 
@@ -223,5 +224,5 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
         return json.dumps("SUCCESS")
   
    def irrigation_status_update(self):
-       temp = self.irrigation_control.get_all()
+       temp = self.irrigation_control.hget_all()
        return json.dumps(temp)

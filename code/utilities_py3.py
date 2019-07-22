@@ -14,7 +14,7 @@ import msgpack
 from redis_support_py3.load_files_py3  import APP_FILES
 from redis_support_py3.load_files_py3  import SYS_FILES
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
-from core_libraries.irrigation_hash_control_py3 import Generate_Hash_Control_Handler
+from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
 
 
 
@@ -182,12 +182,7 @@ class Irrigation_Schedule_Monitoring(Monitoring_Base):
 
           
    def rain_check(self):
-       rain_day = self.irrigation_control.get_rain_flag()
- 
-       if rain_day == 0:
-          return True
-       else:
-          return False
+       return self.irrigation_control.hget("RAIN_FLAG")
 
 
    
@@ -295,7 +290,7 @@ if __name__ == "__main__":
     
  
 
-    irrigation_control        = Generate_Hash_Control_Handler(redis_site)
+    irrigation_control        = generate_irrigation_control(redis_site)
     sched        = Irrigation_Schedule_Monitoring( app_files,completion_dictionary,job_queue,irrigation_control )
     action       = System_Monitoring(app_files,completion_dictionary,job_queue)
 

@@ -118,7 +118,7 @@ class Irrigation_Control_Basic(object):
    def start(self,*args):
       self.io_control.load_duration_counters(self.json_object['run_time'])
       self.io_control.turn_on_valve(self.json_object['io_setup'])
-      self.irrigation_hash_control.update_json_object(self.json_object)
+      self.update_json_object(self.json_object)
       return True
 
    def monitor_irrigation( self, cf_handle, chainObj, parameters, event):
@@ -128,7 +128,7 @@ class Irrigation_Control_Basic(object):
       #turn on io
       self.json_object["elasped_time"]  =      self.json_object["elasped_time"] +1
       self.io_control.turn_on_valve(self.json_object['io_setup'])
-      self.irrigation_hash_control.update_json_object(self.json_object)
+      self.update_json_object(self.json_object)
       
       if self.json_object["elasped_time"] <= self.json_object["run_time"]  :
            self.step_monitor.step_monitoring(self.json_object)       
@@ -144,7 +144,12 @@ class Irrigation_Control_Basic(object):
       return return_value
 
 
-
+   def update_json_object(self,json_object):
+      self.irrigation_hash_control.hset("SCHEDULE_NAME",json_object["schedule_name"])  
+      self.irrigation_hash_control.hset("STEP",json_object["step"])  
+      self.irrigation_hash_control.hset("RUN_TIME",json_object["run_time"])  
+      self.irrigation_hash_control.hset("ELASPED_TIME",json_object["elasped_time"])  
+      self.irrigation_hash_control.hset("TIME_STAMP",time.time())
 
 
 

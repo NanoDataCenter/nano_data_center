@@ -25,8 +25,25 @@ def generate_irrigation_control(redis_site_data):
        generate_handlers = Generate_Handlers(package,redis_site_data)
     
        return generate_handlers.construct_managed_hash(data_structures["IRRIGATION_CONTROL"])
+       
+def generate_sensor_minute_status(redis_site_data):
+       qs = Query_Support( redis_server_ip = redis_site_data["host"], redis_server_port=redis_site_data["port"] )
+       query_list = []
+       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site_data["site"] )
 
+       query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"MQTT_DEVICES_DATA"} )
+                                           
+       package_sets, package_sources = qs.match_list(query_list)  
+     
+       package = package_sources[0] 
+       data_structures = package["data_structures"]
+       
+       generate_handlers = Generate_Handlers(package,redis_site_data)
+    
+       return generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
 
+   
 
    
 if __name__ == "__main__":

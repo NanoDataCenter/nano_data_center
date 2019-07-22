@@ -52,10 +52,10 @@ class Construct_Irrigation_Scheduling_Control(object):
       fields["CLEANING_FLOW_METER"] ={ "type": "float","init_value":0 }
       fields["INPUT_PUMP_CURRENT"] = { "type":"float","init_value":0 }
       fields["OUTPUT_PUMP_CURRENT"] = { "type":"float","init_value":0 }
-      fields["SLAVE_EQUIPMENT_RELAY_TRIP"] = { "type":"dictionary", "fields":{"status":True,"CURRENT_VALUE":0,"LIMIT_VALUE":0,"device_id":""} }
-      fields["SLAVE_IRRIGATION_RELAY_TRIP"] = { "type":"dictionary", "fields":{"status":True,"CURRENT_VALUE":0,"LIMIT_VALUE":0,"device_id":""} }
-      fields["SLAVE_MAX_CURRENT"] = { "type":"dictionary", "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"device_id":""} }
-      fields["SLAVE_RELAY_STATE"] = { "type":"dictionary", "fields":{'EQUIPMENT_STATE':True,'IRRIGATION_STATE':True,"device_id":""} }
+      fields["SLAVE_EQUIPMENT_RELAY_TRIP"] = { "type":"dictionary", "fields":{"status":True,"CURRENT_VALUE":0,"LIMIT_VALUE":0,"device_id":"","timestamp":time.time()} }
+      fields["SLAVE_IRRIGATION_RELAY_TRIP"] = { "type":"dictionary", "fields":{"status":True,"CURRENT_VALUE":0,"LIMIT_VALUE":0,"device_id":"","timestamp":time.time()} }
+      fields["SLAVE_MAX_CURRENT"] = { "type":"dictionary", "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"device_id":"","timestamp":time.time()} }
+      fields["SLAVE_RELAY_STATE"] = { "type":"dictionary", "fields":{'EQUIPMENT_STATE':True,'IRRIGATION_STATE':True,"device_id":"","timestamp":time.time()} }
    
       cd.add_managed_hash(name = "IRRIGATION_CONTROL",fields= fields)
       cd.close_package_contruction()

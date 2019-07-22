@@ -99,7 +99,7 @@ class Irrigation_Scheduling(object):
        schedule_io = step_data[0]
        schedule_step = int(schedule_step)
        schedule_step_time = int(schedule_step_time)
-       if ( self.irrigation_hash_control.get_eto_management_flag() != 0) and (eto_flag == True): 
+       if ( self.irrigation_hash_control.hget("ETO_MANAGEMENT") == True ) and (eto_flag == True): 
           schedule_step_time,eto_flag,eto_list = self.eto_management.determine_eto_management(schedule_step_time, schedule_io )
        else:
           eto_flag = False
@@ -174,7 +174,7 @@ class Incomming_Queue_Management(object):
        
        self.irrigation_sched = Irrigation_Scheduling(handlers,app_files,sys_files,eto_management,irrigation_hash_control)
        
-       self.irrigation_hash_control.clear_json_object()              
+       self.clear_redis_sprinkler_data()              
        self.commands = {}
 
        self.commands["CLEAR"]                     = self.clear                   
@@ -235,17 +235,17 @@ class Incomming_Queue_Management(object):
 
       
    def update_time_stamp(self,*args):
-       self.irrigation_hash_control.set_time_stamp(time.time())
+       self.irrigation_hash_control.hset( "TIME_STAMP",time.time())
 
    def suspend( self, *args ):
        
-       self.irrigation_hash_control.set_suspend(1)
+       self.irrigation_hash_control.hset("SUSPEND",True)
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"SUSPEND_OPERATION","level":"YELLOW"})
        self.cf.send_event("IRI_MASTER_VALVE_SUSPEND",None)
       
 
    def resume( self, *args ):
-       self.irrigation_hash_control.set_suspend(0)
+       self.irrigation_hash_control.hset("SUSPEND",False)
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"RESUME_OPERATION","level":"YELLOW"})
        self.cf.send_event("IRI_MASTER_VALVE_RESUME",None)
       
@@ -295,7 +295,12 @@ class Incomming_Queue_Management(object):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"CLEAR","level":"YELLOW"})         
 
    def clear_redis_sprinkler_data(self):
-       pass  ## TBD     
+      self.irrigation_hash_control.hset("SCHEDULE_NAME","OFFLINE")  
+      self.irrigation_hash_control.hset("STEP",0)  
+      self.irrigation_hash_control.hset("RUN_TIME",0)  
+      self.irrigation_hash_control.hset("ELASPED_TIME",0)  
+      self.irrigation_hash_control.hset("TIME_STAMP",time.time())
+      
  
 
    def open_master_valve( self, object_data ):

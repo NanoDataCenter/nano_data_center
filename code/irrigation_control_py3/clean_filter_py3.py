@@ -55,7 +55,7 @@ class Clean_Filter(object):
        cluster.define_state( cluster_id, state_id,["clean_filter_action_chain"]  )
 
    def clear_cleaning_sum(self, *args):
-       self.irrigation_hash_control.set_cleaning_interval(0)
+       self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",0)
 
    def log_clean_filter( self,*args):
         

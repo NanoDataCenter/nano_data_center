@@ -23,7 +23,9 @@ import time
 ## {"controller":"satellite_1", "pin": 9,  "recharge_eto": 0.216, "recharge_rate":0.245 },
 ## eto_site_data
 from eto_init_py3 import Generate_Data_Handler
-from core_libraries.irrigation_hash_control_py3 import Generate_Hash_Control_Handler
+from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
+from core_libraries.irrigation_hash_control_py3 import generate_sensor_minute_status
+
 
 class ETO_Management(object):
    def __init__(self,redis_site,app_files):
@@ -189,7 +191,8 @@ if __name__ == "__main__":
     ds_handlers["IRRIGATION_TIME_HISTORY"] = generate_handlers.construct_hash(data_structures["IRRIGATION_TIME_HISTORY"])
     ds_handlers["VALVE_JOB_QUEUE_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
     ds_handlers["VALVE_JOB_QUEUE_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
-    irrigation_hash_control = Generate_Hash_Control_Handler(redis_site)  
+    ds_handlers["MQTT_SENSOR_STATUS"] = generate_sensor_minute_status(redis_site)
+    irrigation_hash_control = generate_irrigation_control(redis_site)  
   
  
     query_list = []
@@ -223,7 +226,7 @@ if __name__ == "__main__":
     ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT STARTUP","level":"RED"})
    
     status = ds_handlers["IRRIGATION_CURRENT_CLIENT"].pop()
-    irrigation_hash_control.set_suspend(0)
+    irrigation_hash_control.hset("SUSPEND",False)
     if status[0] == True:
        temp = status[1]
        ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Deleting_Irrigation_Job","details":{"schedule_name":temp["schedule_name"],"step":temp["step"]},"level":"RED"})

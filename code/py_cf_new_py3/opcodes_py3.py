@@ -310,6 +310,7 @@ class Opcodes(object):
             parameters.append(0)
         else:
             if event["name"] == parameters[0]:
+               
                 parameters[-1] = parameters[-1] + 1
                 if parameters[-1] >= int(parameters[1]):
                     returnValue = self.verify_return_code( cf_handle, reset_event, reset_flag)

@@ -111,6 +111,7 @@ class Dictionary_Field(object):
        self.handler = handler
        
    def hget(self,setup,field):
+      
       temp = self.handler.hget(field)
       if temp == None:
         result = setup["fields"]
@@ -118,9 +119,10 @@ class Dictionary_Field(object):
          result = {}
          for i in setup["fields"].keys():
             if i in temp:
+               
                result[i] = temp[i]
             else:
-               result[i] = setup["field"][i]
+               result[i] = setup["fields"][i]
                
       return result
       

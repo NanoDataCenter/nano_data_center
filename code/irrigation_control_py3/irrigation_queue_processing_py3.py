@@ -93,25 +93,27 @@ class Irrigation_Queue_Management(object):
       
       cf.define_chain("accumulate_cleaning_filter", True )
       cf.insert.log("accumulate_cleaning_filer")      
-      cf.insert.one_step(self.accumulate_cleaning_filer) 
+      cf.insert.one_step(self.accumulate_cleaning_filter) 
       cf.insert.wait_event_count(event = "MINUTE_TICK")
       cf.insert.reset()
 
       cf.define_chain("check_excessive_current", True )
       cf.insert.log("check_excessive_current")  
-      cf.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )    
+      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )    
       cf.insert.wait_function(self.check_excessive_current)
-      cf.send_event("IRI_CLOSE_MASTER_VALVE",None)
+      cf.insert.log("excessive_current_found")
+      cf.insert.send_event("IRI_CLOSE_MASTER_VALVE",None)
       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.wait_event_count( count = 1 )
       cf.insert.reset()
  
       cf.define_chain("check_excessive_flow", True )
-      cf.insert.log("check_excessive_current")
-      cf.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )
+      cf.insert.log("check_excessive_flow")
+      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )
       cf.insert.wait_function(self.monitor_excessive_flow)
-      cf.send_event("IRI_CLOSE_MASTER_VALVE",None)
+      cf.insert.log("excessive_flow_found")
+      cf.insert.send_event("IRI_CLOSE_MASTER_VALVE",None)
       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.wait_event_count( count = 1 )
@@ -142,7 +144,7 @@ class Irrigation_Queue_Management(object):
        
    def delete_queue_entry(self,cf_handle, chainObj, parameters, event):
         self.handlers["IRRIGATION_CURRENT_CLIENT"].pop()
-        self.irrigation_hash_control.clear_json_object()
+        self.clear_json_object()
         
    def dispatch_entry(self , cf_handle, chainObj, parameters, event ): 
  
@@ -167,7 +169,7 @@ class Irrigation_Queue_Management(object):
        if isinstance(json_object,str):
           json_object = json.loads(json_object)
       
-       self.irrigation_hash_control.update_json_object(json_object)
+       self.update_json_object(json_object)
        
        
        if json_object["type"] == "CHECK_OFF":
@@ -242,6 +244,19 @@ class Irrigation_Queue_Management(object):
    def skip_operation( self,*args ):
        self.cf.send_event("RELEASE_IRRIGATION_CONTROL",None)       
  
+   def clear_json_object(self):
+      self.irrigation_hash_control.hset("SCHEDULE_NAME","OFFLINE")  
+      self.irrigation_hash_control.hset("STEP",0)  
+      self.irrigation_hash_control.hset("RUN_TIME",0)  
+      self.irrigation_hash_control.hset("ELASPED_TIME",0)  
+      self.irrigation_hash_control.hset("TIME_STAMP",time.time())
+
+   def update_json_object(self,json_object):
+      self.irrigation_hash_control.hset("SCHEDULE_NAME",json_object["schedule_name"])  
+      self.irrigation_hash_control.hset("STEP",1)  
+      self.irrigation_hash_control.hset("RUN_TIME",json_object["run_time"])  
+      self.irrigation_hash_control.hset("ELASPED_TIME",0)  
+      self.irrigation_hash_control.hset("TIME_STAMP",time.time())
 
 #
 #
@@ -254,14 +269,25 @@ class Irrigation_Queue_Management(object):
 
 
    def accumulate_cleaning_filter(self,cf_handle, chainObj, parameters, event):
-       cleaning_interval = io_control.get_cleaning_interval()
-       cleaning_sum      = io_control.get_cleaning_accumulation()
-       gpm               = io_control.get_gpm()
+       
+       cleaning_sum      = self.irrigation_hash_control.hget("CLEANING_ACCUMULATION")
+       
+       gpm               = self.handlers["MQTT_SENSOR_STATUS"].hget('WELL_MONITOR_1/FLOW_METERS:MAIN_FLOW_METER')
+       
        cleaning_sum += gpm
-       io_control.set_cleaning_accumulation(cleaning_sum)
+       
+       self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",cleaning_sum)
 
-  def check_excessive_current(self,cf_handle, chainObj, parameters, event):
-       return True
+   def check_excessive_current(self,cf_handle, chainObj, parameters, event):
+       max_current = self.irrigation_hash_control.hget("SLAVE_MAX_CURRENT")
+       relay_state = self.irrigation_hash_control.hget("SLAVE_RELAY_STATE")
+       return_value = False
+       if max_current['MAX_EQUIPMENT_CURRENT'] > 1.0:
+          print("max_e")
+         return True
+             fields["SLAVE_MAX_CURRENT"] = { "type":"dictionary", "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"device_id":"","timestamp":time.time()} }
+      fields["SLAVE_RELAY_STATE"] = { "type":"dictionary", "fields":{'EQUIPMENT_STATE':True,'IRRIGATION_STATE':True,"device_id":"","timestamp":time.time()} }
 
-  def monitor_excessive_flow(self,cf_handle, chainObj, parameters, event):
-      return True
+
+   def monitor_excessive_flow(self,cf_handle, chainObj, parameters, event):
+      return False

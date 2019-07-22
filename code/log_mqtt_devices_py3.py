@@ -4,7 +4,7 @@ import time
 
 import paho.mqtt.client as mqtt
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
-from core_libraries.irrigation_hash_control_py3 import Generate_Hash_Control_Handler
+from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
 
 
 class Base_Monitor(object):
@@ -70,12 +70,13 @@ class Well_Monitor(Base_Monitor):
        if key_1 not in composite_record:
           composite_record[key_1] = []
        composite_record[key_1].append(data["MAIN_FLOW_METER"])
-       self.irrigation_control.set_main_flow_meter(data["MAIN_FLOW_METER"]) 
+       self.irrigation_control.hset("MAIN_FLOW_METER",data["MAIN_FLOW_METER"])
        key_1 = key+":CLEANING_OUTLET"
        if key_1 not in composite_record:
           composite_record[key_1] = []
        composite_record[key_1].append(data["CLEANING_OUTLET"])
-       self.irrigation_control.set_cleaning_flow_meter(data["CLEANING_OUTLET"])  
+       self.irrigation_control.hset("CLEANING_FLOW_METER",data["CLEANING_OUTLET"])
+
        
    def pump_currents(self,composite_record,data):
       
@@ -84,18 +85,13 @@ class Well_Monitor(Base_Monitor):
        if key_1 not in composite_record:
           composite_record[key_1] = []
        composite_record[key_1].append(data["OUTPUT"]["DC"])
-       self.irrigation_control.set_output_pump_current(data["OUTPUT"]["DC"]) 
+       self.irrigation_control.hset("OUTPUT_PUMP_CURRENT",data["OUTPUT"]["DC"]) 
        key_1 = key+":INPUT"
        if key_1 not in composite_record:
           composite_record[key_1] = []
        composite_record[key_1].append(data["INPUT"]["DC"])
-       self.irrigation_control.set_input_pump_current(data["INPUT"]["DC"]) 
-
-
-       self.access_handler["SLAVE_EQUIPMENT_RELAY_TRIP"] = self.set_equipment_relay
-       self.access_handler["SLAVE_IRRIGATION_RELAY_TRIP"] = self.set_irrigation_relay
-       self.access_handler["SLAVE_MAX_CURRENT"] = self.set_max_currents
-       self.access_handler["SLAVE_RELAY_STATE"] = self.set_relay_state
+       self.irrigation_control.hset("INPUT_PUMP_CURRENT",data["INPUT"]["DC"]) 
+ 
 
 
 class Current_Monitor(Base_Monitor):
@@ -116,12 +112,13 @@ class Current_Monitor(Base_Monitor):
        if key_1 not in composite_record :
           composite_record[key_1] =[]
        composite_record[key_1].append(data["IRRIGATION_VALVES"]["DC"])
-       self.irrigation_control.set_irrigation_valves(data["IRRIGATION_VALVES"]["DC"])
+       self.irrigation_control.hset("IRRIGATION_CURRENT",data["IRRIGATION_VALVES"]["DC"])
+       
        key_1 = key+":EQUIPMENT"
        if key_1 not in composite_record:
           composite_record[key_1] = []
        composite_record[key_1].append(data["EQUIPMENT"]["DC"])
-       self.irrigation_control.set_equipment_current(data["EQUIPMENT"]["DC"])
+       self.irrigation_control.hset("EQUIPMENT_CURRENT",data["EQUIPMENT"]["DC"])
  
    def slave_irrigation_relay_trip(self,composite_record,data):
        results = {}
@@ -129,10 +126,10 @@ class Current_Monitor(Base_Monitor):
        
        results["device_id"] = data["device_id"]
        results["status"] = False
-       results["results"] = {}
-       results["results"]["CURRENT_VALUE"] = data[b"CURRENT_VALUE"]
-       results["results"]["LIMIT_VALUE"] = data[b"LIMIT_VALUE"]
-       self.irrigation_control.set_irrigation_relay(results)  
+       
+       results["CURRENT_VALUE"] = data[b"CURRENT_VALUE"]
+       results["LIMIT_VALUE"] = data[b"LIMIT_VALUE"]
+       self.irrigation_control.hset("SLAVE_IRRIGATION_RELAY_TRIP",results)   
 
        
    def slave_equipment_relay_trip(self,composite_record,data):
@@ -141,33 +138,37 @@ class Current_Monitor(Base_Monitor):
        
        results["device_id"] = data["device_id"]
        results["status"] = False
-       results["results"] = {}
-       results["results"]["CURRENT_VALUE"] = data[b"CURRENT_VALUE"]
-       results["results"]["LIMIT_VALUE"] = data[b"LIMIT_VALUE"]
-       self.irrigation_control.set_equipment_relay(results)  
+       results["CURRENT_VALUE"] = data[b"CURRENT_VALUE"]
+       results["LIMIT_VALUE"] = data[b"LIMIT_VALUE"]
+       self.irrigation_control.hset("SLAVE_EQUIPMENT_RELAY_TRIP",results)  
 
        
    def slave_max_current(self,composite_record,data):
         results = {}
         results["timestamp"] = time.time()
         results["topic"] = "SLAVE_MAX_CURRENT"
-        results["device_id"] = data["device_id"]
-        results["currents"] = {}
-        results["currents"]['MAX_EQUIPMENT_CURRENT'] = data[b'MAX_EQUIPMENT_CURRENT']
-        results["currents"]['MAX_IRRIGATION_CURRENT'] = data[b'MAX_IRRIGATION_CURRENT']
-        self.irrigation_control.set_irrigation_relay(results)  
-             
-       
+        results["device_id"] = data["device_id"]       
+        results['MAX_EQUIPMENT_CURRENT'] = data[b'MAX_EQUIPMENT_CURRENT']
+        results['MAX_IRRIGATION_CURRENT'] = data[b'MAX_IRRIGATION_CURRENT'] 
+        self.irrigation_control.hset("SLAVE_MAX_CURRENT",results)     
+      
    def slave_relay_state(self,composite_record,data):
           results = {}
           results["timestamp"] = time.time()
           results["topic"] = "SLAVE_RELAY_STATE"
-          results["device_id"] = data["device_id"]
-          results["relay_state"] = {}
-          results["relay_state"]['EQUIPMENT_STATE'] = data[b'EQUIPMENT_STATE']
-          results["relay_state"]['IRRIGATION_STATE'] = data[b'IRRIGATION_STATE']
-          self.irrigation_control.set_max_currents(results) 
-
+          results["device_id"] = data["device_id"]        
+          results['EQUIPMENT_STATE'] = data[b'EQUIPMENT_STATE']
+          if results["EQUIPMENT_STATE"] != 0:
+             results["EQUIPMENT_STATE"] = True
+          else:
+             results["EQUIPMENT_STATE"] = False
+          results['IRRIGATION_STATE'] = data[b'IRRIGATION_STATE']
+          if results['IRRIGATION_STATE'] != 0:
+             results['IRRIGATION_STATE'] = True
+          else:
+             results['IRRIGATION_STATE'] = False
+          self.irrigation_control.hset("SLAVE_RELAY_STATE",results) 
+ 
 
 
 class MQTT_Log(object):
@@ -178,14 +179,51 @@ class MQTT_Log(object):
         self.mqtt_devices = mqtt_devices
         self.package  = package
         self.site_data = site_data
-       
+        self.irrigation_control = irrigation_control
         self.generate_data_handlers()
         self.mqtt_handlers = {}
         self.mqtt_handlers["WELL_MONITOR_1"] = Well_Monitor("WELL_MONITOR_1",irrigation_control)
         self.mqtt_handlers['CURRENT_MONITOR_1'] = Current_Monitor('CURRENT_MONITOR_1',irrigation_control)
+        #self.test()
+     
         self.log_data()
 
-        
+   def test(self):  # test non periodic functions
+       data = {}
+       data["device_id"] = "test"
+       data["status"]  = True
+       data[b"CURRENT_VALUE"] = 0
+       data[b"LIMIT_VALUE"] = 0
+       self.mqtt_handlers['CURRENT_MONITOR_1'].slave_irrigation_relay_trip([],data)
+       print(self.irrigation_control.hget("SLAVE_IRRIGATION_RELAY_TRIP"))   
+       
+       data = {}
+       data["device_id"] = "test"
+       data["status"]  = True
+       data[b"CURRENT_VALUE"] = 0
+       data[b"LIMIT_VALUE"] = 0
+       self.mqtt_handlers['CURRENT_MONITOR_1'].slave_equipment_relay_trip([],data)
+       print(self.irrigation_control.hget("SLAVE_EQUIPMENT_RELAY_TRIP"))   
+
+       results = {}
+       results["timestamp"] = time.time()
+       results["topic"] = "SLAVE_MAX_CURRENT"
+       results["device_id"] = ""       
+       results[b'MAX_EQUIPMENT_CURRENT'] = 0
+       results[b'MAX_IRRIGATION_CURRENT'] = 0 
+       self.mqtt_handlers['CURRENT_MONITOR_1'].slave_max_current([],results)
+       print(self.irrigation_control.hget("SLAVE_MAX_CURRENT"))     
+
+       results = {}
+       results["timestamp"] = time.time()
+       results["topic"] = "SLAVE_RELAY_STATE"
+       results["device_id"] = ""        
+       results[b'EQUIPMENT_STATE'] = 1
+       results[b'IRRIGATION_STATE'] = True
+       self.mqtt_handlers['CURRENT_MONITOR_1'].slave_relay_state([],results)
+       print(self.irrigation_control.hget("SLAVE_RELAY_STATE")) 
+
+   
    def process_messages(self,data):
         data = data["data"]
         for key,class_inst in self.mqtt_handlers.items():
@@ -208,25 +246,26 @@ class MQTT_Log(object):
 
    def log_data(self):
        ref_time = time.time()
+       base_time = ref_time
        while 1:
-          time.sleep(15)  # sleep 1 minute
-          print("processing data")
-          start_time = time.time()
-          results = self.ds_handlers["MQTT_INPUT_QUEUE"].revrange(start_time, ref_time , count=1000) 
+           while (time.time() -base_time)< 60:
+               time.sleep(5)  # sleep 1 minute
+               
+               start_time = time.time()
+               results = self.ds_handlers["MQTT_INPUT_QUEUE"].revrange(start_time, ref_time , count=1000) 
           
-          for i in results:
-            self.process_messages(i)
-          ref_time = start_time
-          summarized_data = self.summarize_data()
-          
-          self.reset_composite_record()
-         
-          self.ds_handlers["MQTT_SENSOR_QUEUE"].push({"timestamp":time.time(),"data":summarized_data })
-
-         
-          for key,data in summarized_data.items():
-             self.ds_handlers["MQTT_SENSOR_STATUS"].hset(key,data)
-          self.check_slave_devices()  
+               for i in results:
+                  self.process_messages(i)
+                  
+               ref_time = start_time
+           base_time = ref_time   
+           summarized_data = self.summarize_data()
+           self.reset_composite_record()
+           
+           self.ds_handlers["MQTT_SENSOR_QUEUE"].push({"timestamp":time.time(),"data":summarized_data })
+           for key,data in summarized_data.items():
+              self.ds_handlers["MQTT_SENSOR_STATUS"].hset(key,data)
+           self.check_slave_devices()  
              
              
    def check_slave_devices(self):
@@ -319,7 +358,7 @@ if __name__ == "__main__":
                                            
     package_sets, package_sources = qs.match_list(query_list)
     package = package_sources[0]
-    irrigation_control = Generate_Hash_Control_Handler(redis_site)
+    irrigation_control = generate_irrigation_control(redis_site)
     MQTT_Log(mqtt_server_data = host_data,
                  mqtt_devices = mqtt_devices,
                  package = package,

@@ -14,7 +14,7 @@ class Construct_MQTT_Handlers(object):
       cd.add_stream("WELL_MONITOR")
       cd.add_stream("GARAGE_MONITOR")
       cd.close_package_contruction()
-      
+     
       self.add_status_panel("/REMOTES/GARAGE_MONITOR_1")
       self.add_well_monitor("/REMOTES/WELL_MONITOR_1")
       self.add_power_supply_monitor("/REMOTES/CURRENT_MONITOR_1")
