@@ -76,7 +76,8 @@ class Manage_A_Python_Process(Process_Control):
 
        script_file_list = command_list[1].split("/")
      
-       self.script_file_name = script_file_list[-1].split(".")[0]
+       #self.script_file_name = script_file_list[-1].split(".")[0]
+       self.script_file_name = command_string
        temp  = error_directory + "/"+self.script_file_name
        self.error_file = temp+".err"
        self.error_file_rollover = temp +".errr"
@@ -142,7 +143,7 @@ class System_Control(object):
                
        self.command_list = processor_node["command_list"]
        data_structures = package_node["data_structures"]
-       print(data_structures.keys())
+       #print(data_structures.keys())
        self.ds_handlers = {}
        self.ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_redis_stream_writer(data_structures["ERROR_STREAM"])
        self.ds_handlers["ERROR_HASH"]        = generate_handlers.construct_hash(data_structures["ERROR_HASH"])
@@ -245,6 +246,7 @@ class System_Control(object):
 
        for script in self.startup_list:
            temp = self.process_hash[script]
+           #print("script",script)
            self.ds_handlers["WEB_DISPLAY_DICTIONARY"].hset(script,{"name":script,"enabled":temp.enabled,"active":temp.active,"error":temp.error})
       
  
@@ -310,7 +312,7 @@ if __name__ == "__main__":
                                            
    package_sets, package_nodes = qs.match_list(query_list)  
    
-   print("package_nodes",package_nodes)
+   #print("package_nodes",package_nodes)
   
    generate_handlers = Generate_Handlers(package_nodes[0],site_data)
  
