@@ -16,9 +16,9 @@ class Irrigation_Control_Basic(object):
        self.app_files     = app_files
        self.sys_files     = sys_files
        self.irrigation_hash_control = irrigation_hash_control
-
+       
        self.step_monitor = Irrigation_Step_Monitoring(handlers,manage_eto,io_control,cf)
-
+     
 
    
 

@@ -4,7 +4,7 @@ from redis_support_py3.graph_query_support_py3 import  Query_Support
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 import time
 import msgpack
-class MQTT_Publish(object):
+class MQTT_Current_Monitor_Publish(object):
 
    def __init__(self,redis_site,topic_prefix) :
        self.topic_prefix = topic_prefix
@@ -80,7 +80,7 @@ class MQTT_Publish(object):
    def send_request(self,msg_dict):
      
      msg_dict["tx_topic"] =self.topic_prefix +msg_dict["topic"]
-     print("msg_dict",msg_dict)
+     #print("msg_dict",msg_dict)
      self.job_queue_client.push(msg_dict)
      
       
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     data = file_handle.read()
     file_handle.close()
     redis_site = json.loads(data)
-    x = MQTT_Publish(redis_site,"/REMOTES/CURRENT_MONITOR_1/")
+    x = MQTT_Current_Monitor_Publish(redis_site,"/REMOTES/CURRENT_MONITOR_1/")
     while(1):
       time.sleep(5)
       x.read_max_currents()

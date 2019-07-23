@@ -145,29 +145,33 @@ class Current_Monitor(Base_Monitor):
        
    def slave_max_current(self,composite_record,data):
         results = {}
+        #print(data)
         results["timestamp"] = time.time()
         results["topic"] = "SLAVE_MAX_CURRENT"
         results["device_id"] = data["device_id"]       
-        results['MAX_EQUIPMENT_CURRENT'] = data[b'MAX_EQUIPMENT_CURRENT']
-        results['MAX_IRRIGATION_CURRENT'] = data[b'MAX_IRRIGATION_CURRENT'] 
+        results['MAX_EQUIPMENT_CURRENT'] = data["currents"]['MAX_EQUIPMENT_CURRENT']
+        results['MAX_IRRIGATION_CURRENT'] = data["currents"]['MAX_IRRIGATION_CURRENT'] 
+        #print("results",results)
         self.irrigation_control.hset("SLAVE_MAX_CURRENT",results)     
       
    def slave_relay_state(self,composite_record,data):
           results = {}
+          #print(data)
           results["timestamp"] = time.time()
           results["topic"] = "SLAVE_RELAY_STATE"
           results["device_id"] = data["device_id"]        
-          results['EQUIPMENT_STATE'] = data[b'EQUIPMENT_STATE']
+          results['EQUIPMENT_STATE'] = data["relay_state"]['EQUIPMENT_STATE']
           if results["EQUIPMENT_STATE"] != 0:
              results["EQUIPMENT_STATE"] = True
           else:
              results["EQUIPMENT_STATE"] = False
-          results['IRRIGATION_STATE'] = data[b'IRRIGATION_STATE']
+          results['IRRIGATION_STATE'] = data["relay_state"]['IRRIGATION_STATE']
           if results['IRRIGATION_STATE'] != 0:
              results['IRRIGATION_STATE'] = True
           else:
              results['IRRIGATION_STATE'] = False
-          self.irrigation_control.hset("SLAVE_RELAY_STATE",results) 
+          self.irrigation_control.hset("SLAVE_RELAY_STATE",results)
+          #print("results",results)          
  
 
 

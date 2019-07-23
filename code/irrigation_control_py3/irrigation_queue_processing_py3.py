@@ -11,6 +11,8 @@ from core_libraries.irrigation_hash_control_py3 import get_main_flow_meter_name
 from core_libraries.irrigation_hash_control_py3 import get_main_current_monitor_name
 from core_libraries.irrigation_hash_control_py3 import get_flow_checking_limits
 from core_libraries.irrigation_hash_control_py3 import get_slave_currents
+from core_libraries.mqtt_current_monitor_interface_py3 import MQTT_Current_Monitor_Publish
+
 class Irrigation_Queue_Management(object):
 
    def __init__(self,redis_site_data, handlers,cluster_id,cluster_control,cf,app_files,sys_files,manage_eto,irrigation_io,
@@ -32,6 +34,7 @@ class Irrigation_Queue_Management(object):
       self.mqtt_current_name = get_main_current_monitor_name(redis_site_data)
       self.mqtt_flow_name    = get_main_flow_meter_name(redis_site_data)
       self.irrigation_excessive_flow_limits = get_flow_checking_limits(redis_site_data)
+      self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/")
       self.slave_currents   = get_slave_currents(redis_site_data)
       self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers )   
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,
@@ -81,6 +84,8 @@ class Irrigation_Queue_Management(object):
 
       cf.define_chain("QC_Check_Irrigation_Queue", True )
       cf.insert.log("check irrigation queue")
+      cf.insert.one_step(self.turn_on_power_relays)
+      cf.insert.one_step(self.clear_max_currents)
       cf.insert.one_step(self.clear_json_object)
       cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
@@ -88,6 +93,7 @@ class Irrigation_Queue_Management(object):
       cf.insert.wait_event_count( count = 1 )
       cf.insert.log( "Checking Irrigation Queue" )
       cf.insert.wait_function( self.check_queue)
+      
       cf.insert.one_step( self.dispatch_entry )
       cf.insert.wait_event_count( count = 1 )
       
@@ -105,8 +111,10 @@ class Irrigation_Queue_Management(object):
 
       cf.define_chain("check_excessive_current", True )
       cf.insert.log("check_excessive_current")  
-      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )    
-      cf.insert.wait_function(self.check_excessive_current)
+      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
+      cf.insert.one_step(self.send_mqtt_current_request)      
+      cf.insert.wait_event_count( count = 10 )      
+      cf.insert.assert_function_reset(self.check_excessive_current)
       cf.insert.log("excessive_current_found")
       cf.insert.send_event("IRI_CLOSE_MASTER_VALVE",None)
       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
@@ -300,21 +308,48 @@ class Irrigation_Queue_Management(object):
        
        self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",cleaning_sum)
 
-   def check_excessive_current(self,cf_handle, chainObj, parameters, event):
+   def send_mqtt_current_request(self,cf_handle,chainObj,parameters,event):
+       if event["name"] == "INIT":
+          return "CONTINUE"
+       else:
+        
+         self.mqtt_current_publish.read_max_currents()
+         self.mqtt_current_publish.read_relay_states()         
+         
+         
+   def turn_on_power_relays(self,cf_handle,chainObj,parameters,event):
+       if event["name"] == "INIT":
+          return "CONTINUE"
+       else:
+         
+         self.mqtt_current_publish.enable_irrigation_relay()
+         self.mqtt_current_publish.enable_equipment_relay()
+         
+   def clear_max_currents(self,cf_handle,chainObj,parameters,event):
+       if event["name"] == "INIT":
+          return "CONTINUE"
+       else:
        
+         self.mqtt_current_publish.clear_max_currents()
+         
+     
+
+   def check_excessive_current(self,cf_handle, chainObj, parameters, event):
+       print("check_excessive_current")
        max_current = self.irrigation_hash_control.hget("SLAVE_MAX_CURRENT")
        relay_state = self.irrigation_hash_control.hget("SLAVE_RELAY_STATE")
        return_value = False
        # request max current
-   
+
+       
        if max_current['MAX_EQUIPMENT_CURRENT'] > self.slave_currents["EQUIPMENT"]:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
           details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Current: " + \
               str(max_current['MAX_EQUIPMENT_CURRENT'])+   "Excessive Slave Equipment Current"
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
-          return True
-         
+          return_value =True
+       
        if max_current['MAX_IRRIGATION_CURRENT'] > self.slave_currents["IRRIGATION"]:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
@@ -322,7 +357,8 @@ class Irrigation_Queue_Management(object):
                          "Current: "+str(max_current['MAX_IRRIGATION_CURRENT'])+" Excessive Irrigation Current"
 
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
-          return True
+          return_value = True
+       
        if relay_state["EQUIPMENT_STATE"] == False:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
@@ -330,7 +366,7 @@ class Irrigation_Queue_Management(object):
                          "Current: "+str(max_current['MAX_IRRIGATION_CURRENT'])+" Excessive Irrigation Current"
 
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
-          return True   
+          return_value = True   
 
        if relay_state['IRRIGATION_STATE'] == False:
           json_object = self.get_json_object()
@@ -339,10 +375,11 @@ class Irrigation_Queue_Management(object):
                          "Current: "+str(max_current['MAX_IRRIGATION_CURRENT'])+" Excessive Irrigation Current"
 
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
-          return True          
+          return_value =True          
        #### add rs485 current monitoring
-
-
+       print("return value",return_value)
+       return return_value
+       
    def monitor_excessive_flow(self,cf_handle, chainObj, parameters, event):
        if event["name"] == "INIT":
          

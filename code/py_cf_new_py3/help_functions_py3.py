@@ -159,7 +159,7 @@ class Help_Functions(object):
    def assert_not_event_count_reset( self,event="TIME_TICK", count = 1, reset_event = None, reset_data = None ):
        self.cf.insert_link("Assert_Not_Event_Count",[event, count, [reset_event,reset_data], True] )
 
-   def assert_function_reset( self, reset_event,reset_event_data, function, *params):
+   def assert_function_reset( self, function,  reset_event=None,reset_event_data=None,params =[]):
        list_data = [function,[reset_event,reset_event_data], True]  
        list_data.extend(params)
 
