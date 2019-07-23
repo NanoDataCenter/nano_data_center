@@ -50,7 +50,7 @@ class Base_Manager(object):
          self.ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"].hset(key,data)
          
    def null_command(self,data):
-      print("null_command",data)         
+      pass # print("null_command",data)         
          
 class Security_Monitor(Base_Manager):
    def __init__(self,ds_handlers):
@@ -149,6 +149,7 @@ class Current_Monitor(Base_Manager):
        self.ds_handlers["MQTT_INPUT_QUEUE"].push(results) 
 
    def get_limit_current(self,data):
+          
           results = {}
           results["timestamp"] = time.time()
           results["topic"] = "SLAVE_CURRENT_LIMITS"
@@ -160,6 +161,7 @@ class Current_Monitor(Base_Manager):
           self.ds_handlers["MQTT_INPUT_QUEUE"].push(results)    
           
    def get_max_currents(self,data):
+          
           results = {}
           results["timestamp"] = time.time()
           results["topic"] = "SLAVE_MAX_CURRENT"
@@ -173,6 +175,7 @@ class Current_Monitor(Base_Manager):
         
           
    def get_currents(self,data):
+          
           results = {}
           results["timestamp"] = time.time()
           results["topic"] = "SLAVE_GET_CURRENT"
@@ -185,6 +188,7 @@ class Current_Monitor(Base_Manager):
 
           
    def relay_state(self,data):
+         
           results = {}
           results["timestamp"] = time.time()
           results["topic"] = "SLAVE_RELAY_STATE"

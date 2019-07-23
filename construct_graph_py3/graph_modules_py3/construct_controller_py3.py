@@ -16,6 +16,7 @@ class Construct_Controllers(object):
        properties["command_list"].append( { "file":"pi_monitoring_py3.py","restart":True })
        properties["command_list"].append( { "file":"log_mqtt_devices_py3.py","restart":True })
        properties["command_list"].append( { "file":"monitor_mqtt_devices_py3.py","restart":True })
+       properties["command_list"].append( { "file":"mqtt_local_publish_server_py3.py","restart":True })
        #properties["command_list"].append( { "file":"irrigation_ctrl_startup_py3.py","restart":True })
        #properties["command_list"].append( { "file":"redis_cloud_upload_py3.py","restart":True })
        #properties["command_list"].append( { "file":"mqtt_redis_gateway_py3.py","restart":True })

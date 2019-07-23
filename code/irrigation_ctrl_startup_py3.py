@@ -233,19 +233,20 @@ if __name__ == "__main__":
     ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all() # delete current job to prevent circular reboots
     io_control = IO_Control(irrigation_hash_control)
    
-    Irrigation_Queue_Management(handlers=ds_handlers,
-                               cluster_id = 1, #### not sure what this is
-                               cluster_control = cluster_control,
-                               cf = cf,
-                               app_files = app_files,
-                               sys_files = sys_files,
-                               manage_eto =eto_management,
-                               irrigation_io = io_control,
-                               master_valves = master_valves,
-                               cleaning_valves = cleaning_valves,
-                               measurement_depths =measurement_depths,
-                               eto_management = eto_management,
-                               irrigation_hash_control = irrigation_hash_control  )
+    Irrigation_Queue_Management( redis_site_data = redis_site,
+                                 handlers=ds_handlers,
+                                 cluster_id = 1, #### not sure what this is
+                                 cluster_control = cluster_control,
+                                 cf = cf,
+                                 app_files = app_files,
+                                 sys_files = sys_files,
+                                 manage_eto =eto_management,
+                                 irrigation_io = io_control,
+                                 master_valves = master_valves,
+                                 cleaning_valves = cleaning_valves,
+                                 measurement_depths =measurement_depths,
+                                 eto_management = eto_management,
+                                 irrigation_hash_control = irrigation_hash_control  )
                   
     Incomming_Queue_Management( cf = cf,
                                     handlers = ds_handlers,

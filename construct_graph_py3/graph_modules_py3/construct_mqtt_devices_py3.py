@@ -20,6 +20,7 @@ class Construct_MQTT_Devices(object):
       cd.add_hash("MQTT_UNKNOWN_DEVICES")
       cd.add_hash("MQTT_UNKNOWN_SUBSCRIPTIONS")
       cd.add_hash("MQTT_REBOOT_LOG")
+      cd.add_job_queue("MQTT_PUBLISH_QUEUE",depth= 50,forward = False)
       cd.close_package_contruction()
       properties = {}
       properties["HOST"] = "farm_control.fios-router.home"

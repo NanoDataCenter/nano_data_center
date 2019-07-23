@@ -26,10 +26,10 @@ def generate_irrigation_control(redis_site_data):
     
        return generate_handlers.construct_managed_hash(data_structures["IRRIGATION_CONTROL"])
        
-def generate_sensor_minute_status(redis_site_data):
-       qs = Query_Support( redis_server_ip = redis_site_data["host"], redis_server_port=redis_site_data["port"] )
+def generate_sensor_minute_status(redis_site):
+       qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
        query_list = []
-       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site_data["site"] )
+       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
 
        query_list = qs.add_match_terminal( query_list, 
                                         relationship = "PACKAGE", property_mask={"name":"MQTT_DEVICES_DATA"} )
@@ -39,15 +39,58 @@ def generate_sensor_minute_status(redis_site_data):
        package = package_sources[0] 
        data_structures = package["data_structures"]
        
-       generate_handlers = Generate_Handlers(package,redis_site_data)
+       generate_handlers = Generate_Handlers(package,redis_site)
     
        return generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
 
+def get_main_flow_meter_name(redis_site):
+    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="MQTT_HANDLERS",label="MQTT_HANDLERS" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship =  "MQTT_MAIN_FLOW_METER" )
+                                        
+    flow_meter_sets, flow_meter_sources = qs.match_list(query_list) 
    
+    return flow_meter_sources[0]["name"]
 
-   
+
+
+def get_main_current_monitor_name(redis_site):   
+    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="MQTT_HANDLERS",label="MQTT_HANDLERS" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship =  "MQTT_CURRENT_SENSOR" )
+                                        
+    current_sensor_sets, current_sensor_sources = qs.match_list(query_list) 
+    return current_sensor_sources[0]["name"]
+
+def get_flow_checking_limits(redis_site):   
+    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship =  "EXCESSIVE_FLOW_LIMITS" )
+                                        
+    limits_sets, limit_sources = qs.match_list(query_list) 
+    return limit_sources[0]
+
+def get_slave_currents(redis_site):   
+    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship =  "MQTT_CURRENT_LIMITS" )
+                                        
+    limits_sets, limit_sources = qs.match_list(query_list) 
+    return limit_sources[0]  
 if __name__ == "__main__":
-      #
+      # for test only
     #
     # Read Boot File
     # expand json file

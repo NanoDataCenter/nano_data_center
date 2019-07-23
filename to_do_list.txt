@@ -1,10 +1,13 @@
-July 19
-irrigation startup
-   subtract eto from operation
-irrigation_bootstrap
-  irrigation_streaming   
-irrigation_bootstrap
-   device_status
-   
+July 22
+1.   irrigation_control
+    a.  subtract eto in monitor
+    b.  add current monitoring
+    c.  add excessive current
+    d.  add cleaning current monitoring
+    f.  add statistics logging
+    d.  add past_history
+2.  start irrigation monitoring 
     
-get cloud web interface going
+3.  web
+   add support for web monitor
+   support limits

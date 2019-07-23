@@ -14,11 +14,12 @@ class Construct_MQTT_Handlers(object):
       cd.add_stream("WELL_MONITOR")
       cd.add_stream("GARAGE_MONITOR")
       cd.close_package_contruction()
-     
+      
       self.add_status_panel("/REMOTES/GARAGE_MONITOR_1")
       self.add_well_monitor("/REMOTES/WELL_MONITOR_1")
       self.add_power_supply_monitor("/REMOTES/CURRENT_MONITOR_1")
-      
+      bc.add_info_node("MQTT_MAIN_FLOW_METER","MQTT_MAIN_FLOW_METER",properties={"name":"WELL_MONITOR_1/FLOW_METERS:MAIN_FLOW_METER"} )
+      bc.add_info_node("MQTT_CURRENT_SENSOR","MQTT_CURRENT_SENSOR",properties={"name": 'CURRENT_MONITOR_1/SLAVE_CURRENTS:IRRIGATION_VALVES'} )
       bc.end_header_node("MQTT_HANDLERS")
 
 

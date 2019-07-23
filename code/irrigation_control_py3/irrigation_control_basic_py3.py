@@ -73,16 +73,10 @@ class Irrigation_Control_Basic(object):
        cf.insert.assert_function_terminate(  reset_event = "IR_D_END_IRRIGATION",
                                              reset_event_data=None,
                                              function = self.monitor_irrigation)
+       cf.insert.one_step(self.subtract_eto)
        
        cf.insert.reset()      
       
-      
-    
-
-      
-      
-      
-
 
        return [ "IR_D_start_irrigation_step","IR_D_monitor_irrigation_step","IR_D_end_irrigation" ]
                 
@@ -152,7 +146,8 @@ class Irrigation_Control_Basic(object):
       self.irrigation_hash_control.hset("TIME_STAMP",time.time())
 
 
-
+   def subtract_eto(self,*args):
+       self. manage_eto.update_eto_queue_minute( self.json_object["io_setup"]) 
 
 
 
