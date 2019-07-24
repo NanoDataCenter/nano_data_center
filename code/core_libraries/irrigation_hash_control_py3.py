@@ -47,7 +47,7 @@ def get_main_flow_meter_name(redis_site):
     qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
-    query_list = qs.add_match_relationship( query_list,relationship="MQTT_HANDLERS",label="MQTT_HANDLERS" )
+    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
     query_list = qs.add_match_terminal( query_list, 
                                         relationship =  "MQTT_MAIN_FLOW_METER" )
                                         
@@ -55,13 +55,23 @@ def get_main_flow_meter_name(redis_site):
    
     return flow_meter_sources[0]["name"]
 
-
+def get_cleaning_meter_name(redis_site):
+    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship =  "MQTT_CLEANING_METER" )
+                                        
+    cleaning_meter_sets, cleaning_meter_sources = qs.match_list(query_list) 
+   
+    return cleaning_meter_sources[0]["name"]
 
 def get_main_current_monitor_name(redis_site):   
     qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
-    query_list = qs.add_match_relationship( query_list,relationship="MQTT_HANDLERS",label="MQTT_HANDLERS" )
+    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
     query_list = qs.add_match_terminal( query_list, 
                                         relationship =  "MQTT_CURRENT_SENSOR" )
                                         

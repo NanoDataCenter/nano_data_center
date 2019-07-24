@@ -44,7 +44,7 @@ class Load_Process_Management(object):
    def process_control(self,controller_id):
       
       display_list = self.handlers[controller_id]["WEB_DISPLAY_DICTIONARY"].hkeys()
-      print("display_list",display_list)
+      
       return self.render_template("process_control/process_control",
                                   display_list = display_list, 
                                   command_queue_key = "WEB_COMMAND_QUEUE",

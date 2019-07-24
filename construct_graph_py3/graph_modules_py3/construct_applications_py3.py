@@ -10,7 +10,7 @@ class Construct_Applications(object):
    def __init__(self,bc,cd):  # bc is build configuration class cd is construct data structures
        bc.add_header_node("APPLICATION_SUPPORT")
        Construct_Weather_Stations(bc,cd)
-       Construct_MQTT_Handlers(bc,cd)
+       #Construct_MQTT_Handlers(bc,cd)
        Construct_Irrigation_Scheduling_Control(bc,cd)
        #Construct_Irrigation(bc,cd)
        #Construct_Data_Acquisition(bc,cd)

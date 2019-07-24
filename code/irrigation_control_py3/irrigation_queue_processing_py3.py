@@ -11,6 +11,7 @@ from core_libraries.irrigation_hash_control_py3 import get_main_flow_meter_name
 from core_libraries.irrigation_hash_control_py3 import get_main_current_monitor_name
 from core_libraries.irrigation_hash_control_py3 import get_flow_checking_limits
 from core_libraries.irrigation_hash_control_py3 import get_slave_currents
+from core_libraries.irrigation_hash_control_py3 import get_cleaning_meter_name
 from core_libraries.mqtt_current_monitor_interface_py3 import MQTT_Current_Monitor_Publish
 
 class Irrigation_Queue_Management(object):
@@ -33,6 +34,7 @@ class Irrigation_Queue_Management(object):
       self.redis_site_data = redis_site_data
       self.mqtt_current_name = get_main_current_monitor_name(redis_site_data)
       self.mqtt_flow_name    = get_main_flow_meter_name(redis_site_data)
+      self.mqtt_cleaning_name = get_cleaning_meter_name(redis_site_data)
       self.irrigation_excessive_flow_limits = get_flow_checking_limits(redis_site_data)
       self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/")
       self.slave_currents   = get_slave_currents(redis_site_data)
@@ -134,17 +136,18 @@ class Irrigation_Queue_Management(object):
       cf.insert.reset()
       
       cf.define_chain("check_cleaning_valve", True )
-      cf.insert.log("check_cleaning_valve")
-      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )
-      cf.insert.wait_function(self.check_cleaning_valve)
-      cf.insert.log("excessive_flow_found")
+      cf.insert.log("check_cleaning_flow_meter")  
+      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
+      cf.insert.one_step(self.send_mqtt_current_request)      
+      cf.insert.wait_event_count( count = 1,event ="MINUTE_TICK" )      
+      cf.insert.assert_function_reset(self.check_cleaning_valve)
+      cf.insert.log("excessive_cleaning_flow_found")
       cf.insert.send_event("IRI_CLOSE_MASTER_VALVE",None)
       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.wait_event_count( count = 1 )
-      cf.insert.reset()
-          
-          
+      cf.insert.reset()           
+      
            
 
        
@@ -210,7 +213,7 @@ class Irrigation_Queue_Management(object):
 
        if json_object["type"] == "CLEAN_FILTER":
            self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
-           
+           self.clean_filter_flag = True
            self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"CLEAN_FILTER" )
            return
        if json_object["type"] == "RESET_SYSTEM_QUEUE":
@@ -321,7 +324,7 @@ class Irrigation_Queue_Management(object):
        if event["name"] == "INIT":
           return "CONTINUE"
        else:
-         
+         self.clean_filter_flag = False
          self.mqtt_current_publish.enable_irrigation_relay()
          self.mqtt_current_publish.enable_equipment_relay()
          
@@ -406,5 +409,13 @@ class Irrigation_Queue_Management(object):
               
        
 
-   def check_cleaning_valve(sel,*args):
-       return False
+   def check_cleaning_valve(self,cf_handle, chainObj, parameters, event):
+       if event["name"] == "INIT":  
+          self.monitor_excessive_flow_count = 0
+       else:
+         if self.clean_filter_flag != True
+            gpm = self.handlers["MQTT_SENSOR_STATUS"].hget(self.mqtt_cleaning_name)
+            # if gpm != 0
+            # flag error
+            self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+       return False       
