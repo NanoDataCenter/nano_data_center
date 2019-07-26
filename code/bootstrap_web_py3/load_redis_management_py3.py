@@ -73,7 +73,7 @@ class Load_Redis_Management(Base_Stream_Processing):
    def redis_client_stream(self):
        temp_data = self.handlers["REDIS_MONITOR_CLIENT_STREAM"].revrange("+","-" , count=1000)
        temp_data.reverse()
-       chart_title = " Number of Redis Key in : "
+       chart_title = " Redis Client : "
        
        stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
        

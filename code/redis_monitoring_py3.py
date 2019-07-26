@@ -81,7 +81,8 @@ def construct_redis_instance( qs, site_data ):
     #
     #
     data_structures = package["data_structures"]
-    generate_handlers = Generate_Handlers( package, site_data )
+    redis_handle =  redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] )
+    generate_handlers = Generate_Handlers( package, redis_handle )
     
     redis_monitoring_streams = {}
     redis_monitoring_streams["KEYS"] = generate_handlers.construct_stream_writer(data_structures["REDIS_MONITOR_KEY_STREAM"] )
@@ -93,7 +94,7 @@ def construct_redis_instance( qs, site_data ):
     redis_monitoring_streams["REDIS_MONITOR_SERVER_TIME"] = generate_handlers.construct_stream_writer(data_structures["REDIS_MONITOR_SERVER_TIME"])
  
    
-    redis_handle = generate_handlers.get_redis_handle()  # reusing handle from package
+    
     redis_monitor = Redis_Monitor(redis_handle , redis_monitoring_streams )
     
     
@@ -110,7 +111,7 @@ def add_chains(redis_monitor, cf):
     cf.define_chain("make_measurements", True)
     cf.insert.log("logging_redis_data")
     cf.insert.one_step(redis_monitor.log_data)
-    cf.insert.wait_event_count( event = "HOUR_TICK",count = 1)
+    cf.insert.wait_event_count( event = "MINUTE_TICK",count = 15)
     cf.insert.reset()
 
  

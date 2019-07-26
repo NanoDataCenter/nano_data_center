@@ -7,6 +7,8 @@ import msgpack
 class MQTT_Publish(object):
 
    def __init__(self,redis_site) :
+       
+       self.redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] )
        qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
        query_list = []
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
@@ -17,7 +19,7 @@ class MQTT_Publish(object):
        package_sets, package_sources = qs.match_list(query_list)
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,redis_site)
+       generate_handlers = Generate_Handlers(package,self.redis_handle)
        self.job_queue_server = generate_handlers.construct_job_queue_server(data_structures["MQTT_PUBLISH_QUEUE"])
        query_list = []
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )

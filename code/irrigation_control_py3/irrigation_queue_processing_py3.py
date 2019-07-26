@@ -12,12 +12,13 @@ from core_libraries.irrigation_hash_control_py3 import get_main_current_monitor_
 from core_libraries.irrigation_hash_control_py3 import get_flow_checking_limits
 from core_libraries.irrigation_hash_control_py3 import get_slave_currents
 from core_libraries.irrigation_hash_control_py3 import get_cleaning_meter_name
+from core_libraries.irrigation_hash_control_py3 import get_cleaning_limits
 from core_libraries.mqtt_current_monitor_interface_py3 import MQTT_Current_Monitor_Publish
 
 class Irrigation_Queue_Management(object):
 
    def __init__(self,redis_site_data, handlers,cluster_id,cluster_control,cf,app_files,sys_files,manage_eto,irrigation_io,
-                master_valves,cleaning_valves,measurement_depths,eto_management ,irrigation_hash_control ):
+                master_valves,cleaning_valves,measurement_depths,eto_management ,irrigation_hash_control,qs,redis_handle  ):
       self.handlers = handlers
       self.cluster_id = cluster_id
       self.cluster_ctrl = cluster_control
@@ -32,12 +33,15 @@ class Irrigation_Queue_Management(object):
       self.eto_management = eto_management
       self.irrigation_hash_control = irrigation_hash_control
       self.redis_site_data = redis_site_data
-      self.mqtt_current_name = get_main_current_monitor_name(redis_site_data)
-      self.mqtt_flow_name    = get_main_flow_meter_name(redis_site_data)
-      self.mqtt_cleaning_name = get_cleaning_meter_name(redis_site_data)
-      self.irrigation_excessive_flow_limits = get_flow_checking_limits(redis_site_data)
-      self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/")
-      self.slave_currents   = get_slave_currents(redis_site_data)
+      self.mqtt_current_name = get_main_current_monitor_name(redis_site_data,qs)
+      self.mqtt_flow_name    = get_main_flow_meter_name(redis_site_data,qs)
+      self.mqtt_cleaning_name = get_cleaning_meter_name(redis_site_data,qs)
+      self.irrigation_excessive_flow_limits = get_flow_checking_limits(redis_site_data,qs)
+      self.cleaning_limit      = get_cleaning_limits(redis_site_data,qs) 
+     
+     
+      self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/",qs,redis_handle )
+      self.slave_currents   = get_slave_currents(redis_site_data,qs)
       self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers )   
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,
                                                              cluster_control = cluster_control,
@@ -106,14 +110,14 @@ class Irrigation_Queue_Management(object):
       cf.insert.reset()
       
       cf.define_chain("accumulate_cleaning_filter", True )
-      cf.insert.log("accumulate_cleaning_filer")      
+      #cf.insert.log("accumulate_cleaning_filer")      
       cf.insert.one_step(self.accumulate_cleaning_filter) 
       cf.insert.wait_event_count(event = "MINUTE_TICK")
       cf.insert.reset()
 
       cf.define_chain("check_excessive_current", True )
-      cf.insert.log("check_excessive_current")  
-      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
+      #cf.insert.log("check_excessive_current")  
+      #cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
       cf.insert.one_step(self.send_mqtt_current_request)      
       cf.insert.wait_event_count( count = 10 )      
       cf.insert.assert_function_reset(self.check_excessive_current)
@@ -125,7 +129,7 @@ class Irrigation_Queue_Management(object):
       cf.insert.reset()
  
       cf.define_chain("check_excessive_flow", True )
-      cf.insert.log("check_excessive_flow")
+      #cf.insert.log("check_excessive_flow")
       cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )
       cf.insert.wait_function(self.monitor_excessive_flow)
       cf.insert.log("excessive_flow_found")
@@ -136,9 +140,9 @@ class Irrigation_Queue_Management(object):
       cf.insert.reset()
       
       cf.define_chain("check_cleaning_valve", True )
-      cf.insert.log("check_cleaning_flow_meter")  
+      #cf.insert.log("check_cleaning_flow_meter")  
       cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
-      cf.insert.one_step(self.send_mqtt_current_request)      
+       
       cf.insert.wait_event_count( count = 1,event ="MINUTE_TICK" )      
       cf.insert.assert_function_reset(self.check_cleaning_valve)
       cf.insert.log("excessive_cleaning_flow_found")
@@ -182,14 +186,20 @@ class Irrigation_Queue_Management(object):
        #
        #Checking to clean filter by accumulation
        #
-       #cleaning_interval = io_control.get_cleaning_interval()
-       #cleaning_sum      = io_control.get_cleaning_accumulation()
-       #if cleaning_sum < cleaning_interval:
-       #   self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
-       #   self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"CLEAN_FILTER" )
-       #    return
-       #
-       #
+       
+       cleaning_sum      = self.irrigation_hash_control.hget("CLEANING_ACCUMULATION")
+       if cleaning_sum > self.cleaning_limit:
+           json_object = {}
+           json_object["type"] = "CLEAN_FILTER"
+           json_object["command"]     = "CLEAN_FILTER"
+           json_object["schedule_name"]  = "CLEAN_FILTER"
+           json_object["step"]           = 0
+           json_object["run_time"]       = 0
+           self.handlers["IRRIGATION_CURRENT_CLIENT"].push_front(json_object)
+           details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+" Flow Induced Filter Cleaning"
+           print(details)
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLOW"})
+ 
        #
        json_object = self.handlers["IRRIGATION_PENDING_SERVER"].pop()
        json_object = json_object[1]
@@ -234,7 +244,7 @@ class Irrigation_Queue_Management(object):
              json_object["run_time"] = runtime
              if runtime == 0:
                  details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+" IRRIGATION_ETO_RESTRICTION"
-                 print(details)
+
                  self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLOW"})
                  self.cf.queue_event("RELEASE_IRRIGATION_CONTROL", 0)
                  return 
@@ -306,16 +316,13 @@ class Irrigation_Queue_Management(object):
        
        cleaning_sum      = self.irrigation_hash_control.hget("CLEANING_ACCUMULATION")     
        gpm               = self.handlers["MQTT_SENSOR_STATUS"].hget(self.mqtt_flow_name)
-
        cleaning_sum += gpm
-       
        self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",cleaning_sum)
 
    def send_mqtt_current_request(self,cf_handle,chainObj,parameters,event):
        if event["name"] == "INIT":
           return "CONTINUE"
        else:
-        
          self.mqtt_current_publish.read_max_currents()
          self.mqtt_current_publish.read_relay_states()         
          
@@ -338,13 +345,29 @@ class Irrigation_Queue_Management(object):
      
 
    def check_excessive_current(self,cf_handle, chainObj, parameters, event):
-       print("check_excessive_current")
+       
        max_current = self.irrigation_hash_control.hget("SLAVE_MAX_CURRENT")
        relay_state = self.irrigation_hash_control.hget("SLAVE_RELAY_STATE")
        return_value = False
-       # request max current
-
        
+       ref_time = time.time()
+       
+       if ref_time - max_current["timestamp"] > 120:
+          json_object = self.get_json_object()
+          cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
+          details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Excessive Time: " + \
+              str(ref_time - max_current["timestamp"])
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+          return_value =True
+       if ref_time - relay_state["timestamp"] >  120:
+          json_object = self.get_json_object()
+          cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
+          details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Excessive Time: " + \
+              str(ref_time - max_current["timestamp"])
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+          return_value =True
+          
+     
        if max_current['MAX_EQUIPMENT_CURRENT'] > self.slave_currents["EQUIPMENT"]:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
@@ -380,7 +403,7 @@ class Irrigation_Queue_Management(object):
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
           return_value =True          
        #### add rs485 current monitoring
-       print("return value",return_value)
+       #print("return value",return_value)
        return return_value
        
    def monitor_excessive_flow(self,cf_handle, chainObj, parameters, event):
@@ -413,9 +436,12 @@ class Irrigation_Queue_Management(object):
        if event["name"] == "INIT":  
           self.monitor_excessive_flow_count = 0
        else:
-         if self.clean_filter_flag != True
+         if self.clean_filter_flag != True:
             gpm = self.handlers["MQTT_SENSOR_STATUS"].hget(self.mqtt_cleaning_name)
-            # if gpm != 0
-            # flag error
-            self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+            
+            if gpm != 0:
+              json_object = self.get_json_object()
+              details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+ \
+                         "Flow:"+str(gpm)+" Excessive Cleaning Current"
+              self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
        return False       

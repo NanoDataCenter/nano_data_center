@@ -73,7 +73,7 @@ class Irrigation_Control_Basic(object):
        cf.insert.assert_function_terminate(  reset_event = "IR_D_END_IRRIGATION",
                                              reset_event_data=None,
                                              function = self.monitor_irrigation)
-       cf.insert.one_step(self.subtract_eto)
+       
        
        cf.insert.reset()      
       
@@ -108,9 +108,11 @@ class Irrigation_Control_Basic(object):
 
 
    def start_logging(self,*args):
-       pass
+       self.step_monitor.start_logging(self.json_object)  
+       
    def start(self,*args):
       self.io_control.load_duration_counters(self.json_object['run_time'])
+      # turn on master valve
       self.io_control.turn_on_valve(self.json_object['io_setup'])
       self.update_json_object(self.json_object)
       return True
@@ -119,11 +121,12 @@ class Irrigation_Control_Basic(object):
       return_value = True
       if event["name"] == "INIT":
            return True
-      #turn on io
+    
       self.json_object["elasped_time"]  =      self.json_object["elasped_time"] +1
+      self.io_control.turn_on_master_valves()
       self.io_control.turn_on_valve(self.json_object['io_setup'])
       self.update_json_object(self.json_object)
-      
+      self.manage_eto.update_eto_queue_minute( self.json_object['io_setup'] )
       if self.json_object["elasped_time"] <= self.json_object["run_time"]  :
            self.step_monitor.step_monitoring(self.json_object)       
  
@@ -146,8 +149,7 @@ class Irrigation_Control_Basic(object):
       self.irrigation_hash_control.hset("TIME_STAMP",time.time())
 
 
-   def subtract_eto(self,*args):
-       self. manage_eto.update_eto_queue_minute( self.json_object["io_setup"]) 
+  
 
 
 

@@ -9,8 +9,9 @@ from redis_support_py3.graph_query_support_py3 import  Query_Support
  
 
 
-def generate_irrigation_control(redis_site_data):
-       qs = Query_Support( redis_server_ip = redis_site_data["host"], redis_server_port=redis_site_data["port"] )
+def generate_irrigation_control(redis_site_data,redis_handle,qs ):
+       
+
        query_list = []
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site_data["site"] )
 
@@ -21,13 +22,12 @@ def generate_irrigation_control(redis_site_data):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       
-       generate_handlers = Generate_Handlers(package,redis_site_data)
+       generate_handlers = Generate_Handlers(package,redis_handle)
     
        return generate_handlers.construct_managed_hash(data_structures["IRRIGATION_CONTROL"])
        
-def generate_sensor_minute_status(redis_site):
-       qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+def generate_sensor_minute_status(redis_site,redis_handle,qs ):
+
        query_list = []
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
 
@@ -38,13 +38,12 @@ def generate_sensor_minute_status(redis_site):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       
-       generate_handlers = Generate_Handlers(package,redis_site)
-    
+       generate_handlers = Generate_Handlers(package,redis_handle)
+       print("data_structures",data_structures)
        return generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
 
-def get_main_flow_meter_name(redis_site):
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+def get_main_flow_meter_name(redis_site,qs):
+ 
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
@@ -55,8 +54,8 @@ def get_main_flow_meter_name(redis_site):
    
     return flow_meter_sources[0]["name"]
 
-def get_cleaning_meter_name(redis_site):
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+def get_cleaning_meter_name(redis_site,qs):
+
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
@@ -67,8 +66,8 @@ def get_cleaning_meter_name(redis_site):
    
     return cleaning_meter_sources[0]["name"]
 
-def get_main_current_monitor_name(redis_site):   
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+def get_main_current_monitor_name(redis_site,qs):   
+
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
@@ -78,8 +77,8 @@ def get_main_current_monitor_name(redis_site):
     current_sensor_sets, current_sensor_sources = qs.match_list(query_list) 
     return current_sensor_sources[0]["name"]
 
-def get_flow_checking_limits(redis_site):   
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+def get_flow_checking_limits(redis_site,qs):   
+
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL" )
@@ -88,9 +87,20 @@ def get_flow_checking_limits(redis_site):
                                         
     limits_sets, limit_sources = qs.match_list(query_list) 
     return limit_sources[0]
+    
+def get_cleaning_limits(redis_site,qs):   
+ 
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship =  "CLEANING_LIMITS" )
+                                        
+    limits_sets, limit_sources = qs.match_list(query_list) 
+    return limit_sources[0]["limit"]
 
-def get_slave_currents(redis_site):   
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+def get_slave_currents(redis_site,qs):   
+
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL" )

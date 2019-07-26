@@ -12,8 +12,8 @@ from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 from redis_support_py3.graph_query_support_py3 import  Query_Support
 
 class Generate_Data_Handler():
-   def __init__(self,redis_site_data):
-       qs = Query_Support( redis_server_ip = redis_site_data["host"], redis_server_port=redis_site_data["port"] )
+   def __init__(self,qs,redis_handle,redis_site_data):
+       
        query_list = []
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site_data["site"] )
 
@@ -23,7 +23,7 @@ class Generate_Data_Handler():
        package_sets, package_sources = qs.match_list(query_list)  
        package = package_sources[0]
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,redis_site_data)
+       generate_handlers = Generate_Handlers(package,redis_handle)
        self.eto_data_handler = generate_handlers.construct_hash(data_structures["ETO_ACCUMULATION_TABLE"])
        self.redis_handle = redis.StrictRedis(redis_site_data["host"], redis_site_data["port"], db=redis_site_data["redis_file_db"] )
        
@@ -35,11 +35,11 @@ class Generate_Data_Handler():
        
 class User_Data_Tables(object):
 
-   def __init__(self, redis_site_data ):
-       
+   def __init__(self, qs,redis_handle,redis_site_data ):
+       self.redis_handle = redis_handle
        self.redis_site_data = redis_site_data
        self.ds_handlers = {}
-       generate_handler = Generate_Data_Handler(redis_site_data)
+       generate_handler = Generate_Data_Handler(qs,redis_handle,redis_site_data)
        self.eto_data_handler= generate_handler.get_data_handler()
        self.redis_handle = generate_handler.get_redis_handle()
        self.app_file_handle = APP_FILES( self.redis_handle,self.redis_site_data )

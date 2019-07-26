@@ -177,13 +177,14 @@ class Current_Monitor(Base_Monitor):
 
 class MQTT_Log(object):
 
-   def __init__(self,mqtt_server_data, mqtt_devices, package,site_data,irrigation_control):
+   def __init__(self,mqtt_server_data, mqtt_devices, package,site_data,irrigation_control,redis_handle):
         
         self.mqtt_server_data  = mqtt_server_data
         self.mqtt_devices = mqtt_devices
         self.package  = package
         self.site_data = site_data
         self.irrigation_control = irrigation_control
+        self.redis_handle = redis_handle
         self.generate_data_handlers()
         self.mqtt_handlers = {}
         self.mqtt_handlers["WELL_MONITOR_1"] = Well_Monitor("WELL_MONITOR_1",irrigation_control)
@@ -295,7 +296,7 @@ class MQTT_Log(object):
    def generate_data_handlers(self):
         self.handlers = {}
         data_structures = self.package["data_structures"]
-        generate_handlers = Generate_Handlers(self.package,self.site_data)
+        generate_handlers = Generate_Handlers(self.package,self.redis_handle)
         self.ds_handlers = {}
         self.ds_handlers["MQTT_INPUT_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["MQTT_INPUT_QUEUE"])
         self.ds_handlers["MQTT_PAST_ACTION_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_PAST_ACTION_QUEUE"])
@@ -362,12 +363,14 @@ if __name__ == "__main__":
                                            
     package_sets, package_sources = qs.match_list(query_list)
     package = package_sources[0]
-    irrigation_control = generate_irrigation_control(redis_site)
+    redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] )
+    irrigation_control = generate_irrigation_control(redis_site,redis_handle,qs)
     MQTT_Log(mqtt_server_data = host_data,
                  mqtt_devices = mqtt_devices,
                  package = package,
                  site_data = redis_site,
-                 irrigation_control = irrigation_control)
+                 irrigation_control = irrigation_control,
+                 redis_handle = redis_handle)
 
    
 

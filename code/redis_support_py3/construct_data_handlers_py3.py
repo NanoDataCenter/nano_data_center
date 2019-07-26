@@ -640,10 +640,13 @@ class Stream_Redis_Reader(Redis_Stream):
              
 class Generate_Handlers(object):
    
-   def __init__(self,package,site_data  ):
-       self.site_data = site_data
+   def __init__(self,package,redis_handle ):
+      
        self.package = package
-       self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] ) #, decode_responses=True)
+       self.redis_handle = redis_handle
+       
+       
+       '''
        redis_handle_password = redis.StrictRedis(site_data["host"], site_data["port"], db=site_data["redis_password_db"], decode_responses=True)
        self.influx_server = redis_handle_password.hget("influx_local_server","server")
        self.influx_user = redis_handle_password.hget("influx_local_server","user")
@@ -651,6 +654,7 @@ class Generate_Handlers(object):
        self.influx_retention = redis_handle_password.hget("influx_local_server", "retention" )
        self.influx_database = redis_handle_password.hget("influx_local_server","database" )
        self.influx_handler = None
+       '''
        self.cloud_handler = Cloud_TX_Handler(self.redis_handle) 
        
    def get_redis_handle(self):

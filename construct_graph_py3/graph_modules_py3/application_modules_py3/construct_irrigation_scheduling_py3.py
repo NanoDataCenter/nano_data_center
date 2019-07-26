@@ -21,6 +21,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       cd.close_package_contruction()
       bc.add_info_node("MQTT_CURRENT_LIMITS","MQTT_CURRENT_LIMITS",properties = {"EQUIPMENT":1.0 ,"IRRIGATION": 1.75} )
       bc.add_info_node("EXCESSIVE_FLOW_LIMITS","EXCESSIVE_FLOW_LIMITS",properties={ "EXCESSIVE_FLOW_VALUE":30,"EXCESSIVE_FLOW_TIME":5 } )
+      bc.add_info_node("CLEANING_LIMITS","CLEANING_LIMITS",properties={ "limit":25000 } )
       bc.add_info_node("MASTER_VALVES","MASTER_VALVES",properties={"MASTER_VALVES":[ {"remote":"satellite_1","pins":[43] } ]} )
       bc.add_info_node("CLEANING_VALVES","CLEANING_VALVES",properties= {"CLEANING_VALVES":[ {"remote":"satellite_1","pins":[44] } ]} )
       bc.add_info_node("LOGGING_DEPTH","LOGGING_DEPTH",properties = {"valve_depth":20} )

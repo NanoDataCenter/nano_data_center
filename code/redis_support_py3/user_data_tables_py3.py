@@ -15,10 +15,10 @@ import json
 
 class Generate_Table_Handlers(object):
 
-   def __init__(self,site_data):
+   def __init__(self,site_data,redis_handle):
        self.site_data = site_data   
-      
-       self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_table_db"] )
+      self.redis_handle = redis_handle
+       #self.redis_handle = redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_table_db"] )
        self.prefix = "[SITE:"+site_data["site"]+"][TABLE_DATA:"
        self.cloud_handler = Cloud_TX_Handler(self.redis_handle) 
        

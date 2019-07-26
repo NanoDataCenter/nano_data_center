@@ -18,12 +18,12 @@ ONE_DAY = 24 * 3600
 
 
 class Eto_Management(object):
-    def __init__(self,  eto_sources, package,site_data ):
+    def __init__(self,  eto_sources, package,site_data,redis_handle ):
 
         self.eto_sources = eto_sources
         self.package  = package
         self.site_data = site_data
-        
+        self.redis_handle = redis_handle
        
         self.generate_redis_handlers()
         self.eto_hash_table =  self.ds_handlers["ETO_ACCUMULATION_TABLE"]
@@ -35,7 +35,7 @@ class Eto_Management(object):
     def generate_redis_handlers(self):
         self.handlers = {}
         data_structures = self.package["data_structures"]
-        generate_handlers = Generate_Handlers(self.package,self.site_data)
+        generate_handlers = Generate_Handlers(self.package,redis_handle)
         self.ds_handlers = {}
         self.ds_handlers["EXCEPTION_VALUES"] = generate_handlers.construct_hash(data_structures["EXCEPTION_VALUES"])
         self.ds_handlers["ETO_VALUES"] = generate_handlers.construct_hash(data_structures["ETO_VALUES"])
@@ -196,7 +196,7 @@ def replace_keys( redis_site_data,elements ):
 
 
 
-def construct_eto_instance(qs, site_data ):
+def construct_eto_instance(qs, site_data,redis_handle ):
 
     #
     #
@@ -236,7 +236,7 @@ def construct_eto_instance(qs, site_data ):
    
    
     
-    eto = Eto_Management(eto_sources, package_sources[0],site_data  )
+    eto = Eto_Management(eto_sources, package_sources[0],site_data,redis_handle  )
     
     
     
@@ -333,13 +333,15 @@ if __name__ == "__main__":
     #
     # Setup handle
     # open data stores instance
-    user_table = User_Data_Tables(redis_site)
     
     
-    
+    redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] ) 
+       
     qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    user_table = User_Data_Tables(qs,redis_handle,redis_site)
+  
     
-    eto = construct_eto_instance(qs, redis_site)
+    eto = construct_eto_instance( qs, redis_site,redis_handle)
     #
     # Adding chains
     #

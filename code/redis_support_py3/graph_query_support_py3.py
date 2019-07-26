@@ -5,14 +5,19 @@ import redis
 class Query_Support(object):
 
    
-   def __init__( self , redis_server_ip , redis_server_port=6379, db = 3 ):
-      self.redis_handle  = redis.StrictRedis( host = redis_server_ip, port = redis_server_port, db =db , decode_responses=True)
+   def __init__( self , redis_server_ip , redis_server_port=6379, db = 3,redis_handle = None ):
+      if redis_handle == None:
+          self.redis_handle  = redis.StrictRedis( host = redis_server_ip, port = redis_server_port, db =db , decode_responses=True)
+      else:
+          self.redis_handle = redis_handle
       self.sep       = "["
       self.rel_sep   = ":"
       self.label_sep = "]"
       self.namespace     = []
 
-
+   def get_redis_handle(self):
+       return self.redis_handle
+ 
    def add_match_terminal( self, query_list, relationship, label=None , property_mask = None ):
        temp = {}
        temp["relationship"] = relationship

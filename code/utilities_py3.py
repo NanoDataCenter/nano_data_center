@@ -278,10 +278,11 @@ if __name__ == "__main__":
     #
     #
     data_structures = package["data_structures"]
-    generate_handlers = Generate_Handlers( package, redis_site )
+    redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] ) 
+    generate_handlers = Generate_Handlers( package, redis_handle )
     
     
-    redis_handle = generate_handlers.get_redis_handle()
+    
     app_files = APP_FILES(redis_handle,redis_site)
     data_structures = package["data_structures"]
     job_queue = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_JOB_SCHEDULING"])
@@ -290,7 +291,7 @@ if __name__ == "__main__":
     
  
 
-    irrigation_control        = generate_irrigation_control(redis_site)
+    irrigation_control        = generate_irrigation_control(redis_site,redis_handle,qs)
     sched        = Irrigation_Schedule_Monitoring( app_files,completion_dictionary,job_queue,irrigation_control )
     action       = System_Monitoring(app_files,completion_dictionary,job_queue)
 

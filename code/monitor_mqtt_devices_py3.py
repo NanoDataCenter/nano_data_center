@@ -16,7 +16,7 @@ class Base_Manager(object):
        self.topic_dispatch_table["HEART_BEAT"] = self.handle_presence
  
    def handle_presence(self,data):     
-      
+      print("data",data)
       old_data = self.ds_handlers["MQTT_CONTACT_LOG"].hget(data["device_id"])
       
       data["time"] = time.time()
@@ -297,7 +297,8 @@ class MQTT_Monitor(object):
    def generate_data_handlers(self):
         self.handlers = {}
         data_structures = self.package["data_structures"]
-        generate_handlers = Generate_Handlers(self.package,self.site_data)
+        self.redis_handle =  redis.StrictRedis( host = self.site_data["host"] , port=self.site_data["port"], db=self.site_data["redis_io_db"] )
+        generate_handlers = Generate_Handlers(self.package,self.redis_handle)
         self.ds_handlers = {}
         self.ds_handlers["MQTT_PAST_ACTION_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_PAST_ACTION_QUEUE"])
         self.ds_handlers["MQTT_INPUT_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_INPUT_QUEUE"])

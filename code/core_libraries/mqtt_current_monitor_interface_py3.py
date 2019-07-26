@@ -6,9 +6,9 @@ import time
 import msgpack
 class MQTT_Current_Monitor_Publish(object):
 
-   def __init__(self,redis_site,topic_prefix) :
+   def __init__(self,redis_site,topic_prefix,qs,redis_handle ) :
+     
        self.topic_prefix = topic_prefix
-       qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
        query_list = []
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
 
@@ -17,8 +17,8 @@ class MQTT_Current_Monitor_Publish(object):
                                            
        package_sets, package_sources = qs.match_list(query_list)
        package = package_sources[0] 
+       generate_handlers = Generate_Handlers(package,redis_handle)
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,redis_site)
        self.job_queue_client = generate_handlers.construct_job_queue_client(data_structures["MQTT_PUBLISH_QUEUE"])
        
  

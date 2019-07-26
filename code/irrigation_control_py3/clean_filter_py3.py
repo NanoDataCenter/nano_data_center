@@ -33,6 +33,8 @@ class Clean_Filter(object):
        cf.insert.one_step(  self.irrigation_io.turn_on_cleaning_valves  )# turn on cleaning valve
 
        cf.insert.wait_event_count( count = 30 ) 
+       ######
+       cf.insert.one_step(self.check_cleaning_valve)
        cf.insert.log( "Clean Step 4" ) 
        cf.insert.one_step(  self.irrigation_io.turn_on_master_valves  )# turn turn on master valve
        cf.insert.wait_event_count( count = 10 )
@@ -56,7 +58,15 @@ class Clean_Filter(object):
 
    def clear_cleaning_sum(self, *args):
        self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",0)
-
+       
+       
+       
+   def check_cleaning_valve(self, cf_handle, chainObj, parameters, event ):
+      pass  # put this in when program has control
+      #self.handlers["MQTT_SENSOR_STATUS"].hget(self.mqtt_cleaning_name)
+   
+   
+   
    def log_clean_filter( self,*args):
         
      self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"clean filter","details":{},"level":"GREEN"})
