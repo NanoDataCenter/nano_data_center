@@ -398,7 +398,7 @@ if __name__ == "__main__":
    package_sets, package_nodes = qs.match_list(query_list)  
   
    redis_handle =  redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] ) 
-   generate_handlers = Generate_Handlers(package_nodes[0],site_data)
+   generate_handlers = Generate_Handlers(package_nodes[0],redis_handle)
    pi_monitor = PI_MONITOR(package_nodes[0],generate_handlers)
    
    

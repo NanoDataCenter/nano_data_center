@@ -78,6 +78,7 @@ class Manage_A_Python_Process(Process_Control):
      
        #self.script_file_name = script_file_list[-1].split(".")[0]
        self.script_file_name = command_string
+       self.script_file_name = self.script_file_name.replace(" ","_")
        temp  = error_directory + "/"+self.script_file_name
        self.error_file = temp+".err"
        self.error_file_rollover = temp +".errr"
@@ -204,8 +205,8 @@ class System_Control(object):
                else:
                     
                     data = ""
-               self.ds_handlers["ERROR_HASH"].hset( script , { "script": script, "error_output" : data } )
-               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script, "error_output" : data } )
+               self.ds_handlers["ERROR_HASH"].hset( script , { "script": script, "error_output" : data, "time":time.time()} )
+               self.ds_handlers["ERROR_STREAM"].push( data = { "script": script, "error_output" : data, "time":time.time() } )
                temp.rollover_flag = False
       
        self.update_web_display()
