@@ -48,7 +48,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       fields["ELASPED_TIME"]  = { "type":"float","init_value":0 }
       fields["TIME_STAMP"]  = { "type":"float" ,"init_value":time.time()}
       fields["SUSPEND"]    = { "type":"binary","init_value":False }
-      
+      fields["WELL_PRESSURE"] = { "type":"float","init_value":0 }
       fields["EQUIPMENT_CURRENT"] = { "type":"float","init_value":0 }
       fields["IRRIGATION_CURRENT"] = { "type":"float","init_value":0 }
       fields["MAIN_FLOW_METER"] =    { "type":"float","init_value":0 }
