@@ -296,7 +296,7 @@ if __name__ == "__main__":
    file_handle.close()
    site_data = json.loads(data)
 
-   qs = Query_Support( redis_server_ip = site_data["host"], redis_server_port=site_data["port"], db = site_data["graph_db"] )
+   qs = Query_Support( site_data )
    query_list = []
    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
    query_list = qs.add_match_terminal( query_list,relationship="PROCESSOR",label=site_data["local_node"] )
@@ -314,8 +314,8 @@ if __name__ == "__main__":
    package_sets, package_nodes = qs.match_list(query_list)  
    
    #print("package_nodes",package_nodes)
-   redis_handle =  redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] ) 
-   generate_handlers = Generate_Handlers(package_nodes[0],redis_handle)
+   
+   generate_handlers = Generate_Handlers(package_nodes[0],qs)
  
    system_control = System_Control(processor_nodes[0],package_nodes[0],generate_handlers)
    cf = CF_Base_Interpreter()

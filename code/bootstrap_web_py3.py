@@ -18,7 +18,7 @@ from bootstrap_web_py3.load_static_pages_py3     import  Load_Static_Files
 from bootstrap_web_py3.load_eto_management_py3     import  Load_ETO_Management
 from bootstrap_web_py3.load_redis_access_py3     import  Load_Redis_Access
 from redis_support_py3.graph_query_support_py3 import  Query_Support
-from eto_init_py3 import User_Data_Tables
+from eto_py3.eto_init_py3 import User_Data_Tables
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
 from redis_support_py3.load_files_py3  import APP_FILES
@@ -43,8 +43,8 @@ class PI_Web_Server(object):
        startup_dict = redis_handle_pw.hgetall("web")
        self.data_structure_redis_handle =  redis.StrictRedis( host = redis_site_data["host"] , port=redis_site_data["port"], db=redis_site_data["redis_io_db"] ) 
        
-       self.qs = Query_Support( redis_server_ip = redis_site_data["host"], redis_server_port=redis_site_data["port"] )
-       self.user_table = User_Data_Tables(self.qs,self.data_structure_redis_handle,redis_site_data)
+       self.qs = Query_Support( redis_site_data )
+       self.user_table = User_Data_Tables(self.qs,redis_site_data)
        self.app         = Flask(name) 
        self.auth = HTTPDigestAuth()
        self.auth.get_password( self.get_pw )
@@ -59,10 +59,10 @@ class PI_Web_Server(object):
        self.app.config["DEBUG"]           = True
        self.app.debug                     = True
        self.users                    = json.loads(startup_dict["users"])
-       self.redis_file_handle = redis.StrictRedis(redis_site_data["host"], redis_site_data["port"], db=redis_site_data["redis_file_db"] )
        
-       self.app_files = APP_FILES(self.data_structure_redis_handle, self.redis_site_data) 
-       self.sys_files = SYS_FILES(self.data_structure_redis_handle, self.redis_site_data)          
+       
+       self.app_files = APP_FILES(self.qs.get_redis_data_handle(), self.redis_site_data) 
+       self.sys_files = SYS_FILES(self.qs.get_redis_data_handle(), self.redis_site_data)          
 
        Load_Static_Files(self.app,self.auth)
        self.redis_access = Load_Redis_Access(self.app, self.auth, request )
@@ -128,7 +128,7 @@ class PI_Web_Server(object):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,self.data_structure_redis_handle)
+       generate_handlers = Generate_Handlers(package,self.qs)
        self.ds_handlers = {}
        self.ds_handlers["EXCEPTION_VALUES"] = generate_handlers.construct_hash(data_structures["EXCEPTION_VALUES"])
        self.ds_handlers["ETO_VALUES"] = generate_handlers.construct_hash(data_structures["ETO_VALUES"])
@@ -188,7 +188,7 @@ class PI_Web_Server(object):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,self.data_structure_redis_handle)
+       generate_handlers = Generate_Handlers(package,self.qs)
        ds_handlers = {}
        ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
        ds_handlers["MQTT_REBOOT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_REBOOT_LOG"])
@@ -214,7 +214,7 @@ class PI_Web_Server(object):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,self.data_structure_redis_handle)
+       generate_handlers = Generate_Handlers(package,self.qs)
        ds_handlers = {}
        ds_handlers["IRRIGATION_JOB_SCHEDULING"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_JOB_SCHEDULING"])
        ds_handlers["IRRIGATION_PENDING"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_PENDING"])
@@ -227,11 +227,11 @@ class PI_Web_Server(object):
                                            
        package_sets, package_sources = self.qs.match_list(query_list)
        package = package_sources[0]
-       generate_handlers = Generate_Handlers(package,self.data_structure_redis_handle)
+       generate_handlers = Generate_Handlers(package,self.qs)
        data_structures = package["data_structures"]
        ds_handlers["MQTT_SENSOR_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["MQTT_SENSOR_QUEUE"])
     
-       irrigation_control = generate_irrigation_control(self.redis_site_data,self.data_structure_redis_handle,self.qs)
+       irrigation_control = generate_irrigation_control(self.redis_site_data,self.qs)
        Load_Irrigation_Pages(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
                   render_template=render_template, redis_handle= self.data_structure_redis_handle, handlers= ds_handlers ,irrigation_control=irrigation_control)
                   
@@ -248,7 +248,7 @@ class PI_Web_Server(object):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,self.data_structure_redis_handle)
+       generate_handlers = Generate_Handlers(package,self.qs)
        ds_handlers = {}
        ds_handlers["FREE_CPU"] = generate_handlers.construct_redis_stream_reader(data_structures["FREE_CPU"])
        ds_handlers["RAM"] = generate_handlers.construct_redis_stream_reader(data_structures["RAM"])
@@ -279,7 +279,7 @@ class PI_Web_Server(object):
        package_sets, package_sources = self.qs.match_list(query_list)  
       
        package = package_sources[0]
-       generate_handlers = Generate_Handlers(package,self.data_structure_redis_handle)
+       generate_handlers = Generate_Handlers(package,self.qs)
        data_structures = package["data_structures"]     
  
        ds_handlers = {}
@@ -327,7 +327,7 @@ class PI_Web_Server(object):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,self.data_structure_redis_handle)
+       generate_handlers = Generate_Handlers(package,self.qs)
        ds_handlers = {}
        ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_redis_stream_reader(data_structures["ERROR_STREAM"])
        ds_handlers["ERROR_HASH"]        = generate_handlers.construct_hash(data_structures["ERROR_HASH"])

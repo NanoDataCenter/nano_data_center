@@ -640,10 +640,10 @@ class Stream_Redis_Reader(Redis_Stream):
              
 class Generate_Handlers(object):
    
-   def __init__(self,package,redis_handle ):
+   def __init__(self,package,qs ):
       
        self.package = package
-       self.redis_handle = redis_handle
+       self.redis_handle = qs.get_redis_data_handle()
        
        
        '''

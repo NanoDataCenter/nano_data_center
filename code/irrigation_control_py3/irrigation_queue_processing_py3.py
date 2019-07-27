@@ -18,7 +18,7 @@ from core_libraries.mqtt_current_monitor_interface_py3 import MQTT_Current_Monit
 class Irrigation_Queue_Management(object):
 
    def __init__(self,redis_site_data, handlers,cluster_id,cluster_control,cf,app_files,sys_files,manage_eto,irrigation_io,
-                master_valves,cleaning_valves,measurement_depths,eto_management ,irrigation_hash_control,qs,redis_handle  ):
+                master_valves,cleaning_valves,measurement_depths,eto_management ,irrigation_hash_control,qs  ):
       self.handlers = handlers
       self.cluster_id = cluster_id
       self.cluster_ctrl = cluster_control
@@ -40,7 +40,7 @@ class Irrigation_Queue_Management(object):
       self.cleaning_limit      = get_cleaning_limits(redis_site_data,qs) 
      
      
-      self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/",qs,redis_handle )
+      self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/",qs )
       self.slave_currents   = get_slave_currents(redis_site_data,qs)
       self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers )   
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,
@@ -62,7 +62,8 @@ class Irrigation_Queue_Management(object):
                                                            sys_files=sys_files,
                                                            manage_eto = manage_eto,
                                                            measurement_depths = measurement_depths,
-                                                           irrigation_hash_control = irrigation_hash_control )
+                                                           irrigation_hash_control = irrigation_hash_control,
+                                                           qs = qs )
 
       self.chain_list    = []
       self.chain_list.extend(self.check_off.construct_chains(cf))
@@ -316,6 +317,7 @@ class Irrigation_Queue_Management(object):
        
        cleaning_sum      = self.irrigation_hash_control.hget("CLEANING_ACCUMULATION")     
        gpm               = self.handlers["MQTT_SENSOR_STATUS"].hget(self.mqtt_flow_name)
+      
        cleaning_sum += gpm
        self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",cleaning_sum)
 

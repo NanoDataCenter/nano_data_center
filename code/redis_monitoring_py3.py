@@ -81,8 +81,8 @@ def construct_redis_instance( qs, site_data ):
     #
     #
     data_structures = package["data_structures"]
-    redis_handle =  redis.StrictRedis( host = site_data["host"] , port=site_data["port"], db=site_data["redis_io_db"] )
-    generate_handlers = Generate_Handlers( package, redis_handle )
+    
+    generate_handlers = Generate_Handlers( package, qs )
     
     redis_monitoring_streams = {}
     redis_monitoring_streams["KEYS"] = generate_handlers.construct_stream_writer(data_structures["REDIS_MONITOR_KEY_STREAM"] )
@@ -95,7 +95,7 @@ def construct_redis_instance( qs, site_data ):
  
    
     
-    redis_monitor = Redis_Monitor(redis_handle , redis_monitoring_streams )
+    redis_monitor = Redis_Monitor(qs.get_redis_data_handle() , redis_monitoring_streams )
     
     
     
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     # Setup handle
     # open data stores instance
    
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    qs = Query_Support( redis_site )
     
     redis_monitor = construct_redis_instance(qs, redis_site )
     #

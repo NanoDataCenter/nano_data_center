@@ -261,7 +261,7 @@ if __name__ == "__main__":
     # Setup handle
     # open data stores instance
 
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    qs = Query_Support( redis_site )
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
 
@@ -279,11 +279,11 @@ if __name__ == "__main__":
     #
     data_structures = package["data_structures"]
     redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] ) 
-    generate_handlers = Generate_Handlers( package, redis_handle )
+    generate_handlers = Generate_Handlers( package, qs )
     
     
     
-    app_files = APP_FILES(redis_handle,redis_site)
+    app_files = APP_FILES(qs.get_redis_data_handle(),redis_site)
     data_structures = package["data_structures"]
     job_queue = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_JOB_SCHEDULING"])
   
@@ -291,7 +291,7 @@ if __name__ == "__main__":
     
  
 
-    irrigation_control        = generate_irrigation_control(redis_site,redis_handle,qs)
+    irrigation_control        = generate_irrigation_control(redis_site,qs)
     sched        = Irrigation_Schedule_Monitoring( app_files,completion_dictionary,job_queue,irrigation_control )
     action       = System_Monitoring(app_files,completion_dictionary,job_queue)
 

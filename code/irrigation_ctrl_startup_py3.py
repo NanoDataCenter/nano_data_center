@@ -22,16 +22,16 @@ import time
 ##
 ## {"controller":"satellite_1", "pin": 9,  "recharge_eto": 0.216, "recharge_rate":0.245 },
 ## eto_site_data
-from eto_init_py3 import Generate_Data_Handler
+from eto_py3.eto_init_py3 import Generate_Data_Handler
 from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
 from core_libraries.irrigation_hash_control_py3 import generate_sensor_minute_status
 
 
 class ETO_Management(object):
-   def __init__(self,qs,redis_handle,redis_site,app_files):
+   def __init__(self,qs,redis_site,app_files):
  
        self.app_files = app_files
-       self.generate_handlers = Generate_Data_Handler( qs,redis_handle,redis_site )
+       self.generate_handlers = Generate_Data_Handler( qs,redis_site )
        self.eto_hash_table = self.generate_handlers.get_data_handler()
    
       
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     data = file_handle.read()
     file_handle.close()
     redis_site = json.loads(data)
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    qs = Query_Support( redis_site )
                             
     
     query_list = []
@@ -174,11 +174,11 @@ if __name__ == "__main__":
     package_sets, package_sources = qs.match_list(query_list)
     package = package_sources[0]    
     data_structures = package["data_structures"]
-    data_structure_redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] ) 
-    generate_handlers = Generate_Handlers(package,data_structure_redis_handle)
-    redis_file_handle = generate_handlers.get_redis_handle()    
-    app_files        =  APP_FILES(redis_file_handle,redis_site)     
-    sys_files        =  SYS_FILES(redis_file_handle,redis_site)
+    
+    generate_handlers = Generate_Handlers(package,qs)
+    
+    app_files        =  APP_FILES(qs.get_redis_data_handle(),redis_site)     
+    sys_files        =  SYS_FILES(qs.get_redis_data_handle(),redis_site)
     ds_handlers = {}
     ds_handlers["IRRIGATION_PAST_ACTIONS"] = generate_handlers.construct_redis_stream_writer(data_structures["IRRIGATION_PAST_ACTIONS"] )
    
@@ -192,8 +192,8 @@ if __name__ == "__main__":
     ds_handlers["IRRIGATION_TIME_HISTORY"] = generate_handlers.construct_hash(data_structures["IRRIGATION_TIME_HISTORY"])
     ds_handlers["VALVE_JOB_QUEUE_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
     ds_handlers["VALVE_JOB_QUEUE_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
-    ds_handlers["MQTT_SENSOR_STATUS"] = generate_sensor_minute_status(redis_site,data_structure_redis_handle,qs)
-    irrigation_hash_control = generate_irrigation_control(redis_site,data_structure_redis_handle,qs)  
+    ds_handlers["MQTT_SENSOR_STATUS"] = generate_sensor_minute_status(redis_site,qs)
+    irrigation_hash_control = generate_irrigation_control(redis_site,qs)  
 
  
     query_list = []
@@ -220,7 +220,7 @@ if __name__ == "__main__":
      
     cf = CF_Base_Interpreter()
     cluster_control = Cluster_Control(cf)
-    eto_management = ETO_Management(qs,data_structure_redis_handle,redis_site,app_files)
+    eto_management = ETO_Management(qs,redis_site,app_files)
 
     ##
     ## log entry that go removed
@@ -248,8 +248,8 @@ if __name__ == "__main__":
                                  measurement_depths =measurement_depths,
                                  eto_management = eto_management,
                                  irrigation_hash_control = irrigation_hash_control,
-                                 qs = qs,
-                                 redis_handle = data_structure_redis_handle)
+                                 qs = qs )
+                                
                                  
                   
     Incomming_Queue_Management( cf = cf,

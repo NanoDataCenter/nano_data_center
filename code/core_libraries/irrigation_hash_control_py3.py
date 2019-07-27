@@ -9,7 +9,7 @@ from redis_support_py3.graph_query_support_py3 import  Query_Support
  
 
 
-def generate_irrigation_control(redis_site_data,redis_handle,qs ):
+def generate_irrigation_control(redis_site_data,qs ):
        
 
        query_list = []
@@ -22,11 +22,11 @@ def generate_irrigation_control(redis_site_data,redis_handle,qs ):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,redis_handle)
+       generate_handlers = Generate_Handlers(package,qs)
     
        return generate_handlers.construct_managed_hash(data_structures["IRRIGATION_CONTROL"])
        
-def generate_sensor_minute_status(redis_site,redis_handle,qs ):
+def generate_sensor_minute_status(redis_site,qs ):
 
        query_list = []
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
@@ -38,8 +38,8 @@ def generate_sensor_minute_status(redis_site,redis_handle,qs ):
      
        package = package_sources[0] 
        data_structures = package["data_structures"]
-       generate_handlers = Generate_Handlers(package,redis_handle)
-       print("data_structures",data_structures)
+       generate_handlers = Generate_Handlers(package,qs)
+       
        return generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
 
 def get_main_flow_meter_name(redis_site,qs):

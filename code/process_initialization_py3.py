@@ -67,7 +67,7 @@ if __name__ == "__main__":
    print("results",results)
    
    
-   qs = Query_Support( redis_server_ip = site_data["host"], redis_server_port=site_data["port"], db = site_data["graph_db"] )
+   qs = Query_Support( site_data )
    
    query_list = []
    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
@@ -86,7 +86,7 @@ if __name__ == "__main__":
    package_sets, package_nodes = qs.match_list(query_list)  
    
    data_structures = package_nodes[0]["data_structures"]
-   generate_handlers = Generate_Handlers(package_nodes[0],site_data)
+   generate_handlers = Generate_Handlers(package_nodes[0],qs)
    ds_handlers = {}
    ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
    

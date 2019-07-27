@@ -5,19 +5,25 @@ import redis
 class Query_Support(object):
 
    
-   def __init__( self , redis_server_ip , redis_server_port=6379, db = 3,redis_handle = None ):
-      if redis_handle == None:
-          self.redis_handle  = redis.StrictRedis( host = redis_server_ip, port = redis_server_port, db =db , decode_responses=True)
-      else:
-          self.redis_handle = redis_handle
+   def __init__( self , redis_site,db=3  ):
+   
+      host = redis_site["host"]  
+      port=redis_site["port"] 
+      
+      
+      self.redis_graph_handle  = redis.StrictRedis( host = redis_site["host"], port = redis_site["port"], db =db , decode_responses=True)
+      self.redis_data_handle = redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] )
       self.sep       = "["
       self.rel_sep   = ":"
       self.label_sep = "]"
       self.namespace     = []
 
-   def get_redis_handle(self):
-       return self.redis_handle
- 
+   def get_redis_graph_handle(self):
+       return self.redis_graph_handle
+
+   def get_redis_data_handle(self):
+       return self.redis_data_handle
+       
    def add_match_terminal( self, query_list, relationship, label=None , property_mask = None ):
        temp = {}
        temp["relationship"] = relationship
@@ -41,7 +47,7 @@ class Query_Support(object):
 
    def match_list( self,  match_list, starting_set = None  ):
        if starting_set == None:
-           starting_set = self.redis_handle.smembers("@GRAPH_KEYS")
+           starting_set = self.redis_graph_handle.smembers("@GRAPH_KEYS")
        
        for i in match_list:
            if i["type"] == "MATCH_TERMINAL":
@@ -65,16 +71,16 @@ class Query_Support(object):
        
        if label == None:
           
-          if self.redis_handle.sismember( "@TERMINALS", relationship) == True:
+          if self.redis_graph_handle.sismember( "@TERMINALS", relationship) == True:
              
-              return_value = set(self.redis_handle.smembers("&"+relationship))
+              return_value = set(self.redis_graph_handle.smembers("&"+relationship))
               return_value = return_value.intersection(starting_set)
               
        
        else:
-          if self.redis_handle.sismember( "@TERMINALS", relationship) == True:
-               if self.redis_handle.exists("$"+relationship+self.rel_sep+label) == True:
-                   return_value = self.redis_handle.smembers("$"+relationship+self.rel_sep+label)
+          if self.redis_graph_handle.sismember( "@TERMINALS", relationship) == True:
+               if self.redis_graph_handle.exists("$"+relationship+self.rel_sep+label) == True:
+                   return_value = self.redis_graph_handle.smembers("$"+relationship+self.rel_sep+label)
                    return_value = return_value.intersection(starting_set)
 
        if (property_values != None) and (return_value != None):
@@ -86,19 +92,19 @@ class Query_Support(object):
        
        if label == None:
           
-          if self.redis_handle.sismember(  "@RELATIONSHIPS", relationship) == True:
+          if self.redis_graph_handle.sismember(  "@RELATIONSHIPS", relationship) == True:
              
-              return_value = set(self.redis_handle.smembers("%"+relationship))
+              return_value = set(self.redis_graph_handle.smembers("%"+relationship))
               return_value = return_value.intersection(starting_set)
               
        
        else:
           
-          if self.redis_handle.sismember( "@RELATIONSHIPS", relationship) == True:
+          if self.redis_graph_handle.sismember( "@RELATIONSHIPS", relationship) == True:
                
-               if self.redis_handle.exists("#"+relationship+self.rel_sep+label) == True:
+               if self.redis_graph_handle.exists("#"+relationship+self.rel_sep+label) == True:
                    
-                   return_value = self.redis_handle.smembers("#"+relationship+self.rel_sep+label)
+                   return_value = self.redis_graph_handle.smembers("#"+relationship+self.rel_sep+label)
                    
                    return_value = return_value.intersection(starting_set)
        return return_value
@@ -113,7 +119,7 @@ class Query_Support(object):
            
            for j , value in property_values.items(): 
                
-               data = self.redis_handle.hget(i,j)
+               data = self.redis_graph_handle.hget(i,j)
                if data == None:
                    flag = False
                    break
@@ -130,7 +136,7 @@ class Query_Support(object):
    def return_data( self, key_set ):
        return_value = []
        for i in key_set:
-           data = self.redis_handle.hgetall(i)
+           data = self.redis_graph_handle.hgetall(i)
            
            temp = {}
            for j in data.keys():

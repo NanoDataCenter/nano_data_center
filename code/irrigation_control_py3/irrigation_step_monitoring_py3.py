@@ -1,18 +1,19 @@
-Note -- deal with limits
-note -- deal with short irrigation sequences
-note -- deal with bad histories
+#Note -- deal with limits
+#note -- deal with short irrigation sequences
+#note -- deal with bad histories
 
 
 
 class Irrigation_Step_Monitoring(object):
 
 
-   def __init__(self,handlers,manage_eto,io_manager,cf,irrigation_hash_control):
+   def __init__(self,handlers,manage_eto,io_manager,cf,irrigation_hash_control,qs):
        self.manage_eto = manage_eto
        self.handlers   = handlers
        self.io_manager = io_manager
        self.cf         = cf
        self.irrigation_hash_control = irrigation_hash_control
+       self.qs = qs
 
    def initialize_monitoring(self,json_object):
        self.working_key = self.form_key(json_object)
@@ -45,7 +46,7 @@ class Irrigation_Step_Monitoring(object):
 
    def form_key(self,json_object):
       key = ""
-      for i,item in json_object["io"].items()
+      for i,item in json_object["io"].items():
          key = key+"/"+i+str(item)
       return key
       
@@ -86,7 +87,7 @@ class Irrigation_Step_Monitoring(object):
          mean = working_entry["mean"][i]
          sd = 0
          for j in range(5,len(temp)):
-           sd += math.pow(temp[j][i] -mean),2)
+           sd += math.pow((temp[j][i] -mean),2)
            
          sd = sd/len(temp-5)
          sd = math.sqrt(sd)         

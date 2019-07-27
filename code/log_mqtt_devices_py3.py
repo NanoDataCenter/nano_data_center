@@ -79,7 +79,7 @@ class Well_Monitor(Base_Monitor):
 
        
    def pump_currents(self,composite_record,data):
-      
+       
        key = self.device_id+"/"+data["topic"]
        key_1 = key+":OUTPUT"
        if key_1 not in composite_record:
@@ -91,6 +91,12 @@ class Well_Monitor(Base_Monitor):
           composite_record[key_1] = []
        composite_record[key_1].append(data["INPUT"]["DC"])
        self.irrigation_control.hset("INPUT_PUMP_CURRENT",data["INPUT"]["DC"]) 
+       key_1 = key+":WELL_PRESSURE"
+       if key_1 not in composite_record:
+          composite_record[key_1] = []
+       composite_record[key_1].append(data['WELL_PRESSURE']["DC"])
+       
+       self.irrigation_control.hset("WELL_PRESSURE",data['WELL_PRESSURE']["DC"]) 
  
 
 
@@ -177,7 +183,7 @@ class Current_Monitor(Base_Monitor):
 
 class MQTT_Log(object):
 
-   def __init__(self,mqtt_server_data, mqtt_devices, package,site_data,irrigation_control,redis_handle):
+   def __init__(self,mqtt_server_data, mqtt_devices, package,site_data,irrigation_control,qs):
         
         self.mqtt_server_data  = mqtt_server_data
         self.mqtt_devices = mqtt_devices
@@ -185,7 +191,7 @@ class MQTT_Log(object):
         self.site_data = site_data
         self.irrigation_control = irrigation_control
         self.redis_handle = redis_handle
-        self.generate_data_handlers()
+        self.generate_data_handlers(qs)
         self.mqtt_handlers = {}
         self.mqtt_handlers["WELL_MONITOR_1"] = Well_Monitor("WELL_MONITOR_1",irrigation_control)
         self.mqtt_handlers['CURRENT_MONITOR_1'] = Current_Monitor('CURRENT_MONITOR_1',irrigation_control)
@@ -293,10 +299,10 @@ class MQTT_Log(object):
               
               self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Change","device_id":x[ 'device_id'],"status":x["status"]})          
              
-   def generate_data_handlers(self):
+   def generate_data_handlers(self,qs):
         self.handlers = {}
         data_structures = self.package["data_structures"]
-        generate_handlers = Generate_Handlers(self.package,self.redis_handle)
+        generate_handlers = Generate_Handlers(self.package,qs)
         self.ds_handlers = {}
         self.ds_handlers["MQTT_INPUT_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["MQTT_INPUT_QUEUE"])
         self.ds_handlers["MQTT_PAST_ACTION_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_PAST_ACTION_QUEUE"])
@@ -335,7 +341,7 @@ if __name__ == "__main__":
     file_handle.close()
     redis_site = json.loads(data)
      
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    qs = Query_Support( redis_site )
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_terminal( query_list, 
@@ -364,13 +370,13 @@ if __name__ == "__main__":
     package_sets, package_sources = qs.match_list(query_list)
     package = package_sources[0]
     redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] )
-    irrigation_control = generate_irrigation_control(redis_site,redis_handle,qs)
+    irrigation_control = generate_irrigation_control(redis_site,qs)
     MQTT_Log(mqtt_server_data = host_data,
                  mqtt_devices = mqtt_devices,
                  package = package,
                  site_data = redis_site,
                  irrigation_control = irrigation_control,
-                 redis_handle = redis_handle)
+                 qs = qs)
 
    
 

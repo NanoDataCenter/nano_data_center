@@ -227,8 +227,16 @@ class Well_Monitor(Base_Manager):
    def manage_well_data(self,data):
        
        temp = data[b'MEASUREMENTS']
+       
        results = {}
-       for i in temp: 
+       for i in temp:
+          if i[b'CHANNEL'] ==  0:
+             dc = i[ b'DC']
+             sd = i[ b'SD'] 
+             dc = (dc*2-.5)*150/4.
+             sd = (sd*2)*150/4.
+             results["WELL_PRESSURE"] = {"DC":dc,"SD":sd} 
+                        
           if i[b'CHANNEL'] == 6:
              dc = i[ b'DC']
              sd = i[ b'SD']
@@ -273,14 +281,14 @@ class Well_Monitor(Base_Manager):
        
 class MQTT_Monitor(object):
 
-   def __init__(self,mqtt_server_data, mqtt_devices, package,site_data):
+   def __init__(self,mqtt_server_data, mqtt_devices, package,site_data,qs):
         
         self.mqtt_server_data  = mqtt_server_data
         self.mqtt_devices = mqtt_devices
         self.package  = package
         self.site_data = site_data
        
-        self.generate_data_handlers()
+        self.generate_data_handlers(qs)
         self.mqtt_handlers = {}
         self.mqtt_handlers["SECURITY_MONITOR"] = Security_Monitor(self.ds_handlers)
         self.mqtt_handlers["CURRENT_MONITOR"]     = Current_Monitor(self.ds_handlers)
@@ -294,11 +302,11 @@ class MQTT_Monitor(object):
        
      
 
-   def generate_data_handlers(self):
+   def generate_data_handlers(self,qs):
         self.handlers = {}
         data_structures = self.package["data_structures"]
-        self.redis_handle =  redis.StrictRedis( host = self.site_data["host"] , port=self.site_data["port"], db=self.site_data["redis_io_db"] )
-        generate_handlers = Generate_Handlers(self.package,self.redis_handle)
+        
+        generate_handlers = Generate_Handlers(self.package,qs)
         self.ds_handlers = {}
         self.ds_handlers["MQTT_PAST_ACTION_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_PAST_ACTION_QUEUE"])
         self.ds_handlers["MQTT_INPUT_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_INPUT_QUEUE"])
@@ -423,7 +431,7 @@ if __name__ == "__main__":
     file_handle.close()
     redis_site = json.loads(data)
      
-    qs = Query_Support( redis_server_ip = redis_site["host"], redis_server_port=redis_site["port"] )
+    qs = Query_Support( redis_site )
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_terminal( query_list, 
@@ -454,7 +462,8 @@ if __name__ == "__main__":
     MQTT_Monitor(mqtt_server_data = host_data,
                  mqtt_devices = mqtt_devices,
                  package = package,
-                 site_data = redis_site)
+                 site_data = redis_site,
+                 qs= qs)
 
    
 
