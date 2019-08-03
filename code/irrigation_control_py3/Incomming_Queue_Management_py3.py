@@ -120,7 +120,7 @@ class Irrigation_Scheduling(object):
        else:
            details = "Schedule "+ schedule_name +" step "+str(schedule_step)+" IRRIGATION_ETO_RESTRICTION"
            
-           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLOW"})
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_ETO_RESTRICTION","details":details,"level":"YELLOW"})
        
        
    def get_schedule_data( self,link_data, schedule_name, schedule_step):

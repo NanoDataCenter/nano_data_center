@@ -111,11 +111,12 @@ class ETO_Management(object):
        return runtime
 
    def update_eto_queue_minute( self, sensor_list ):
+       
        for l in  sensor_list:
            j_index = l[0]
            queue_name = l[1]
            j = self.eto_site_data[ j_index ]
-           deficient = self.self.eto_hash_table.hget(  queue_name )
+           deficient = self.eto_hash_table.hget(  queue_name )
            
            if deficient == None:
                deficient = 0

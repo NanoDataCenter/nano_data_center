@@ -303,7 +303,7 @@ class MQTT_Monitor(object):
      
 
    def generate_data_handlers(self,qs):
-        self.handlers = {}
+        
         data_structures = self.package["data_structures"]
         
         generate_handlers = Generate_Handlers(self.package,qs)

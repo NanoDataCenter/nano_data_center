@@ -12,7 +12,7 @@ import msgpack
 
 
 from .graph_query_support_py3 import Query_Support
-from .construct_data_handlers_py3 import Redis_Stream
+from .redis_stream_utilities_py3 import Redis_Stream
 
 class Construct_Namespace(object):
    def __init__(self):
@@ -50,10 +50,12 @@ class Construct_Namespace(object):
 
 class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
 
-   def __init__(self,redis_site,depth=100):
+   def __init__(self,redis_site,mqtt_devices,package,generate_handlers,depth=1000):
 
    
        self.depth = depth
+      
+       self.mqtt_devices = mqtt_devices
        self.redis_handle = redis.StrictRedis( host = redis_site["host"] , 
                                              port=redis_site["port"], 
                                              db=redis_site["mqtt_db"] )
@@ -61,18 +63,74 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
                                                           
       
        Construct_Namespace.__init__(self)
-           
-     
-
+       data_structures = package["data_structures"]
+       
+       self.ds_handlers = {}
+       self.ds_handlers["MQTT_UNKNOWN_DEVICES"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_DEVICES"])   
+       self.ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_SUBSCRIPTIONS"])
+       self.ds_handlers["MQTT_UNKNOWN_DEVICES"].delete_all()
+       self.ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"].delete_all()
+       
+       
    def clear_db(self):
        self.redis_handle.flushdb()   
        
    def get_topics(self):
        return self.redis_handle.smembers("@TOPICS")
-                                             
+
+   def validate_device(self,topic,namespace_list):
+       device_id = namespace_list[1][0]
+      
+       if device_id in self.mqtt_devices:
+          self.device_id = device_id
+          return True
+       else:
+            print("no_match")
+            data = {}
+            data["topic"] = topic
+            data["timestamp"] = time.time()
+            self.ds_handlers["MQTT_UNKNOWN_DEVICES"].hset(device_id,data)
+            return False
+
+ 
+   def check_for_null_command(self,topic,namespace_list):
+       null_commands = self.mqtt_devices[self.device_id]["null_commands"]
+       topic_list = topic.split("/")
+       topic_list = topic_list[3:]
+       topic_search = "/".join(topic_list)
+       if topic_search in null_commands:
+          print("null_commands found")
+          return True
+       else:
+          
+           return False
+
+   def check_for_valid_subscriptions(self,topic,namespace_list):
+       valid_commands = self.mqtt_devices[self.device_id]["subscriptions"]
+       topic_list = topic.split("/")
+       topic_list = topic_list[3:]
+       topic_search = "/".join(topic_list)
+       if topic_search in valid_commands:
+          print("valid command",topic)
+          return True
+       else:
+            print("no_match")
+            data = {}
+            data["topic"] = topic
+            data["timestamp"] = time.time()
+            self.ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"].hset(topic,data)
+            return False
+  
+ 
    def store_mqtt_data(self,topic,mqtt_data):
       
        namespace,namespace_list = self.construct_name_space(topic)
+       if self.validate_device(topic,namespace_list) != True:
+           return # unknown device
+       if self.check_for_null_command(topic,namespace_list) == True :
+           return #null command 
+       if self.check_for_valid_subscriptions(topic,namespace_list) != True:
+            return #bad subscription       
        self.redis_handle.sadd("@GRAPH_KEYS",namespace)
        self.redis_handle.sadd("@NAMESPACE",namespace)
        self.redis_handle.sadd("@TOPICS",topic)
@@ -82,18 +140,15 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        self.construct_relations(namespace,namespace_list)
        
        try:
-          
-         
-          data = msgpack.unpackb(mqtt_data)
-          
-          
 
+          data = msgpack.unpackb(mqtt_data)
+ 
           self.stream_write(namespace,data)
           
   
        except: 
-         
-         raise
+         pass # bad message pack data
+        
          
        
    def stream_write(self,key, data):
@@ -121,19 +176,18 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        
        
 
-class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Query_Support,Redis_Stream):
+class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Redis_Stream):
 
    def __init__(self,redis_site_data):
-       self.redis_handle = redis.StrictRedis( host = redis_site_data["host"] , 
-                                             port=redis_site_data["port"], 
-                                             db=redis_site_data["mqtt_db"] )
-                                            
+       self.site_data = redis_site_data 
+                                             
                     
        self.sep       = "["
        self.rel_sep   = ":"
        self.label_sep = "]"
-                                            
-    
+       Construct_Namespace.__init__(self) 
+       self.redis_handle   = redis.StrictRedis( host = redis_site_data["host"], port = redis_site_data["port"],db=redis_site_data["mqtt_db"])       
+       
 
 
    def add_mqtt_match_terminal( self, query_list, relationship, label=None ):
@@ -160,10 +214,11 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Query_Support,Redis_Stre
    def match_mqtt_list( self,  match_list, starting_set = None  ):
        if starting_set == None:
            starting_set = self.redis_handle.smembers("@GRAPH_KEYS")
-       
+          
        for i in match_list:
            if i["type"] == "MATCH_TERMINAL":
                starting_set = self.match_terminal_relationship( i["relationship"], i["label"] , starting_set, i["property_mask"])
+               
                if starting_set == None:
                    return set([]), []
 
@@ -174,7 +229,78 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Query_Support,Redis_Stre
           
          
        return starting_set
+ 
+   def match_terminal_relationship( self, relationship, label= None , starting_set = None,property_values = None ):
+       return_value = None
+      
+       if label == None:
+         
+          if self.redis_handle.sismember( "@TERMINALS", relationship) == True:
+             
+              return_value = set(self.redis_handle.smembers("&"+relationship))
+             
+              return_value = return_value.intersection(starting_set)
+              
+              
+       
+       else:
+          if self.redis_handle.sismember( "@TERMINALS", relationship) == True:
+               if self.redis_handle.exists("$"+relationship+self.rel_sep+label) == True:
+                   return_value = self.redis_handle.smembers("$"+relationship+self.rel_sep+label)
+                   return_value = return_value.intersection(starting_set)
+
+       if (property_values != None) and (return_value != None):
+          return_value = self.match_properties( return_value , property_values )
+       return return_value
+
+   def match_relationship( self, relationship, label= None , starting_set = None ):
+       return_value = None
+       
+       if label == None:
           
+          if self.redis_handle.sismember(  "@RELATIONSHIPS", relationship) == True:
+             
+              return_value = set(self.redis_handle.smembers("%"+relationship))
+              return_value = return_value.intersection(starting_set)
+              
+       
+       else:
+          
+          if self.redis_handle.sismember( "@RELATIONSHIPS", relationship) == True:
+               
+               if self.redis_handle.exists("#"+relationship+self.rel_sep+label) == True:
+                   
+                   return_value = self.redis_handle.smembers("#"+relationship+self.rel_sep+label)
+                   
+                   return_value = return_value.intersection(starting_set)
+       return return_value
+
+
+      
+
+   def match_properties( self, starting_set , property_values ):
+       return_value = []
+       for i in list(starting_set):
+           flag = True
+           
+           for j , value in property_values.items(): 
+               
+               data = self.redis_handle.hget(i,j)
+               if data == None:
+                   flag = False
+                   break
+               
+               if json.loads(data) != value:
+                   flag = False
+                   break
+ 
+           if flag == True:
+               return_value.append( i)
+       return return_value
+
+
+
+ 
        
    def xrange_topic(self, topic, start_timestamp, end_timestamp , count=100):
        if self.redis_handle.sismember("@TOPICS",topic) == True:

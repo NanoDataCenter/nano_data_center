@@ -54,7 +54,7 @@ class Construct_Data_Structures(object):
        properties["forward"] =forward
        self.properties["data_structures"][measurement] = properties 
 
-   def add_redis_stream(self,name,depth=256,forward=False):
+   def add_redis_stream(self,name,depth=1024,forward=False):
        assert(name not in self.properties )
        properties = {}
        properties["name"] = name

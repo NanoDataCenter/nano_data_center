@@ -28,7 +28,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       bc.add_info_node("MQTT_MAIN_FLOW_METER","MQTT_MAIN_FLOW_METER",properties={"name":"WELL_MONITOR_1/FLOW_METERS:MAIN_FLOW_METER"} )
       bc.add_info_node("MQTT_CLEANING_METER","MQTT_CLEANING_METER",properties={"name":"WELL_MONITOR_1/FLOW_METERS:CLEANING_OUTLET"} )
       bc.add_info_node("MQTT_CURRENT_SENSOR","MQTT_CURRENT_SENSOR",properties={"name": 'CURRENT_MONITOR_1/SLAVE_CURRENTS:IRRIGATION_VALVES'} )
-
+      bc.add_info_node("IRRIGATION_LOGGING","IRRIGATION_LOGGING",properties={"log_length": 50,"settling_time":5})
       
       
    

@@ -1,13 +1,13 @@
-July 22
-1.   irrigation_control
-    a.  subtract eto in monitor
-    b.  add current monitoring
-    c.  add excessive current
-    d.  add cleaning current monitoring
-    f.  add statistics logging
-    d.  add past_history
-2.  start irrigation monitoring 
+July 28
+
+1.  Add error state to irrigation_queue processing
+    verify modbus is operating
+    verify mqtt devices are operating correctly
+    verify relay state
+    verify null currents and null flow
+    verify master valve operations
+       check flow rate and cleaning valve operations  -- check off functionality
+       verify power draw of master valve
     
-3.  web
-   add support for web monitor
-   support limits
+2.  Mqtt devuce statys
+    exception statys forgot termingat

@@ -1,3 +1,163 @@
+import msgpack
+import base64
+import redis
+import time
+from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
+from redis_support_py3.mqtt_to_redis_py3 import MQTT_TO_REDIS_BRIDGE_RETRIEVE
+from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
+
+class MQTT_Log(object):
+
+   def __init__(self,mqtt_server_data, mqtt_devices, package,site_data,irrigation_control,qs):
+        
+        self.mqtt_server_data  = mqtt_server_data
+        self.mqtt_devices = mqtt_devices
+        self.site_data = site_data
+        self.irrigation_control = irrigation_control
+        
+        self.mqtt_bridge = MQTT_TO_REDIS_BRIDGE_RETRIEVE(site_data)
+        self.generate_data_handlers(package,qs)
+        self.log_data()
+        
+        
+        
+        
+        
+   def generate_data_handlers(self,package,qs):
+        self.handlers = {}
+        data_structures = package["data_structures"]
+        generate_handlers = Generate_Handlers(package,qs)
+        self.ds_handlers = {}
+        self.ds_handlers["MQTT_INPUT_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["MQTT_INPUT_QUEUE"])
+        self.ds_handlers["MQTT_PAST_ACTION_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_PAST_ACTION_QUEUE"])
+        self.ds_handlers["MQTT_SENSOR_QUEUE"] = generate_handlers.construct_redis_stream_writer(data_structures["MQTT_SENSOR_QUEUE"])
+        self.ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
+        self.ds_handlers["MQTT_SENSOR_STATUS"] = generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
+
+
+   def log_data(self):
+       
+       self.base_time = time.time()
+       self.check_heartbeat()
+       while 1:
+           self.interval_time = time.time()
+           while (time.time() -self.base_time)< 60:
+               time.sleep(15)
+               self.update_irrigation_data()
+               self.update_max_current()
+               self.update_irrigation_relay_trip()
+               
+               
+              
+           self.check_heartbeat()
+           self.check_reboot()
+           self.average_irrigation_data()
+           self.base_time = time.time() 
+
+
+   def update_irrigation_data(self):
+        print(time.time()-self.interval_time )
+        
+   def update_max_current(self):
+       print(time.time()-self.interval_time )
+
+   def update_irrigation_relay_trip(self):
+      print(time.time()-self.interval_time )
+
+   def check_heartbeat(self):
+     
+      query_list = []
+      
+      query_list = self.mqtt_bridge.add_mqtt_match_terminal(query_list,"HEART_BEAT")
+      heartbeat_sets = self.mqtt_bridge.match_mqtt_list(query_list)  
+      print("heartbeat_sets",heartbeat_sets)
+      list_data = list(heartbeat_sets)
+      for i in list_data:
+          data = self.mqtt_bridge.xrevrange_namespace(i, "+", "-" , count=1)
+          print(type(data[0]))
+          timestamp = data[0]["timestamp"]
+          print(i,time.time()-timestamp)
+      
+      
+      
+   def check_reboot(self):
+      print(time.time()-self.base_time )
+
+   def average_irrigation_data(self):
+       print(time.time()-self.base_time )
+       
+       
+       
+       
+if __name__ == "__main__":
+
+    import datetime
+    import time
+    import string
+    import urllib.request
+    import math
+    import redis
+    import base64
+    import json
+
+    import os
+    import copy
+    #import load_files_py3
+    from redis_support_py3.graph_query_support_py3 import  Query_Support
+    import datetime
+    
+
+    from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
+
+    #
+    #
+    # Read Boot File
+    # expand json file
+    # 
+    file_handle = open("system_data_files/redis_server.json",'r')
+    data = file_handle.read()
+    file_handle.close()
+    redis_site = json.loads(data)
+     
+    qs = Query_Support( redis_site )
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship =  "MQTT_DEVICE" )
+                                        
+    mqtt_sets, mqtt_sources = qs.match_list(query_list) 
+    mqtt_devices = {}
+    for i in mqtt_sources:
+       mqtt_devices[i["name"]] = {"name":i["name"], "type":i["type"],"topic":i["topic"] }
+
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_terminal( query_list, 
+                             relationship = "MQTT_SERVER" )
+                                           
+    host_sets, host_sources = qs.match_list(query_list)
+    host_data = host_sources[0]
+   
+    
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"MQTT_DEVICES_DATA"} )
+                                           
+    package_sets, package_sources = qs.match_list(query_list)
+    package = package_sources[0]
+    redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] )
+    irrigation_control = generate_irrigation_control(redis_site,qs)
+    MQTT_Log(mqtt_server_data = host_data,
+                 mqtt_devices = mqtt_devices,
+                 package = package,
+                 site_data = redis_site,
+                 irrigation_control = irrigation_control,
+                 qs = qs)
+
+   
+'''
 import ssl
 import msgpack
 import time
@@ -5,7 +165,13 @@ import time
 import paho.mqtt.client as mqtt
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
-
+import json
+import msgpack
+import base64
+import redis
+import time
+from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
+from redis_support_py3.mqtt_to_redis_py3 import MQTT_TO_REDIS_BRIDGE_STORE
 
 class Base_Monitor(object):
    def __init__(self,device_id):
@@ -383,3 +549,5 @@ if __name__ == "__main__":
 else:
   pass
   
+
+'''

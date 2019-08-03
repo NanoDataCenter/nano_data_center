@@ -63,7 +63,8 @@ class Irrigation_Queue_Management(object):
                                                            manage_eto = manage_eto,
                                                            measurement_depths = measurement_depths,
                                                            irrigation_hash_control = irrigation_hash_control,
-                                                           qs = qs )
+                                                           qs = qs,
+                                                           redis_site = redis_site_data  )
 
       self.chain_list    = []
       self.chain_list.extend(self.check_off.construct_chains(cf))
@@ -118,8 +119,8 @@ class Irrigation_Queue_Management(object):
 
       cf.define_chain("check_excessive_current", True )
       #cf.insert.log("check_excessive_current")  
-      #cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
-      cf.insert.one_step(self.send_mqtt_current_request)      
+      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
+      #cf.insert.one_step(self.send_mqtt_current_request)      
       cf.insert.wait_event_count( count = 10 )      
       cf.insert.assert_function_reset(self.check_excessive_current)
       cf.insert.log("excessive_current_found")
@@ -347,35 +348,35 @@ class Irrigation_Queue_Management(object):
      
 
    def check_excessive_current(self,cf_handle, chainObj, parameters, event):
-       
+       #self.send_mqtt_current_request(cf_handle, chainObj, parameters, event)
        max_current = self.irrigation_hash_control.hget("SLAVE_MAX_CURRENT")
        relay_state = self.irrigation_hash_control.hget("SLAVE_RELAY_STATE")
        return_value = False
        
        ref_time = time.time()
-       
+       '''
        if ref_time - max_current["timestamp"] > 120:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
           details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Excessive Time: " + \
               str(ref_time - max_current["timestamp"])
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Lost_MQTT_Comunication_Current","details":details,"level":"RED"})
           return_value =True
        if ref_time - relay_state["timestamp"] >  120:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
           details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Excessive Time: " + \
-              str(ref_time - max_current["timestamp"])
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+              str(ref_time - relay_state["timestamp"])
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":":Lost_MQTT_Comunication_Current","details":details,"level":"RED"})
           return_value =True
           
-     
+       '''
        if max_current['MAX_EQUIPMENT_CURRENT'] > self.slave_currents["EQUIPMENT"]:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
           details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Current: " + \
               str(max_current['MAX_EQUIPMENT_CURRENT'])+   "Excessive Slave Equipment Current"
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Excessive Equipment Current","details":details,"level":"RED"})
           return_value =True
        
        if max_current['MAX_IRRIGATION_CURRENT'] > self.slave_currents["IRRIGATION"]:
@@ -384,25 +385,25 @@ class Irrigation_Queue_Management(object):
           details = "Schedule "+ json_object["schedule_name"] +" step: "+str(json_object["step"] )+ \
                          "Current: "+str(max_current['MAX_IRRIGATION_CURRENT'])+" Excessive Irrigation Current"
 
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Excessive Irrigation Current","details":details,"level":"RED"})
           return_value = True
        
        if relay_state["EQUIPMENT_STATE"] == False:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
           details = "Schedule "+ json_object["schedule_name"] +" step: "+str(json_object["step"] )+ \
-                         "Current: "+str(max_current['MAX_IRRIGATION_CURRENT'])+" Excessive Irrigation Current"
+                         "Current: "+str(relay_state["CURRENT_VALUE"])+" Equipment Relay Tripped"
 
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Equipment Relay Tripped","details":details,"level":"RED"})
           return_value = True   
 
        if relay_state['IRRIGATION_STATE'] == False:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
           details = "Schedule "+ json_object["schedule_name"] +" step: "+str(json_object["step"] )+ \
-                         "Current: "+str(max_current['MAX_IRRIGATION_CURRENT'])+" Excessive Irrigation Current"
+                         "Current: "+str(relay_state["CURRENT_VALUE"])+" IRRIGATION Relay Tripped"
 
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Irrigation Relay Tripped","details":details,"level":"RED"})
           return_value =True          
        #### add rs485 current monitoring
        #print("return value",return_value)
@@ -428,7 +429,7 @@ class Irrigation_Queue_Management(object):
               details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+ \
                          "Flow:"+str(gpm)+" Excessive Irrigation Current"
 
-              self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+              self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Excessive Flow","details":details,"level":"RED"})
               return True
        return False
               
@@ -445,5 +446,5 @@ class Irrigation_Queue_Management(object):
               json_object = self.get_json_object()
               details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+ \
                          "Flow:"+str(gpm)+" Excessive Cleaning Current"
-              self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
+              self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Excessive Cleaning Valve Flow","details":details,"level":"RED"})
        return False       

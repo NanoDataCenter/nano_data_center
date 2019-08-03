@@ -37,16 +37,51 @@ class Construct_MQTT_Devices(object):
        properties = {}
        properties["type"] = "SECURITY_MONITOR"
        properties["topic"] = mqtt_tag
+       properties["null_commands"] = {}
+       properties["subscriptions"] = {}
+       properties["subscriptions"]["REBOOT"] = True
+       properties["subscriptions"]["HEART_BEAT"] = True
        self.bc.add_info_node( "MQTT_DEVICE",mqtt_tag,properties=properties )
        
    def add_current_monitor(self,mqtt_tag):
        properties = {}
        properties["type"] = "CURRENT_MONITOR"
        properties["topic"] = mqtt_tag
+       properties["null_commands"] = {}
+             
+       properties["null_commands"]["INPUT/MQTT_CURRENT/GET_LIMIT_CURRENTS"] = True
+       properties["null_commands"]["INPUT/MQTT_CURRENT/GET_MAX_CURRENTS"] = True
+       properties["null_commands"]["INPUT/MQTT_CURRENT/READ_CURRENT"] = True
+       properties["null_commands"]["OUTPUT/MQTT_CURRENT/READ_RELAY_STATES"] = True
+       properties["null_commands"]["OUTPUT/MQTT_CURRENT/CLEAR_MAX_CURRENTS"] = True
+       properties["null_commands"]["OUTPUT/MQTT_CURRENT/ENABLE_EQUIPMENT_RELAY"] = True
+       properties["null_commands"]["OUTPUT/MQTT_CURRENT/ENABLE_IRRIGATION_RELAY"] = True
+       properties["null_commands"]["OUTPUT/MQTT_CURRENT/DISABLE_EQUIPMENT_RELAY"] = True
+       properties["null_commands"]["OUTPUT/MQTT_CURRENT/DISABLE_IRRIGATION_RELAY"] = True
+
+       properties["subscriptions"] = {}
+       properties["subscriptions"]["REBOOT"] = True
+       properties["subscriptions"]["HEART_BEAT"] = True
+       properties["subscriptions"]['INPUT/AD1/VALUE/RESPONSE'] = True
+       properties["subscriptions"]["OUTPUT/MQTT_CURRENT/EQUIPMENT_RELAY_TRIP/RESPONSE"] = True
+       properties["subscriptions"]["OUTPUT/MQTT_CURRENT/IRRIGATION_RELAY_TRIP/RESPONSE"] = True
+       properties["subscriptions"]["INPUT/MQTT_CURRENT/GET_LIMIT_CURRENTS/REPONSE"] = True
+       properties["subscriptions"]["INPUT/MQTT_CURRENT/MAX_CURRENTS/RESPONSE"] = True
+       properties["subscriptions"]["INPUT/MQTT_CURRENT/CURRENTS/RESPONSE"] = True
+       properties["subscriptions"]["OUTPUT/MQTT_CURRENT/RELAY_STATE/RESPONSE"] = True
+
        self.bc.add_info_node( "MQTT_DEVICE",mqtt_tag,properties=properties )
        
    def add_well_monitor(self,mqtt_tag):
        properties = {}
        properties["type"] = "WELL_MONITOR"
        properties["topic"] = mqtt_tag
+       properties["null_commands"] = {}
+       properties["subscriptions"] = {}
+       properties["subscriptions"]["REBOOT"] = True
+       properties["subscriptions"]["HEART_BEAT"] = True
+ 
+       properties["subscriptions"]['INPUT/AD1/VALUE/RESPONSE'] = True
+       properties["subscriptions"]['INPUT/PULSE_COUNT/VALUE'] = True
+
        self.bc.add_info_node( "MQTT_DEVICE",mqtt_tag,properties=properties )
