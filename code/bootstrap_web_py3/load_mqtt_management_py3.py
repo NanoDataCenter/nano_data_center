@@ -64,9 +64,8 @@ class Load_MQTT_Pages(Base_Stream_Processing):
        temp_data = self.handlers["MQTT_REBOOT_LOG"].hgetall()
       
        for key,i in temp_data.items():
-         i["time"] = str(datetime.fromtimestamp(int(i["timestamp"]))) 
-         i["delta_t"] = int(i["delta_t"])
-         i["detail"] = "--- Device Id: "+ i["device_id"]+" Reboot Date:  "+i['time'] + " Reboot Interval "+str(i["delta_t"])+ " SEC"
+           i["time"] = str(datetime.fromtimestamp(int(i["timestamp"]))) 
+           i["detail"] = "--- Device Id: "+ i["device_id"]+" Reboot Date:  "+i['time'] 
        return self.render_template("mqtt_templates/mqtt_status_template" ,time_history = temp_data, title ="Reboot Status" )
 
 
@@ -84,7 +83,7 @@ class Load_MQTT_Pages(Base_Stream_Processing):
       
        for key,i in temp_data.items():
          i["time"] = str(datetime.fromtimestamp(i["timestamp"]))
-         i["detail"] = "--- Device Id: "+ i["device_id"]+"  Date:  "+i['time'] + " Topic "+str(i[b"TOPIC"])
+         i["detail"] = "--- Date:  "+i['time'] + " Topic "+str(i['topic'])
        return self.render_template("mqtt_templates/mqtt_status_template" ,time_history = temp_data,title ="Unknown Commands" )
 
 

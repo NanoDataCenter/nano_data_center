@@ -68,8 +68,6 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        self.ds_handlers = {}
        self.ds_handlers["MQTT_UNKNOWN_DEVICES"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_DEVICES"])   
        self.ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"] = generate_handlers.construct_hash(data_structures["MQTT_UNKNOWN_SUBSCRIPTIONS"])
-       self.ds_handlers["MQTT_UNKNOWN_DEVICES"].delete_all()
-       self.ds_handlers["MQTT_UNKNOWN_SUBSCRIPTIONS"].delete_all()
        
        
    def clear_db(self):
@@ -85,7 +83,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
           self.device_id = device_id
           return True
        else:
-            print("no_match")
+            print("no_match",topic)
             data = {}
             data["topic"] = topic
             data["timestamp"] = time.time()
@@ -99,7 +97,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        topic_list = topic_list[3:]
        topic_search = "/".join(topic_list)
        if topic_search in null_commands:
-          print("null_commands found")
+          #print("null_commands found")
           return True
        else:
           
@@ -111,10 +109,10 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        topic_list = topic_list[3:]
        topic_search = "/".join(topic_list)
        if topic_search in valid_commands:
-          print("valid command",topic)
+          #print("valid command",topic)
           return True
        else:
-            print("no_match")
+            print("no_match",topic)
             data = {}
             data["topic"] = topic
             data["timestamp"] = time.time()
@@ -142,12 +140,16 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        try:
 
           data = msgpack.unpackb(mqtt_data)
- 
+          data["device_path"] = topic
+          print("data",data)
           self.stream_write(namespace,data)
           
   
        except: 
-         pass # bad message pack data
+          data = {}
+          data["topic"] = topic
+          data["timestamp"] = time.time()
+          self.stream_write(namespace,data)
         
          
        
@@ -189,7 +191,13 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Redis_Stream):
        self.redis_handle   = redis.StrictRedis( host = redis_site_data["host"], port = redis_site_data["port"],db=redis_site_data["mqtt_db"])       
        
 
-
+   def stream_exists(self,key):
+       print(key)
+       if self.redis_handle.exists(key):
+          if self.redis_handle.type(key) == b'stream':
+             return True
+       return False
+          
    def add_mqtt_match_terminal( self, query_list, relationship, label=None ):
        temp = {}
        temp["relationship"] = relationship
