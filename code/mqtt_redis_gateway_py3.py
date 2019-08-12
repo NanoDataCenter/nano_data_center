@@ -12,6 +12,8 @@ from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 from redis_support_py3.mqtt_to_redis_py3 import MQTT_TO_REDIS_BRIDGE_STORE
 import paho.mqtt.client as mqtt
 import ssl
+from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
+
 
 class MQTT_Redis_Bridge(object):
    
@@ -20,12 +22,14 @@ class MQTT_Redis_Bridge(object):
                 mqtt_devices,
                 site_data,
                 package,
-                qs ):
+                qs ,
+                irrigation_hash_control,
+                irrigation_hash_fields):
                 
        self.mqtt_server_data = mqtt_server_data
        self.site_data = site_data
        generate_handlers = Generate_Handlers(package,qs)
-       self.mqtt_bridge = MQTT_TO_REDIS_BRIDGE_STORE(site_data,mqtt_devices,package,generate_handlers)
+       self.mqtt_bridge = MQTT_TO_REDIS_BRIDGE_STORE(site_data,mqtt_devices,package,generate_handlers,irrigation_hash_fields,irrigation_hash_control)
        
        self.client = mqtt.Client(client_id="", clean_session=True, userdata=None,  transport="tcp")
        self.client.tls_set( cert_reqs=ssl.CERT_NONE )
@@ -120,12 +124,26 @@ if __name__ == "__main__":
     package_sets, package_sources = qs.match_list(query_list)
     package = package_sources[0]  
     
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="MQTT_DEVICES",label="MQTT_DEVICES" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "IRRIGATION_HASH_FIELDS",label="IRRIGATION_HASH_FIELDS"  )
                                            
+    irrigation_hash_fields_sets, irrigation_hash_fields = qs.match_list(query_list)
+    irrigation_hash_fields = irrigation_hash_fields[0]["data"]
+    irrigation_hash_control = generate_irrigation_control(redis_site,qs )
+    
+    
+    
+      
 
     MQTT_Redis_Bridge(mqtt_server_data = host_data,
                       mqtt_devices = mqtt_devices,
                       site_data = redis_site,
                       package = package,
-                      qs= qs)
+                      qs= qs,
+                      irrigation_hash_control=irrigation_hash_control,
+                      irrigation_hash_fields=irrigation_hash_fields)
 
    

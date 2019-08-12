@@ -13,6 +13,7 @@ import msgpack
 
 from .graph_query_support_py3 import Query_Support
 from .redis_stream_utilities_py3 import Redis_Stream
+from .mqtt_message_processing_py3 import MQTT_Message_Processing
 
 class Construct_Namespace(object):
    def __init__(self):
@@ -50,10 +51,18 @@ class Construct_Namespace(object):
 
 class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
 
-   def __init__(self,redis_site,mqtt_devices,package,generate_handlers,depth=1000):
+   def __init__(self,redis_site,
+                     mqtt_devices,
+                     package,
+                     generate_handlers,
+                     irrigation_table_entries,
+                     irrigation_table,
+                     depth=1000):
 
    
        self.depth = depth
+       self.irrigation_table_entries = irrigation_table_entries
+       self.irrigation_table  = irrigation_table
       
        self.mqtt_devices = mqtt_devices
        self.redis_handle = redis.StrictRedis( host = redis_site["host"] , 
@@ -61,7 +70,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
                                              db=redis_site["mqtt_db"] )
                                              
                                                           
-      
+       self.mqtt_messaging = MQTT_Message_Processing()
        Construct_Namespace.__init__(self)
        data_structures = package["data_structures"]
        
@@ -141,16 +150,17 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
 
           data = msgpack.unpackb(mqtt_data)
           data["device_path"] = topic
-          print("data",data)
+         
           self.stream_write(namespace,data)
-          
+          self.update_irrigation_table(topic,data)   
   
        except: 
+          raise
           data = {}
           data["topic"] = topic
           data["timestamp"] = time.time()
           self.stream_write(namespace,data)
-        
+         
          
        
    def stream_write(self,key, data):
@@ -176,7 +186,29 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        self.redis_handle.sadd("$"+relationship+self.rel_sep+label,namespace)
        
        
-       
+   def update_irrigation_table(self,topic,data):
+       topic_list = topic.split("/")
+       device = topic_list[2]
+       device_topic = "/".join(topic_list[3:])
+       for key,item in self.irrigation_table_entries.items():
+           
+           if (device == item[0]) and (device_topic == item[1]):
+              
+               if isinstance(self.mqtt_devices[device]["subscriptions"][device_topic],dict): 
+                  processed_data = self.mqtt_messaging.process_mqtt_message(self.mqtt_devices[device]["subscriptions"][device_topic],item[2],data)
+                  print(key,processed_data)
+                  self.irrigation_table.hset(key,processed_data)
+                  
+       print("xxxxxxxx",topic,device,device_topic)
+
+
+
+
+
+
+
+
+   
 
 class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Redis_Stream):
 
