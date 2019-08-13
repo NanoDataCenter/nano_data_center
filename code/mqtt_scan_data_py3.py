@@ -5,17 +5,25 @@ import redis
 import time
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 from redis_support_py3.mqtt_to_redis_py3 import MQTT_TO_REDIS_BRIDGE_RETRIEVE
-from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
+from redis_support_py3.mqtt_message_processing_py3 import MQTT_Message_Processing
 
 class MQTT_Log(object):
 
-   def __init__(self,mqtt_server_data, mqtt_devices, package,site_data,irrigation_control,qs):
+   def __init__(self,
+                mqtt_server_data, 
+                mqtt_devices, 
+                package,
+                site_data,
+                qs,
+                stream_average_fields):
         
+        
+        self.stream_average_fields = stream_average_fields
         self.mqtt_server_data  = mqtt_server_data
         self.mqtt_devices = mqtt_devices
         self.site_data = site_data
         self.irrigation_control = irrigation_control
-        
+        self.mqtt_messaging = MQTT_Message_Processing()
 
         self.mqtt_bridge = MQTT_TO_REDIS_BRIDGE_RETRIEVE(site_data)
         self.construct_presence_key_name()
@@ -53,47 +61,21 @@ class MQTT_Log(object):
 
    def log_data(self):
        
-       self.base_time = time.time()
+    
        self.check_heartbeat()
        self.check_reboot()
        
        while 1:
-           self.interval_time = time.time()
-           while (time.time() -self.base_time)< 60:
-               time.sleep(15)
-               self.update_mqtt_ad_packets()
-               self.update_pulse_count_packets()
-               self.update_irrigation_relay_trip()
-               
+           time.sleep(60)
                
               
            self.check_heartbeat()
            self.check_reboot()
            self.average_irrigation_data()
-           self.base_time = time.time() 
 
 
-   def self.update_mqtt_ad_packets(self):
-[INPUT:][AD1:][VALUE:][RESPONSE:]       
+ 
    
-       
-   def update_pulse_count_packets(self):
-       "[REMOTES:][WELL_MONITOR_1:][INPUT:][PULSE_COUNT:][VALUE:]" 
-        key = self.device_id+"/"+data["topic"]
-       key_1 = key+":MAIN_FLOW_METER"
-       if key_1 not in composite_record:
-          composite_record[key_1] = []
-       composite_record[key_1].append(data["MAIN_FLOW_METER"])
-       self.irrigation_control.hset("MAIN_FLOW_METER",data["MAIN_FLOW_METER"])
-       key_1 = key+":CLEANING_OUTLET"
-       if key_1 not in composite_record:
-          composite_record[key_1] = []
-       composite_record[key_1].append(data["CLEANING_OUTLET"])
-       self.irrigation_control.hset("CLEANING_FLOW_METER",data["CLEANING_OUTLET"])      
-   def update_irrigation_relay_trip(self):
-       pass
-
-
 
    def update_contact(self,name,key,status):
        old_data = self.ds_handlers["MQTT_CONTACT_LOG"].hget(name)
@@ -169,7 +151,7 @@ class MQTT_Log(object):
       
 
    def average_irrigation_data(self):
-       print(time.time()-self.base_time )
+       pass
        
    
        
@@ -226,8 +208,13 @@ if __name__ == "__main__":
                                       "reboot_flag":i["REBOOT_FLAG"],"reboot_key":host_data["BASE_TOPIC"]+"/"+i["name"]+"/"+i["REBOOT_KEY"],
                                       "heart_beat":host_data["BASE_TOPIC"]+"/"+i["name"]+"/"+i["HEART_BEAT"] }
    
-   
-
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="MQTT_DEVICES",label="MQTT_DEVICES" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "SENSOR_MINUTE_FIELDS",label="SENSOR_MINUTE_FIELDS"  )   
+    stream_average_sets,stream_average_fields = qs.match_list(query_list)
+    stream_average_fields = stream_average_fields[0]["data"]
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
 
@@ -236,13 +223,13 @@ if __name__ == "__main__":
                                            
     package_sets, package_sources = qs.match_list(query_list)
     package = package_sources[0]
-    redis_handle =  redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["redis_io_db"] )
-    irrigation_control = generate_irrigation_control(redis_site,qs)
+ 
     MQTT_Log(mqtt_server_data = host_data,
                  mqtt_devices = mqtt_devices,
                  package = package,
                  site_data = redis_site,
-                 irrigation_control = irrigation_control,
-                 qs = qs)
+                 qs = qs,
+                 stream_average_fields = stream_average_fields)
+                
 
    

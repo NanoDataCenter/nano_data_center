@@ -37,13 +37,14 @@ class Construct_MQTT_Devices(object):
 
    def add_minute_average_fields(self):
        properties = {}
-       properties["WELL_PRESSURE"] = [["WELL_MONITOR_1",'INPUT/AD1/VALUE/RESPONSE', "WELL_PRESSURE"    ]]
-       properties["EQUIPMENT_CURRENT"] =[["CURRENT_MONITOR_1",'INPUT/AD1/VALUE/RESPONSE',"EQUIPMENT_CURRENT"]]
-       properties["IRRIGATION_CURRENT"] = [[ "CURRENT_MONITOR_1", 'INPUT/AD1/VALUE/RESPONSE', "IRRIGATION_CURRENT"]]
-       properties["MAIN_FLOW_METER"] = [["WELL_MONITOR_1",  'INPUT/PULSE_COUNT/VALUE',  "MAIN_FLOW_METER" ]]
-       properties["CLEANING_FLOW_METER"] = [["WELL_MONITOR_1",'INPUT/PULSE_COUNT/VALUE' , "CLEANING_OUTLET"   ]]
-       properties["INPUT_PUMP_CURRENT"] = [["WELL_MONITOR_1",'INPUT/AD1/VALUE/RESPONSE' ,"INPUT_PUMP_CURRENT"    ]]
-       properties["OUTPUT_PUMP_CURRENT"] = [["WELL_MONITOR_1", 'INPUT/AD1/VALUE/RESPONSE', "OUTPUT_PUMP_CURRENT"   ]]
+       properties["data"] = {}
+       properties["data"]["WELL_PRESSURE"] = [["WELL_MONITOR_1",'INPUT/AD1/VALUE/RESPONSE', "WELL_PRESSURE"    ]]
+       properties["data"]["EQUIPMENT_CURRENT"] =[["CURRENT_MONITOR_1",'INPUT/AD1/VALUE/RESPONSE',"EQUIPMENT_CURRENT"]]
+       properties["data"]["IRRIGATION_CURRENT"] = [[ "CURRENT_MONITOR_1", 'INPUT/AD1/VALUE/RESPONSE', "IRRIGATION_CURRENT"]]
+       properties["data"]["MAIN_FLOW_METER"] = [["WELL_MONITOR_1",  'INPUT/PULSE_COUNT/VALUE',  "MAIN_FLOW_METER" ]]
+       properties["data"]["CLEANING_FLOW_METER"] = [["WELL_MONITOR_1",'INPUT/PULSE_COUNT/VALUE' , "CLEANING_OUTLET"   ]]
+       properties["data"]["INPUT_PUMP_CURRENT"] = [["WELL_MONITOR_1",'INPUT/AD1/VALUE/RESPONSE' ,"INPUT_PUMP_CURRENT"    ]]
+       properties["data"]["OUTPUT_PUMP_CURRENT"] = [["WELL_MONITOR_1", 'INPUT/AD1/VALUE/RESPONSE', "OUTPUT_PUMP_CURRENT"   ]]
 
        self.bc.add_info_node( "SENSOR_MINUTE_FIELDS","SENSOR_MINUTE_FIELDS",properties=properties )
 

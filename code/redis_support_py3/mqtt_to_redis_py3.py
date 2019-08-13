@@ -155,7 +155,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
           self.update_irrigation_table(topic,data)   
   
        except: 
-          raise
+          
           data = {}
           data["topic"] = topic
           data["timestamp"] = time.time()
