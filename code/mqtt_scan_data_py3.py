@@ -22,7 +22,7 @@ class MQTT_Log(object):
         self.mqtt_server_data  = mqtt_server_data
         self.mqtt_devices = mqtt_devices
         self.site_data = site_data
-        self.irrigation_control = irrigation_control
+        
         self.mqtt_messaging = MQTT_Message_Processing()
 
         self.mqtt_bridge = MQTT_TO_REDIS_BRIDGE_RETRIEVE(site_data)
@@ -42,7 +42,7 @@ class MQTT_Log(object):
        for i,item in self.mqtt_devices.items():
          if "reboot_flag" in item:
           self.mqtt_devices[i]["reboot_name_space"] = self.mqtt_bridge.construct_name_space(item["reboot_key"])[0]   
-       print(self.mqtt_devices)
+      
         
    def generate_data_handlers(self,package,qs):
         self.handlers = {}
@@ -55,15 +55,16 @@ class MQTT_Log(object):
         self.ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
         self.ds_handlers["MQTT_REBOOT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_REBOOT_LOG"])
         self.ds_handlers["MQTT_SENSOR_STATUS"] = generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
-        
+        self.ds_handlers["MQTT_SENSOR_STATUS"].delete_all()
        
 
 
    def log_data(self):
        
-    
        self.check_heartbeat()
-       self.check_reboot()
+       self.check_reboot()   
+       self.average_irrigation_data()
+       quit()
        
        while 1:
            time.sleep(60)
@@ -93,7 +94,7 @@ class MQTT_Log(object):
           return
        if old_data["status"] != status:
            update_flag = True
-           print("device change")
+          
            self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Change","device_id":name,"status":status})   
        if status == True:
           update_flag = True
@@ -110,14 +111,14 @@ class MQTT_Log(object):
             self.update_contact(name,key,False)
           else:
             data = self.mqtt_bridge.xrevrange_namespace(key, "+", "-" , count=1)
-            print(type(data[0]),data)
+            
             timestamp = data[0]["timestamp"]
-            print(i,time.time()-timestamp)
+           
             if items["HEART_BEAT_TIME_OUT"] < time.time()-timestamp:
-              print("device not responding")
+              
               self.update_contact(name,key,False)
             else:
-              print("device responding")
+              
               self.update_contact(name,key,True)
 
    def update_reboot(self,name,key,timestamp):
@@ -136,13 +137,13 @@ class MQTT_Log(object):
 
       
    def check_reboot(self):
-      print("check reboot",self.mqtt_devices)
+     
       for i,items in self.mqtt_devices.items():
           name = items["name"]
           if "reboot_flag" in items:
              key = items["reboot_name_space"] 
              if self.mqtt_bridge.stream_exists(key) == False:
-                print("stream does not exist")
+                pass
                 
              else:
                  data = self.mqtt_bridge.xrevrange_namespace(key, "+", "-" , count=1)
@@ -151,10 +152,19 @@ class MQTT_Log(object):
       
 
    def average_irrigation_data(self):
-       pass
-       
-   
-       
+       return_value = {}
+       cache = {}
+       for key,item in self.stream_average_fields.items():
+          
+          topic = "/REMOTES/"+item[0]+"/"+item[1]
+          
+          if topic not in cache:
+            namespace = self.mqtt_bridge.construct_name_space(topic)[0]
+            print("namespace",namespace)
+            data = self.mqtt_bridge.xrevrange_namespace(namespace, time.time(), time.time()-60 , count=5)
+            print("data",data)
+            cache[topic] = data
+            
 if __name__ == "__main__":
 
     import datetime
