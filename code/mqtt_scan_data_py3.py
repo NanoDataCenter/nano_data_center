@@ -15,9 +15,10 @@ class MQTT_Log(object):
                 package,
                 site_data,
                 qs,
-                stream_average_fields):
+                stream_average_fields,
+                host_data):
         
-        
+        self.host_data = host_data
         self.stream_average_fields = stream_average_fields
         self.mqtt_server_data  = mqtt_server_data
         self.mqtt_devices = mqtt_devices
@@ -36,12 +37,15 @@ class MQTT_Log(object):
         
    def construct_presence_key_name(self):
        for i,item in self.mqtt_devices.items():
-          self.mqtt_devices[i]["presence_name_space"] = self.mqtt_bridge.construct_name_space(item["heart_beat"])[0]       
+       
+          topic = self.host_data["BASE_TOPIC"]+"/"+item["name"]+"/"+item["HEART_BEAT"]
+          self.mqtt_devices[i]["presence_name_space"] = self.mqtt_bridge.construct_name_space(topic)[0]       
        
    def construct_reboot_key_name(self):
        for i,item in self.mqtt_devices.items():
-         if "reboot_flag" in item:
-          self.mqtt_devices[i]["reboot_name_space"] = self.mqtt_bridge.construct_name_space(item["reboot_key"])[0]   
+         if "REBOOT_FLAG" in item:
+            topic = self.host_data["BASE_TOPIC"]+"/"+item["name"]+"/"+item["REBOOT_KEY"]
+            self.mqtt_devices[i]["reboot_name_space"] = self.mqtt_bridge.construct_name_space(topic)[0]   
       
         
    def generate_data_handlers(self,package,qs):
@@ -55,7 +59,7 @@ class MQTT_Log(object):
         self.ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
         self.ds_handlers["MQTT_REBOOT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_REBOOT_LOG"])
         self.ds_handlers["MQTT_SENSOR_STATUS"] = generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
-        self.ds_handlers["MQTT_SENSOR_STATUS"].delete_all()
+        self.ds_handlers["MQTT_SENSOR_QUEUE"].delete_all()
        
 
 
@@ -64,7 +68,7 @@ class MQTT_Log(object):
        self.check_heartbeat()
        self.check_reboot()   
        self.average_irrigation_data()
-       quit()
+       
        
        while 1:
            time.sleep(60)
@@ -106,6 +110,7 @@ class MQTT_Log(object):
       for i,items in self.mqtt_devices.items():
           name = items["name"]
           key = items["presence_name_space"]
+          
           if self.mqtt_bridge.stream_exists(key) == False:
             print("stream does not exist")
             self.update_contact(name,key,False)
@@ -140,8 +145,9 @@ class MQTT_Log(object):
      
       for i,items in self.mqtt_devices.items():
           name = items["name"]
-          if "reboot_flag" in items:
+          if "REBOOT_FLAG" in items:
              key = items["reboot_name_space"] 
+            
              if self.mqtt_bridge.stream_exists(key) == False:
                 pass
                 
@@ -159,12 +165,21 @@ class MQTT_Log(object):
           topic = "/REMOTES/"+item[0]+"/"+item[1]
           
           if topic not in cache:
-            namespace = self.mqtt_bridge.construct_name_space(topic)[0]
-            print("namespace",namespace)
-            data = self.mqtt_bridge.xrevrange_namespace(namespace, time.time(), time.time()-60 , count=5)
-            print("data",data)
-            cache[topic] = data
-            
+             namespace = self.mqtt_bridge.construct_name_space(topic)[0]
+             #print("namespace",namespace)
+             data = self.mqtt_bridge.xrevrange_namespace(namespace, time.time(), time.time()-60 , count=5)
+             #print("data",data)
+             cache[topic] = data
+          processed_data = 0
+          for i in cache[topic]:
+              data = i["data"]
+              processed_data += self.mqtt_messaging.process_mqtt_message(self.mqtt_devices[item[0]]["subscriptions"][item[1]],item[2],data)
+          if len(cache[topic]) > 0:
+             processed_data = processed_data/len(cache[topic])
+          return_value[key] = processed_data
+       return_value["timestamp"] = time.time()
+       self.ds_handlers["MQTT_SENSOR_QUEUE"].push(return_value)
+                   
 if __name__ == "__main__":
 
     import datetime
@@ -213,11 +228,16 @@ if __name__ == "__main__":
                                         
     mqtt_sets, mqtt_sources = qs.match_list(query_list) 
     mqtt_devices = {}
+    '''
     for i in mqtt_sources:
        mqtt_devices[i["name"]] = {"name":i["name"], "type":i["type"],"topic":i["topic"],"HEART_BEAT_TIME_OUT":i["HEART_BEAT_TIME_OUT"],
                                       "reboot_flag":i["REBOOT_FLAG"],"reboot_key":host_data["BASE_TOPIC"]+"/"+i["name"]+"/"+i["REBOOT_KEY"],
                                       "heart_beat":host_data["BASE_TOPIC"]+"/"+i["name"]+"/"+i["HEART_BEAT"] }
-   
+    '''
+    for i in mqtt_sources:
+       mqtt_devices[i["name"]] = i
+
+ 
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_relationship( query_list,relationship="MQTT_DEVICES",label="MQTT_DEVICES" )
@@ -239,7 +259,9 @@ if __name__ == "__main__":
                  package = package,
                  site_data = redis_site,
                  qs = qs,
-                 stream_average_fields = stream_average_fields)
+                 stream_average_fields = stream_average_fields,
+                 host_data= host_data)
+                 
                 
 
    

@@ -16,6 +16,7 @@ class MQTT_Message_Processing(object):
         
         
    def process_mqtt_message(self,data_def,data_key,data):
+
        if data_def["type"] in self.message_handlers:
          return self.message_handlers[data_def["type"]](data_def,data_key,data)
        else:
@@ -43,7 +44,9 @@ class MQTT_Message_Processing(object):
    def process_raw_analog(self,definition_record,raw_data):
        sensor_field = str.encode(definition_record["channel_field"]) 
        sensor_element = definition_record["channel_value"]
+       
        for i in raw_data:
+         
          if i[sensor_field] == sensor_element:
            #print("sensor data",i[b"DC"] )
            return i[b"DC"]

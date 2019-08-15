@@ -59,7 +59,7 @@ class MQTT_Redis_Bridge(object):
 
    def on_connect(self,client, userdata, flags, rc):
       
-     
+        time.sleep(30)
         self.client.subscribe(self.mqtt_server_data["BASE_TOPIC"]+"/#")
 
 # The callback for when a PUBLISH message is received from the server.

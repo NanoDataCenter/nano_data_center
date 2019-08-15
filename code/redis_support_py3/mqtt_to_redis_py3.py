@@ -214,7 +214,7 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Redis_Stream):
 
    def __init__(self,redis_site_data):
        self.site_data = redis_site_data 
-                                             
+                                    
                     
        self.sep       = "["
        self.rel_sep   = ":"
@@ -224,7 +224,7 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Redis_Stream):
        
 
    def stream_exists(self,key):
-       print(key)
+       
        if self.redis_handle.exists(key):
           if self.redis_handle.type(key) == b'stream':
              return True
@@ -397,4 +397,5 @@ class MQTT_TO_REDIS_BRIDGE_RETRIEVE(Construct_Namespace,Redis_Stream):
 
        return data_list
 
+ 
 
