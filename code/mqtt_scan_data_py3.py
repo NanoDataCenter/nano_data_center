@@ -59,7 +59,7 @@ class MQTT_Log(object):
         self.ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
         self.ds_handlers["MQTT_REBOOT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_REBOOT_LOG"])
         self.ds_handlers["MQTT_SENSOR_STATUS"] = generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
-        self.ds_handlers["MQTT_SENSOR_QUEUE"].delete_all()
+        
        
 
 
@@ -177,7 +177,7 @@ class MQTT_Log(object):
           if len(cache[topic]) > 0:
              processed_data = processed_data/len(cache[topic])
           return_value[key] = processed_data
-       return_value["timestamp"] = time.time()
+       
        self.ds_handlers["MQTT_SENSOR_QUEUE"].push(return_value)
                    
 if __name__ == "__main__":
