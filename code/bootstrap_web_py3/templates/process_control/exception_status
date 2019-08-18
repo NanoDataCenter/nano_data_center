@@ -56,7 +56,8 @@ function change_controller(event,ui)
 <div style="margin-top:10px"></div>
 <h5>{{controller_exceptions[item].script}}</h5>
 <ul>  
-<li>crc: {{controller_exceptions[item].script}} </li>
+<li>name: {{controller_exceptions[item].script}} </li>
+<li>time: {{controller_exceptions[item].time}}
 <li>exception stack:</li>
 <ul>
 {% for line in controller_exceptions[item].error_output %}

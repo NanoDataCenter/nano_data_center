@@ -6,13 +6,11 @@ import os
 from .valve_resistance_check_py3  import   Valve_Resistance_Check
 from .clean_filter_py3            import   Clean_Filter
 from .check_off_py3               import   Check_Off
+
 from .irrigation_control_basic_py3      import   Irrigation_Control_Basic 
-from core_libraries.irrigation_hash_control_py3 import get_main_flow_meter_name
-from core_libraries.irrigation_hash_control_py3 import get_main_current_monitor_name
 from core_libraries.irrigation_hash_control_py3 import get_flow_checking_limits
-from core_libraries.irrigation_hash_control_py3 import get_slave_currents
-from core_libraries.irrigation_hash_control_py3 import get_cleaning_meter_name
 from core_libraries.irrigation_hash_control_py3 import get_cleaning_limits
+from core_libraries.irrigation_hash_control_py3 import get_current_limits
 from core_libraries.mqtt_current_monitor_interface_py3 import MQTT_Current_Monitor_Publish
 
 class Irrigation_Queue_Management(object):
@@ -33,16 +31,15 @@ class Irrigation_Queue_Management(object):
       self.eto_management = eto_management
       self.irrigation_hash_control = irrigation_hash_control
       self.redis_site_data = redis_site_data
-      self.mqtt_current_name = get_main_current_monitor_name(redis_site_data,qs)
-      self.mqtt_flow_name    = get_main_flow_meter_name(redis_site_data,qs)
-      self.mqtt_cleaning_name = get_cleaning_meter_name(redis_site_data,qs)
+      self.mqtt_flow_name = "MAIN_FLOW_METER"
       self.irrigation_excessive_flow_limits = get_flow_checking_limits(redis_site_data,qs)
       self.cleaning_limit      = get_cleaning_limits(redis_site_data,qs) 
-     
+      self.current_limit       = get_current_limits(redis_site_data,qs)
      
       self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/",qs )
-      self.slave_currents   = get_slave_currents(redis_site_data,qs)
-      self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers )   
+      
+      self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers )
+  
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,
                                                              cluster_control = cluster_control,
                                                              io_control = irrigation_io, 
@@ -72,7 +69,7 @@ class Irrigation_Queue_Management(object):
       self.chain_list.extend(self.clean_filter.construct_chains(cf))
        
       self.chain_list.extend(self.irrigation_control.construct_chains(cf))
-
+     
       cluster_control.define_cluster( cluster_id, self.chain_list, [])
       self.check_off.construct_clusters( cluster_control, cluster_id,"CHECK_OFF" )
       self.measure_valve_resistance.construct_clusters(cluster_control, 
@@ -80,7 +77,7 @@ class Irrigation_Queue_Management(object):
       self.clean_filter.construct_clusters( cluster_control, cluster_id,"CLEAN_FILTER" )
       
       self.irrigation_control.construct_clusters( cluster_control, cluster_id,"DIAGNOSITIC_CONTROL" )
-
+      
   
      
 
@@ -92,11 +89,14 @@ class Irrigation_Queue_Management(object):
 
       cf.define_chain("QC_Check_Irrigation_Queue", True )
       cf.insert.log("check irrigation queue")
+
+      cf.insert.enable_chains(["operational_check"])
+      cf.insert.wait_event_count( event = "IRRIGATION_OPERATION_OK" ,count = 1)
+      cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
+      cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.one_step(self.turn_on_power_relays)
       cf.insert.one_step(self.clear_max_currents)
       cf.insert.one_step(self.clear_json_object)
-      cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
-      cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)
       cf.insert.wait_event_count( count = 1 )
       cf.insert.log( "Checking Irrigation Queue" )
@@ -154,9 +154,62 @@ class Irrigation_Queue_Management(object):
       cf.insert.wait_event_count( count = 1 )
       cf.insert.reset()           
       
-           
+ 
+      cf.insert.one_step(self.clear_max_currents)
+      cf.insert.one_step(self.clear_json_object) 
 
-       
+      
+      cf.define_chain("operational_check", False )
+      
+      cf.insert.one_step(self.op_check_master_relay_json_object)
+      cf.insert.enable_chains(["mqtt_power_device_check"])
+      cf.insert.wait_event_count( event = "MQTT_POWER_DEVICE_OK" ,count = 1)
+      
+      cf.insert.one_step(self.op_check_mqtt_device_json_object)
+      cf.insert.enable_chains(["mqtt_device_check"])
+      cf.insert.wait_event_count( event = "MQTT_DEVICE_OK" ,count = 1)
+      
+      cf.insert.one_step(self.op_check_plc_device_json_object)
+      cf.insert.enable_chains(["plc_device_check"])
+      cf.insert.wait_event_count( event = "PLC_OPERATION_OK" ,count = 1)
+      
+      cf.insert.send_event( "IRRIGATION_OPERATION_OK")
+      cf.insert.terminate()
+
+
+
+      cf.define_chain("mqtt_power_device_check",False)     
+      cf.insert.assert_function_terminate(  "MQTT_POWER_DEVICE_OK" ,None,self.check_master_relay) # False is pass
+      cf.insert.one_step(self.turn_off_master_relay)
+      cf.insert.wait_event_count(event = 10)
+      cf.insert.one_step(self.turn_on_master_relay)
+      cf.insert.wait_event_count( event="MINUTE_TICK",count = 1)
+      cf.insert.reset()
+      
+      cf.define_chain("mqtt_device_check",False)     
+      cf.insert.assert_function_terminate( "MQTT_DEVICE_OK" ,None,self.check_mqtt_power_relays) # False is pass
+      cf.insert.one_step(self.turn_off_equipment_relay)
+      cf.insert.wait_event_count(event = 10)
+      cf.insert.one_step(self.turn_on_equipment_relay)
+      cf.insert.wait_event_count( event="MINUTE_TICK",count = 1)
+      cf.insert.verify_function_reset( None,None,self.check_equipment_power_level) # false is pass
+      cf.insert.enable_chains(["serious_fault"])
+      cf.insert.terminate()
+    
+      
+      cf.define_chain("plc_device_check",False)     
+      cf.insert.assert_function_terminate( "PLC_OPERATION_OK" ,None,self.check_plc_devices) # False is pass     
+      cf.insert.wait_event_count(event = 10)     
+      cf.insert.reset()
+      
+      
+   
+      
+      cf.define_chain("serious_fault",False)
+      cf.insert.one_step(self.op_check_serious_fault_json_object)
+      #cf.insert.one_step(self.update_past_actions,"SERIOUS FAULT IRRIGATION SUSPENDED")
+      cf.insert.halt() 
+     
    def check_queue( self, cf_handle, chainObj, parameters, event):
    
    
@@ -281,8 +334,37 @@ class Irrigation_Queue_Management(object):
        self.cluster_ctrl.disable_cluster_rt( self.cf,self.cluster_id)
 
    def skip_operation( self,*args ):
-       self.cf.send_event("RELEASE_IRRIGATION_CONTROL",None)       
- 
+       self.cf.send_event("RELEASE_IRRIGATION_CONTROL",None)  
+
+
+   def op_check_master_relay_json_object(self,*args):
+      self.irrigation_hash_control.hset("SCHEDULE_NAME","CHECK_MASTER_RELAY")  
+      self.irrigation_hash_control.hset("STEP",0)  
+      self.irrigation_hash_control.hset("RUN_TIME",0)  
+      self.irrigation_hash_control.hset("ELASPED_TIME",0)  
+      self.irrigation_hash_control.hset("TIME_STAMP",time.time())
+
+   def op_check_mqtt_device_json_object(self,*args):
+      self.irrigation_hash_control.hset("SCHEDULE_NAME","CHECK_MQTT_DEVICES")  
+      self.irrigation_hash_control.hset("STEP",0)  
+      self.irrigation_hash_control.hset("RUN_TIME",0)  
+      self.irrigation_hash_control.hset("ELASPED_TIME",0)  
+      self.irrigation_hash_control.hset("TIME_STAMP",time.time())
+
+   def op_check_plc_device_json_object(self,*args):
+      self.irrigation_hash_control.hset("SCHEDULE_NAME","CHECK_PLC_DEVICES")  
+      self.irrigation_hash_control.hset("STEP",0)  
+      self.irrigation_hash_control.hset("RUN_TIME",0)  
+      self.irrigation_hash_control.hset("ELASPED_TIME",0)  
+      self.irrigation_hash_control.hset("TIME_STAMP",time.time())
+
+   def op_check_serious_fault_json_object(self,*args):
+      self.irrigation_hash_control.hset("SCHEDULE_NAME","SERIOUS EQUIPMENT CURRENT")  
+      self.irrigation_hash_control.hset("STEP",0)  
+      self.irrigation_hash_control.hset("RUN_TIME",0)  
+      self.irrigation_hash_control.hset("ELASPED_TIME",0)  
+      self.irrigation_hash_control.hset("TIME_STAMP",time.time())
+      
    def clear_json_object(self,*args):
       self.irrigation_hash_control.hset("SCHEDULE_NAME","OFFLINE")  
       self.irrigation_hash_control.hset("STEP",0)  
@@ -310,15 +392,39 @@ class Irrigation_Queue_Management(object):
 #
 #
 #
- 
+   def check_master_relay(self,*parms):
+      return False
+      
+      
+   def turn_off_master_relay(self,*parms):
+       pass
+     
+     
+   def turn_on_master_relay(self,*parms):
+         pass
+
+   def check_mqtt_power_relays(self,*parms):
+       return False
+       
+   def turn_off_equipment_relay(self,*parms):
+      pass
+            
+   def turn_on_equipment_relay(self,*parms):
+      pass
+      
+   def check_equipment_power_level(self,*parms):
+      pass
+
+   def check_plc_devices(self,*parms):
+     pass
 
 
 
    def accumulate_cleaning_filter(self,cf_handle, chainObj, parameters, event):
        
        cleaning_sum      = self.irrigation_hash_control.hget("CLEANING_ACCUMULATION")     
-       gpm               = self.handlers["MQTT_SENSOR_STATUS"].hget(self.mqtt_flow_name)
-      
+       gpm               = self.handlers["MQTT_SENSOR_STATUS"].hget("MAIN_FLOW_METER")
+       print("gpm",gpm)
        cleaning_sum += gpm
        self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",cleaning_sum)
 
@@ -348,30 +454,25 @@ class Irrigation_Queue_Management(object):
      
 
    def check_excessive_current(self,cf_handle, chainObj, parameters, event):
-       #self.send_mqtt_current_request(cf_handle, chainObj, parameters, event)
+       self.send_mqtt_current_request(cf_handle, chainObj, parameters, event)
        max_current = self.irrigation_hash_control.hget("SLAVE_MAX_CURRENT")
        relay_state = self.irrigation_hash_control.hget("SLAVE_RELAY_STATE")
        return_value = False
-       
+       print("max_current",max_current)
+       print("relay_state",relay_state)
        ref_time = time.time()
-       '''
-       if ref_time - max_current["timestamp"] > 120:
-          json_object = self.get_json_object()
-          cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
-          details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Excessive Time: " + \
-              str(ref_time - max_current["timestamp"])
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Lost_MQTT_Comunication_Current","details":details,"level":"RED"})
-          return_value =True
-       if ref_time - relay_state["timestamp"] >  120:
-          json_object = self.get_json_object()
-          cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
-          details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Excessive Time: " + \
-              str(ref_time - relay_state["timestamp"])
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":":Lost_MQTT_Comunication_Current","details":details,"level":"RED"})
-          return_value =True
+       plc_flag = False
+       if max_current == None:
+          plc_flag = True
+       if relay_state == None:
+         plc_flag = True
+       if ref_time - max_current["timestamp"] > 60: # results greater than one minute ago
+           plc_flag = True
+       if ref_time - relay_state["timestamp"] >  60: # results greater than one minute ago
+           plc_flag = True
           
-       '''
-       if max_current['MAX_EQUIPMENT_CURRENT'] > self.slave_currents["EQUIPMENT"]:
+       
+       if max_current['MAX_EQUIPMENT_CURRENT'] > self.current_limit["EQUIPMENT"]:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
           details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+"Current: " + \
@@ -379,7 +480,7 @@ class Irrigation_Queue_Management(object):
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Excessive Equipment Current","details":details,"level":"RED"})
           return_value =True
        
-       if max_current['MAX_IRRIGATION_CURRENT'] > self.slave_currents["IRRIGATION"]:
+       if max_current['MAX_IRRIGATION_CURRENT'] > self.current_limit["IRRIGATION"]:
           json_object = self.get_json_object()
           cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
           details = "Schedule "+ json_object["schedule_name"] +" step: "+str(json_object["step"] )+ \
@@ -405,8 +506,9 @@ class Irrigation_Queue_Management(object):
 
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Irrigation Relay Tripped","details":details,"level":"RED"})
           return_value =True          
-       #### add rs485 current monitoring
-       #print("return value",return_value)
+       if plc_flag == True:
+         # add in get currents from plcs
+         return_value = False
        return return_value
        
    def monitor_excessive_flow(self,cf_handle, chainObj, parameters, event):
@@ -440,7 +542,7 @@ class Irrigation_Queue_Management(object):
           self.monitor_excessive_flow_count = 0
        else:
          if self.clean_filter_flag != True:
-            gpm = self.handlers["MQTT_SENSOR_STATUS"].hget(self.mqtt_cleaning_name)
+            gpm = self.handlers["MQTT_SENSOR_STATUS"].hget("CLEANING_FLOW_METER")
             
             if gpm != 0:
               json_object = self.get_json_object()

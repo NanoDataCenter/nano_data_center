@@ -86,6 +86,10 @@ class Load_Process_Management(object):
        controller_exceptions = self.handlers[controller_id]["ERROR_HASH"].hgetall()
 
        for i in controller_exceptions.keys():
+           if "time" in controller_exceptions[i]:
+               temp = controller_exceptions[i]["time"]
+               controller_exceptions[i]["time"] = datetime.datetime.utcfromtimestamp(temp).strftime('%Y-%m-%d %H:%M:%S')
+           
            temp = controller_exceptions[i]["error_output"]
            controller_exceptions[i]["error_output"] = [temp]
       

@@ -177,7 +177,7 @@ class MQTT_Log(object):
           if len(cache[topic]) > 0:
              processed_data = processed_data/len(cache[topic])
           return_value[key] = processed_data
-       
+          self.ds_handlers["MQTT_SENSOR_STATUS"].hset(key,processed_data)
        self.ds_handlers["MQTT_SENSOR_QUEUE"].push(return_value)
                    
 if __name__ == "__main__":

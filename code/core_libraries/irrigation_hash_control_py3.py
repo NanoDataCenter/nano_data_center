@@ -42,40 +42,10 @@ def generate_sensor_minute_status(redis_site,qs ):
        
        return generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
 
-def get_main_flow_meter_name(redis_site,qs):
- 
-    query_list = []
-    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
-    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
-    query_list = qs.add_match_terminal( query_list, 
-                                        relationship =  "MQTT_MAIN_FLOW_METER" )
-                                        
-    flow_meter_sets, flow_meter_sources = qs.match_list(query_list) 
-   
-    return flow_meter_sources[0]["name"]
 
-def get_cleaning_meter_name(redis_site,qs):
 
-    query_list = []
-    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
-    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
-    query_list = qs.add_match_terminal( query_list, 
-                                        relationship =  "MQTT_CLEANING_METER" )
-                                        
-    cleaning_meter_sets, cleaning_meter_sources = qs.match_list(query_list) 
-   
-    return cleaning_meter_sources[0]["name"]
 
-def get_main_current_monitor_name(redis_site,qs):   
 
-    query_list = []
-    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
-    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL",label="IRRIGIGATION_SCHEDULING_CONTROL" )
-    query_list = qs.add_match_terminal( query_list, 
-                                        relationship =  "MQTT_CURRENT_SENSOR" )
-                                        
-    current_sensor_sets, current_sensor_sources = qs.match_list(query_list) 
-    return current_sensor_sources[0]["name"]
 
 def get_flow_checking_limits(redis_site,qs):   
 
@@ -99,8 +69,8 @@ def get_cleaning_limits(redis_site,qs):
     limits_sets, limit_sources = qs.match_list(query_list) 
     return limit_sources[0]["limit"]
 
-def get_slave_currents(redis_site,qs):   
-
+def get_current_limits(redis_site,qs):  
+ 
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL" )
@@ -108,7 +78,8 @@ def get_slave_currents(redis_site,qs):
                                         relationship =  "MQTT_CURRENT_LIMITS" )
                                         
     limits_sets, limit_sources = qs.match_list(query_list) 
-    return limit_sources[0]  
+    return limit_sources[0]
+
 if __name__ == "__main__":
       # for test only
     #
