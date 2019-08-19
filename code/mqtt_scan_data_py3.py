@@ -59,8 +59,25 @@ class MQTT_Log(object):
         self.ds_handlers["MQTT_CONTACT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_CONTACT_LOG"])
         self.ds_handlers["MQTT_REBOOT_LOG"] = generate_handlers.construct_hash(data_structures["MQTT_REBOOT_LOG"])
         self.ds_handlers["MQTT_SENSOR_STATUS"] = generate_handlers.construct_hash(data_structures["MQTT_SENSOR_STATUS"])
+        contact_set = set(self.ds_handlers["MQTT_CONTACT_LOG"].hkeys())
+        device_set = set(self.mqtt_devices.keys())
+        difference_set = contact_set-device_set
+        for i in list(difference_set):
+           self.ds_handlers["MQTT_CONTACT_LOG"].hdelete(i)
+           
         
-       
+        contact_set = set(self.ds_handlers["MQTT_CONTACT_LOG"].hkeys())
+        difference_set = device_set -contact_set
+        for i in list(difference_set):
+            data = {}
+            data["time"] = time.time()
+            data["status"] = status
+            data["name"] = name
+            data["device_id"] = name # redundant with name
+            self.ds_handlers["MQTT_PAST_ACTION_QUEUE"].push({"action":"Device_Change","device_id":name,"status":status})
+            self.ds_handlers["MQTT_CONTACT_LOG"].hset(name,data)  
+        
+
 
 
    def log_data(self):
@@ -84,6 +101,7 @@ class MQTT_Log(object):
 
    def update_contact(self,name,key,status):
        old_data = self.ds_handlers["MQTT_CONTACT_LOG"].hget(name)
+       print("old_data",old_data)
        data = {}
        data["time"] = time.time()
        data["status"] = status
@@ -116,9 +134,9 @@ class MQTT_Log(object):
             self.update_contact(name,key,False)
           else:
             data = self.mqtt_bridge.xrevrange_namespace(key, "+", "-" , count=1)
-            
+            print('data',data[0])
             timestamp = data[0]["timestamp"]
-           
+            print(name,time.time()-timestamp)
             if items["HEART_BEAT_TIME_OUT"] < time.time()-timestamp:
               
               self.update_contact(name,key,False)

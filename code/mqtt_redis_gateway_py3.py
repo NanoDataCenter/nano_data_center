@@ -44,22 +44,19 @@ class MQTT_Redis_Bridge(object):
        self.client.on_connect = self.on_connect
        self.client.on_message = self.on_message
        self.connection_flag = False
-       while self.connection_flag == False:
-           try:
-              
-              print(self.mqtt_server_data["HOST"],self.mqtt_server_data["PORT"])
-              self.client.connect(self.mqtt_server_data["HOST"],self.mqtt_server_data["PORT"], 60)
-           except:
-              
-              time.sleep(5)
-           else:
-              self.connection_flag = True
+      
            
+              
+       print(self.mqtt_server_data["HOST"],self.mqtt_server_data["PORT"])
+       self.client.connect(self.mqtt_server_data["HOST"],self.mqtt_server_data["PORT"], 60)
+
        self.client.loop_forever()
 
    def on_connect(self,client, userdata, flags, rc):
-      
-        time.sleep(30)
+        print("connection successfull",rc)
+        if rc != 0:
+          raise ValueError("bad mqtt connection")
+        self.connection_flag = True
         self.client.subscribe(self.mqtt_server_data["BASE_TOPIC"]+"/#")
 
 # The callback for when a PUBLISH message is received from the server.

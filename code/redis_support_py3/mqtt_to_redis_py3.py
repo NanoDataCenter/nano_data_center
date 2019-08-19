@@ -130,7 +130,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
   
  
    def store_mqtt_data(self,topic,mqtt_data):
-      
+       print("*******************************topic",topic)
        namespace,namespace_list = self.construct_name_space(topic)
        if self.validate_device(topic,namespace_list) != True:
            return # unknown device
@@ -149,6 +149,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        try:
 
           data = msgpack.unpackb(mqtt_data)
+         
           data["device_path"] = topic
          
           self.stream_write(namespace,data)

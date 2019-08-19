@@ -28,7 +28,7 @@ class Construct_MQTT_Devices(object):
       properties["PORT"] = 8883
       properties["BASE_TOPIC"] = "/REMOTES"
       self.bc.add_info_node( "MQTT_SERVER","MQTT_SERVER",properties=properties )
-      self.add_security_monitor("GARAGE_MONITOR_1")
+      #self.add_security_monitor("GARAGE_MONITOR_1")
       self.add_current_monitor("CURRENT_MONITOR_1")
       self.add_well_monitor("WELL_MONITOR_1")
       self.irrigation_hash_fields()
