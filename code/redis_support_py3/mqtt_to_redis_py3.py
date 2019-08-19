@@ -155,7 +155,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
           self.update_irrigation_table(topic,data)   
   
        except: 
-          
+          print("*******************************exception")
           data = {}
           data["topic"] = topic
           data["timestamp"] = time.time()
@@ -187,6 +187,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
        
        
    def update_irrigation_table(self,topic,data):
+       
        topic_list = topic.split("/")
        device = topic_list[2]
        device_topic = "/".join(topic_list[3:])
@@ -199,7 +200,7 @@ class MQTT_TO_REDIS_BRIDGE_STORE(Construct_Namespace,Redis_Stream):
                   print(key,processed_data)
                   self.irrigation_table.hset(key,processed_data)
                   
-       print("xxxxxxxx",topic,device,device_topic)
+       #print("xxxxxxxx",topic,device,device_topic)
 
 
 

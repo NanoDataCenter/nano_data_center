@@ -47,10 +47,10 @@ class IO_Control(object):
        print("turn on cleaning valve")
             
    def turn_off_cleaning_valves( self,*arg ):
-      
       print("turn off cleaning valve")
     
-
+   def verify_all_devices(self,*args):
+       return True
  
  
    #

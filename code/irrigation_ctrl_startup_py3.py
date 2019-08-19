@@ -25,7 +25,7 @@ import time
 from eto_py3.eto_init_py3 import Generate_Data_Handler
 from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
 from core_libraries.irrigation_hash_control_py3 import generate_sensor_minute_status
-
+from core_libraries.irrigation_hash_control_py3 import generate_mqtt_devices
 
 class ETO_Management(object):
    def __init__(self,qs,redis_site,app_files):
@@ -194,6 +194,7 @@ if __name__ == "__main__":
     ds_handlers["VALVE_JOB_QUEUE_CLIENT"] = generate_handlers.construct_job_queue_client(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
     ds_handlers["VALVE_JOB_QUEUE_SERVER"] = generate_handlers.construct_job_queue_server(data_structures["IRRIGATION_VALVE_JOB_QUEUE"] )
     ds_handlers["MQTT_SENSOR_STATUS"] = generate_sensor_minute_status(redis_site,qs)
+    ds_handlers["MQTT_CONTACT_LOG"] = generate_mqtt_devices(redis_site,qs)
     irrigation_hash_control = generate_irrigation_control(redis_site,qs)  
 
  

@@ -97,7 +97,7 @@ class MQTT_Message_Processing(object):
        
    def process_flat_input(self,data_def,data_key,data):
        result = {}
-       print("data",data)
+       #print("data",data)
        for i in data_def["fields"]:
          result[i["name"]] = data[str.encode(i["field"])]
        result["timestamp"] = time.time()

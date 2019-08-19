@@ -89,9 +89,11 @@ class Irrigation_Queue_Management(object):
 
       cf.define_chain("QC_Check_Irrigation_Queue", True )
       cf.insert.log("check irrigation queue")
-
+      cf.insert.log( "Starting Operational Check" )
       cf.insert.enable_chains(["operational_check"])
+      
       cf.insert.wait_event_count( event = "IRRIGATION_OPERATION_OK" ,count = 1)
+      cf.insert.log( "Ending Operational Check" )
       cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.one_step(self.turn_on_power_relays)
@@ -111,26 +113,27 @@ class Irrigation_Queue_Management(object):
       cf.insert.log("RELEASE_IRRIGATION_CONTROL event received")
       cf.insert.reset()
       
-      cf.define_chain("accumulate_cleaning_filter", True )
+      cf.define_chain("accumulate_cleaning_filter", False )
       #cf.insert.log("accumulate_cleaning_filer")      
       cf.insert.one_step(self.accumulate_cleaning_filter) 
       cf.insert.wait_event_count(event = "MINUTE_TICK")
       cf.insert.reset()
 
-      cf.define_chain("check_excessive_current", True )
-      #cf.insert.log("check_excessive_current")  
+      cf.define_chain("check_excessive_current", False )
+      #cf.insert.log("check_excessive_current")
+            
       cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
-      #cf.insert.one_step(self.send_mqtt_current_request)      
+      cf.insert.one_step(self.send_mqtt_current_request)      
       cf.insert.wait_event_count( count = 10 )      
       cf.insert.assert_function_reset(self.check_excessive_current)
       cf.insert.log("excessive_current_found")
-      cf.insert.send_event("IRI_CLOSE_MASTER_VALVE",None)
+      cf.insert.send_event("IRI_CLOSE_MASTER_VALVE",False)
       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.wait_event_count( count = 1 )
       cf.insert.reset()
  
-      cf.define_chain("check_excessive_flow", True )
+      cf.define_chain("check_excessive_flow", False )
       #cf.insert.log("check_excessive_flow")
       cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )
       cf.insert.wait_function(self.monitor_excessive_flow)
@@ -141,7 +144,7 @@ class Irrigation_Queue_Management(object):
       cf.insert.wait_event_count( count = 1 )
       cf.insert.reset()
       
-      cf.define_chain("check_cleaning_valve", True )
+      cf.define_chain("check_cleaning_valve", False )
       #cf.insert.log("check_cleaning_flow_meter")  
       cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
        
@@ -155,41 +158,43 @@ class Irrigation_Queue_Management(object):
       cf.insert.reset()           
       
  
-      cf.insert.one_step(self.clear_max_currents)
-      cf.insert.one_step(self.clear_json_object) 
+      
 
       
-      cf.define_chain("operational_check", False )
-      
+      cf.define_chain("operational_check", False )     
       cf.insert.one_step(self.op_check_master_relay_json_object)
-      cf.insert.enable_chains(["mqtt_power_device_check"])
+      cf.insert.enable_chains(["mqtt_current_controller_check"])
       cf.insert.wait_event_count( event = "MQTT_POWER_DEVICE_OK" ,count = 1)
-      
       cf.insert.one_step(self.op_check_mqtt_device_json_object)
       cf.insert.enable_chains(["mqtt_device_check"])
       cf.insert.wait_event_count( event = "MQTT_DEVICE_OK" ,count = 1)
-      
+      cf.insert.log("check mqtt devices end")
       cf.insert.one_step(self.op_check_plc_device_json_object)
       cf.insert.enable_chains(["plc_device_check"])
       cf.insert.wait_event_count( event = "PLC_OPERATION_OK" ,count = 1)
-      
+      cf.insert.log("check plc end")
       cf.insert.send_event( "IRRIGATION_OPERATION_OK")
       cf.insert.terminate()
 
 
 
-      cf.define_chain("mqtt_power_device_check",False)     
-      cf.insert.assert_function_terminate(  "MQTT_POWER_DEVICE_OK" ,None,self.check_master_relay) # False is pass
+      cf.define_chain("mqtt_current_controller_check",False)           
+      cf.insert.one_step(self.get_current_controller_info)
+         
+      cf.insert.wait_event_count(count = 10)           
+      cf.insert.assert_function_terminate(  "MQTT_POWER_DEVICE_OK" ,None,self.check_current_controller) # False is pass
       cf.insert.one_step(self.turn_off_master_relay)
-      cf.insert.wait_event_count(event = 10)
+      cf.insert.wait_event_count(count = 10)
       cf.insert.one_step(self.turn_on_master_relay)
       cf.insert.wait_event_count( event="MINUTE_TICK",count = 1)
       cf.insert.reset()
       
-      cf.define_chain("mqtt_device_check",False)     
-      cf.insert.assert_function_terminate( "MQTT_DEVICE_OK" ,None,self.check_mqtt_power_relays) # False is pass
+      cf.define_chain("mqtt_device_check",False)    
+      cf.insert.one_step(self.turn_on_equipment_relay)
+      cf.insert.wait_event_count(count = 3)      
+      cf.insert.assert_function_terminate( "MQTT_DEVICE_OK" ,None,self.check_mqtt_devices) # False is pass
       cf.insert.one_step(self.turn_off_equipment_relay)
-      cf.insert.wait_event_count(event = 10)
+      cf.insert.wait_event_count(count = 10)
       cf.insert.one_step(self.turn_on_equipment_relay)
       cf.insert.wait_event_count( event="MINUTE_TICK",count = 1)
       cf.insert.verify_function_reset( None,None,self.check_equipment_power_level) # false is pass
@@ -199,7 +204,7 @@ class Irrigation_Queue_Management(object):
       
       cf.define_chain("plc_device_check",False)     
       cf.insert.assert_function_terminate( "PLC_OPERATION_OK" ,None,self.check_plc_devices) # False is pass     
-      cf.insert.wait_event_count(event = 10)     
+      cf.insert.wait_event_count(count = 10)     
       cf.insert.reset()
       
       
@@ -207,7 +212,7 @@ class Irrigation_Queue_Management(object):
       
       cf.define_chain("serious_fault",False)
       cf.insert.one_step(self.op_check_serious_fault_json_object)
-      #cf.insert.one_step(self.update_past_actions,"SERIOUS FAULT IRRIGATION SUSPENDED")
+      
       cf.insert.halt() 
      
    def check_queue( self, cf_handle, chainObj, parameters, event):
@@ -364,6 +369,8 @@ class Irrigation_Queue_Management(object):
       self.irrigation_hash_control.hset("RUN_TIME",0)  
       self.irrigation_hash_control.hset("ELASPED_TIME",0)  
       self.irrigation_hash_control.hset("TIME_STAMP",time.time())
+      details = " SEVERE EQUIPMENT CURRENT"
+      self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"RED"})
       
    def clear_json_object(self,*args):
       self.irrigation_hash_control.hset("SCHEDULE_NAME","OFFLINE")  
@@ -392,32 +399,92 @@ class Irrigation_Queue_Management(object):
 #
 #
 #
-   def check_master_relay(self,*parms):
-      return False
+   def get_current_controller_info(self, cf_handle, chainObj, parameters, event):
+       if event["name"] == "INIT":
+          return "CONTINUE"
+       else:
+         self.mqtt_current_publish.read_max_currents()
+         self.mqtt_current_publish.read_relay_states()      
       
-      
-   def turn_off_master_relay(self,*parms):
-       pass
-     
-     
-   def turn_on_master_relay(self,*parms):
-         pass
 
-   def check_mqtt_power_relays(self,*parms):
-       return False
+         
        
-   def turn_off_equipment_relay(self,*parms):
-      pass
-            
-   def turn_on_equipment_relay(self,*parms):
-      pass
+   # Purpose is to check current controller is operational
+   def check_current_controller(self, cf_handle, chainObj, parameters, event):
+       
+       if event["name"] == "INIT":
+          return "CONTINUE"
+       else:
+           max_current = self.irrigation_hash_control.hget("SLAVE_MAX_CURRENT")
+           relay_state = self.irrigation_hash_control.hget("SLAVE_RELAY_STATE")
+           return_value = False
+           print("max_current",max_current)
+           print("relay_state",relay_state)
+           print(time.time())
+           ref_time = time.time()
+       
+           if max_current == None:
+               return_value = True
+           if relay_state == None:
+              return_value = True
+           if return_value == False:
+              print(ref_time - max_current["timestamp"])
+              if ref_time - max_current["timestamp"] > 10: # results greater than one minute ago
+                  return_value =  True
+              print(ref_time - relay_state["timestamp"])
+              if ref_time - relay_state["timestamp"] >  10: # results greater than one minute ago
+                 return_value = True
+           print("controller check",return_value)
+
+           return return_value
+       
+ 
       
-   def check_equipment_power_level(self,*parms):
-      pass
+   def turn_off_master_relay(self, cf_handle, chainObj, parameters, event):
+       pass # wait for hardware
+     
+     
+   def turn_on_master_relay(self, cf_handle, chainObj, parameters, event):
+       pass # wait for hardware
 
-   def check_plc_devices(self,*parms):
-     pass
+   def check_mqtt_devices(self, cf_handle, chainObj, parameters, event):
+       print("made it here")
+       if event["name"] == "INIT":
+          return "CONTINUE"
+       else:
+         return_value = False
+         devices_data = self.handlers["MQTT_CONTACT_LOG"].hgetall()
+       
+         ref_time = time.time()
+         for i,item in devices_data.items():
+            print(i,ref_time - item["time"])
+      
+            if ref_time > item["time"]+90: 
+               return_value = True
+               
+               
+         print("return_value",return_value)
+         return False
+       
+   def turn_off_equipment_relay(self, cf_handle, chainObj, parameters, event):
+      pass #self.mqtt_current_publish.disable_equipment_relay()
+            
+   def turn_on_equipment_relay(self, cf_handle, chainObj, parameters, event):
+      pass #self.mqtt_current_publish.clear_max_currents()
+      #self.mqtt_current_publish.enable_equipment_relay()
+      
+   def check_equipment_power_level(self, cf_handle, chainObj, parameters, event):
+      return False
 
+   def check_plc_devices(self, cf_handle, chainObj, parameters, event):
+       
+       if self.irrigation_io.verify_all_devices() == True:
+          return_value =  False
+       else:
+          return_value = True
+       print("plc_return_value",return_value)
+       return return_value       
+    
 
 
    def accumulate_cleaning_filter(self,cf_handle, chainObj, parameters, event):
@@ -433,6 +500,7 @@ class Irrigation_Queue_Management(object):
           return "CONTINUE"
        else:
          self.mqtt_current_publish.read_max_currents()
+         
          self.mqtt_current_publish.read_relay_states()         
          
          

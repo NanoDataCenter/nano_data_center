@@ -41,7 +41,7 @@ class MQTT_Publish(object):
        self.client.on_connect = self.on_connect
        
        self.client.on_disconnect = self.on_disconnect
-       
+       self.client.on_publish = self.on_publish
        self.connection_flag = False
        print("connection attempting")
        while self.connection_flag == False:
@@ -65,7 +65,11 @@ class MQTT_Publish(object):
           pass # self.client.loop_start automatically reconnects
           
 
-    
+   def on_publish(self,client,userdata,result):
+      
+       self.publish_flag = True
+
+       
    def server_job_queue(self):
        try:
          while True:
@@ -76,11 +80,13 @@ class MQTT_Publish(object):
                del data["tx_topic"] 
                binary_data = msgpack.packb(data, use_bin_type=True)
                print("topic",topic,data)
-               infot = self.client.publish(topic,binary_data)
-               infot.wait_for_publish()
+               self.publish_flag = False
+               print(self.client.publish(topic,binary_data))
+               while self.publish_flag == False:
+                  time.sleep(.5)
                self.job_queue_server.pop()
            else:
-               time.sleep(5)
+               time.sleep(2)
        except Exception as tst:
           self.client.loop_stop()
           
