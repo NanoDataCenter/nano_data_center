@@ -55,6 +55,7 @@ class MQTT_Redis_Bridge(object):
    def on_connect(self,client, userdata, flags, rc):
         print("connection successfull",rc)
         if rc != 0:
+          time.sleep(5)
           raise ValueError("bad mqtt connection")
         self.connection_flag = True
         self.client.subscribe(self.mqtt_server_data["BASE_TOPIC"]+"/#")

@@ -57,7 +57,9 @@ class MQTT_Publish(object):
        self.server_job_queue()
        
    def on_connect(self,client, userdata, flags, rc):
-      
+       if rc != 0:
+          time.sleep()
+          raise ValueError("Bad connection")
        print("Connected with result code "+str(rc),)
       
 
@@ -81,12 +83,10 @@ class MQTT_Publish(object):
                binary_data = msgpack.packb(data, use_bin_type=True)
                print("topic",topic,data)
                self.publish_flag = False
-               print(self.client.publish(topic,binary_data))
-               while self.publish_flag == False:
-                  time.sleep(.5)
+               self.client.publish(topic,binary_data)
                self.job_queue_server.pop()
            else:
-               time.sleep(2)
+               time.sleep(.5)
        except Exception as tst:
           self.client.loop_stop()
           

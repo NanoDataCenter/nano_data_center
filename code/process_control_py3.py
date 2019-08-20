@@ -291,6 +291,7 @@ if __name__ == "__main__":
     # Read Boot File
     # expand json file
     # 
+   time.sleep(15) # wait for mqtt server get started
    file_handle = open("system_data_files/redis_server.json",'r')
    data = file_handle.read()
    file_handle.close()
