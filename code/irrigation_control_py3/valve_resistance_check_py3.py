@@ -6,7 +6,7 @@ from .irrigation_logging_py3 import Hash_Logging_Object
 class Valve_Resistance_Check(object):
 
    def __init__( self, cf, cluster_control,io_control, handlers,
-               app_files, sys_files,master_valves,cleaning_valves,measurement_depths):
+               app_files, sys_files,master_valves,cleaning_valves,measurement_depths,mqtt_current_publish,irrigation_hash_control):
        self.handlers = handlers
        self.sys_files    = sys_files
        self.app_files    = app_files
@@ -14,10 +14,10 @@ class Valve_Resistance_Check(object):
        self.cluster_control = cluster_control
        self.io_control      = io_control
        self.master_valves = master_valves
-       self.cleaning_valves = cleaning_valves
+       self.cleaning_valves = cleaning_valves   
+       self.mqtt_current_publish = mqtt_current_publish
+       self.irrigation_hash_control = irrigation_hash_control
        self.hash_logging   = Hash_Logging_Object(self.handlers, "IRRIGATION_VALVE_TEST",measurement_depths["valve_depth"] )
-       
-
 
    def construct_chains( self, cf):
 
@@ -33,9 +33,11 @@ class Valve_Resistance_Check(object):
        cf.insert.terminate() 
 
        cf.define_chain("test_each_valve",False,init_function= self.check_queue)
-       cf.insert.wait_event_count( count = 1 )
+       cf.insert.wait_event_count( count = 1 ) #synchronize on second tick
        cf.insert.one_step(self.valve_setup)
-       cf.insert.wait_event_count(count =2)
+       cf.insert.wait_event_count(count =1)
+       cf.insert.one_step(self.request_measurements)
+       cf.insert.wait_event_count(count =6)
        cf.insert.one_step( self.valve_measurement)
        cf.insert.verify_function_terminate(  reset_event = "IR_V_Valve_Check_Done",
                                              reset_event_data=None,
@@ -123,9 +125,11 @@ class Valve_Resistance_Check(object):
        
        return return_value
 
-   def valve_setup(self, *args ):
-      
+   def valve_setup(self, cf_handle, chainObj, parameters, event ):
+       if event["name"] == "INIT":
+          return "CONTINUE" 
        json_object = self.handlers["VALVE_JOB_QUEUE_SERVER"].pop()
+       self.valve_object = json_object
        if json_object[0] == True:
           json_object = json_object[1]
           
@@ -133,19 +137,63 @@ class Valve_Resistance_Check(object):
           self.io_control.turn_on_valve(  [{"remote": json_object[0], "bits":[int(json_object[1])]}] ) #  {"remote":xxxx,"bits":[] } 
           self.remote = json_object[0]
           self.output = json_object[1]
- 
+          self.mqtt_current_publish.clear_max_currents()
+          self.mqtt_current_publish.enable_equipment_relay()
 
+   def request_measurements(self, cf_handle, chainObj, parameters, event):
+       if event["name"] == "INIT":
+          return "CONTINUE"      
+       self.mqtt_current_publish.read_max_currents()
+       self.mqtt_current_publish.read_relay_states()    
            
-   def valve_measurement(self, *args ):
+   def valve_measurement(self, cf_handle, chainObj, parameters, event ):
+       if event["name"] == "INIT":
+          return "CONTINUE"
+       # check time stamp
+       #
+       #
+       #
+          
+       coil_current = self.measure_current()
        
-       coil_current = self.io_control.measure_valve_current()
-       print( "coil current",coil_current )
        self.hash_logging.log_value(self.remote+":"+str(self.output),coil_current )
        self.io_control.disable_all_sprinklers()
+ 
+
+   def measure_current(self):
+      
+       max_current = self.irrigation_hash_control.hget("SLAVE_MAX_CURRENT")
+       relay_state = self.irrigation_hash_control.hget("SLAVE_RELAY_STATE")
+       return_value = False
+       print("max_current",max_current)
+       print("relay_state",relay_state)
+       ref_time = time.time()
+       plc_flag = False
+       if max_current == None:
+          plc_flag = True
+       if relay_state == None:
+         plc_flag = True
+       if ref_time - max_current["timestamp"] > 6: # results greater than one minute ago
+           plc_flag = True
+       if ref_time - relay_state["timestamp"] >  6: # results greater than one minute ago
+           plc_flag = True
+           
+       if plc_flag == True:
+         return_value =  self.io_controlmeasure_valve_current()
                
+       
+       elif relay_state['IRRIGATION_STATE'] == False:
+         return_value =  max_current['MAX_IRRIGATION_CURRENT']
+         detail = {"current":return_value,"valve":self.valve_object[1]}   
+         self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"valve_short","details":detail})
+       else:
+         return_value =  max_current['MAX_IRRIGATION_CURRENT']
+       print("valve",self.valve_object[1],return_value)
+       return return_value
+ 
    def log_valve_check( self,*args):
         
-     self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"valve resistance","details":{},"level":"GREEN"})
+     self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"valve_resistance_done","details":{},"level":"GREEN"})
  
        
 

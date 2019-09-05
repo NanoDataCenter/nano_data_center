@@ -9,9 +9,10 @@ class Hash_Logging_Object(object):
        self.logging_key = logging_key
        self.depth       = depth
        self.handler = self.handlers[logging_key]
+       self.handler.delete_all()
        
    def log_value(self,key,measurement):
-       if self.handler.hexists(key): 
+       if self.handler.hexists(key) == False: 
             temp = [measurement]
        else:
           temp = self.handler.hget(key)
@@ -21,5 +22,5 @@ class Hash_Logging_Object(object):
              temp = [measurement]
        
        while len(temp) > self.depth:
-             temp.pop()       
+             temp = temp[1:]      
        self.handler.hset(key,temp)

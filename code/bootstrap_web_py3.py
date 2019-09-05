@@ -76,7 +76,7 @@ class PI_Web_Server(object):
        self.load_configuration_management()
        self.load_irrigation_control()
        self.load_mqtt_management()
-      
+       #self.load_irrigation_statistics()
  
 
    def get_pw( self,username):
@@ -234,8 +234,29 @@ class PI_Web_Server(object):
        irrigation_control = generate_irrigation_control(self.redis_site_data,self.qs)
        Load_Irrigation_Pages(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
                   render_template=render_template, redis_handle= self.data_structure_redis_handle, handlers= ds_handlers ,irrigation_control=irrigation_control)
-                  
-       
+    
+   '''    
+   def load_irrigation_statistics(self):
+    
+       query_list = []
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+
+       query_list = self.qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"IRRIGIGATION_SCHEDULING_CONTROL_DATA"} )
+                                           
+       package_sets, package_sources = self.qs.match_list(query_list)  
+     
+       package = package_sources[0] 
+       data_structures = package["data_structures"]
+       generate_handlers = Generate_Handlers(package,self.qs)
+       ds_handlers = {}
+       ds_handlers["IRRIGATION_VALVE_TEST"] = generate_handlers.construct_hash(data_structures["IRRIGATION_VALVE_TEST"])
+   '''
+
+
+
+
+   
    def assemble_controller_handlers(self,label ):
        query_list = []
        query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )

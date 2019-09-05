@@ -85,7 +85,9 @@ class Float_Field(object):
    def hset(self,setup,field,data):
 
        self.handler.hset(field,float(data))
-        
+ 
+
+ 
 class Binary_Field(object):
    def __init__(self,handler):
        self.handler = handler
@@ -105,7 +107,26 @@ class Binary_Field(object):
            self.handler.hset(field,data)
        else:
          raise ValueError("not a boolean type "+str(data))
+ 
+
+class List_Field(object):
+   def __init__(self,handler):
+       self.handler = handler
        
+   def hget(self,setup,field):
+      result = self.handler.hget(field)
+      if result == None:
+         result = setup["init_value"]
+      return bool(result) 
+      
+   def hset(self,setup,field,data):
+       if isinstance(data, list):
+           self.handler.hset(field,data)
+       else:
+         raise ValueError("not a list type "+str(data))
+ 
+
+ 
 class Dictionary_Field(object):
    def __init__(self,handler):
        self.handler = handler
@@ -144,6 +165,7 @@ class Managed_Redis_Hash(object):
         self.field_handlers["string"] = String_Field(self.handler)
         self.field_handlers["float"] = Float_Field(self.handler)
         self.field_handlers["binary"] = Binary_Field(self.handler)
+        self.field_handlers["list"]   = List_Field(self.handler)
         self.field_handlers["dictionary"] = Dictionary_Field(self.handler)      
         self.validate_graph_data()
         self.sanitize_keys()

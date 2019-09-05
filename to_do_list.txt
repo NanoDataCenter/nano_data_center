@@ -1,13 +1,17 @@
 July 28
 
-1.  Add error state to irrigation_queue processing
-    verify modbus is operating
-    verify mqtt devices are operating correctly
-    verify relay state
-    verify null currents and null flow
-    verify master valve operations
-       check flow rate and cleaning valve operations  -- check off functionality
-       verify power draw of master valve
-    
-2.  Mqtt devuce statys
-    exception statys forgot termingat
+1. work on dependency graph
+   -- dependency graph for elements each  irrigation modes
+   -- element properties
+      -- initialization  -- returns True or False
+      -- event processing
+      -- systems which are dependent
+  -- on initialization a topological ordering of elements
+  -- modules will be in a separte directory .. Shared by systems
+ 
+ 
+2.  Work on graphing resistance measurement
+
+3. 
+  
+  

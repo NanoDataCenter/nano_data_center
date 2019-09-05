@@ -27,6 +27,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       bc.add_info_node("LOGGING_DEPTH","LOGGING_DEPTH",properties = {"valve_depth":20} )   
       bc.add_info_node("IRRIGATION_LOGGING","IRRIGATION_LOGGING",properties={"log_length": 50,"settling_time":5})
       
+
       
    
       bc.add_header_node("IRRIGATION_CONTROL_MANAGEMENT")
@@ -61,5 +62,72 @@ class Construct_Irrigation_Scheduling_Control(object):
     
 
       bc.end_header_node("IRRIGATION_CONTROL_MANAGEMENT")
-      bc.end_header_node("IRRIGIGATION_SCHEDULING_CONTROL")
+      
+      bc.add_header_node("IRRIGATION_OBJECTS") 
+      # basic startup operations
+      self.construct_irrigation_object(bc,"VERIFY_MODBUS_OPERATION")
+      self.construct_irrigation_object(bc,"VERIFY_CURRENT_CONTROLLER",  )
+      self.construct_irrigation_object(bc,"VERIFY_REQUIRE_MQTT_DEVICES",dependency=["VERIFY_CURRENT_CONTROLLER"],)
+           
+      # normal irrigation
+      self.construct_irrigation_object(bc,"VERIFY_PLC_DEVICES",dependency=["VERIFY_MODBUS_OPERATION"])
+       
 
+      self.construct_irrigation_object(bc,"VERIFY_INITIAL_TURN_ON",dependency=["VERIFY_PLC_DEVICES","VERIFY_REQUIRE_MQTT_DEVICES"])
+    
+      self.construct_irrigation_object(bc,"MONITOR_EXCESSIVE_CURRENT",dependency=["VERIFY_INITIAL_TURN_ON"])
+      self.construct_irrigation_object(bc,"MONITOR_EXCESSIVE_FLOW",dependency=["MONITOR_EXCESSIVE_CURRENT"])
+      self.construct_irrigation_object(bc,"MONITOR_CLEANING_VALVE",dependency=["MONITOR_EXCESSIVE_FLOW"])
+      self.construct_irrigation_object(bc,"MONITOR_IRRIGATION_VALVE",dependency=["MONITOR_CLEANING_VALVE"])
+      self.construct_irrigation_object(bc,"MONITOR_IRRIGATION_STATISTICS",dependency=["MONITOR_IRRIGATION_VALVE"])
+      self.construct_irrigation_object(bc,"MONITOR_IRRIGATION_OPERATION",dependency=["MONITOR_IRRIGATION_STATISTICS"],)
+      # check off
+      self.construct_irrigation_object(bc,"MONITOR_CHECK_OFF",dependency=["VERIFY_REQUIRE_MQTT_DEVICES","VERIFY_MODBUS_OPERATION"])
+      # clean filter
+      self.construct_irrigation_object(bc,"MONITOR_CLEAN_FILTER",dependency=["VERIFY_REQUIRE_MQTT_DEVICES","VERIFY_MODBUS_OPERATION"])
+      # valve resistance
+      self.construct_irrigation_object(bc,"VERIFY_ALL_PLC_DEVICES",dependency=["VERIFY_MODBUS_OPERATION"])
+      self.construct_irrigation_object(bc,"MONITOR_VALVE_RESISTANCE",dependency=["VERIFY_REQUIRE_MQTT_DEVICES","VERIFY_ALL_PLC_DEVICES"])
+      bc.end_header_node("IRRIGATION_OBJECTS")
+      
+      
+      bc.add_header_node("IRRIGATION_MODES") 
+      self.contruct_mode(bc,"IRRIGATION",objects = ["MONITOR_IRRIGATION_OPERATION"])
+      self.contruct_mode(bc,"CLEANING",objects = ["MONITOR_CLEAN_FILTER"])
+      self.contruct_mode(bc,"CHECK_OFF",objects = ["MONITOR_CHECK_OFF"])
+      self.contruct_mode(bc,"VALVE_RESISTANCE",objects = ["MONITOR_VALVE_RESISTANCE"])
+      bc.end_header_node("IRRIGATION_MODES")
+
+ 
+      bc.end_header_node("IRRIGIGATION_SCHEDULING_CONTROL")
+     
+
+
+
+   def construct_irrigation_object(self,bc,name,dependency=[]):
+      properties = {}
+      properties["name"] = name
+     
+      properties["dependency"] = dependency
+      bc.add_info_node("IRRIGATION_OBJECT_ELEMENTS",name,properties=properties)   
+   
+   def contruct_mode(self,bc,name,objects):
+      properties = {}
+      properties["name"] = name
+      properties["objects"] = objects
+
+      bc.add_info_node("IRRIGATION_MODE_ELEMENT",name,properties=properties)   
+      
+
+       
+       
+
+      
+      
+
+      
+
+      
+      
+
+      
