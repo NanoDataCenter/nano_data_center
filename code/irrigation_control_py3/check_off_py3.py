@@ -1,15 +1,12 @@
 
 class Check_Off(object):
 
-   def __init__( self,cf,cluster_control,   io_control, handlers):
+   def __init__( self,cf,cluster_control,   io_control, handlers,Check_Cleaning_Valve,Check_Excessive_Current):
        self.cf = cf
        self.cluster_control = cluster_control
        self.io_control = io_control
        self.handlers = handlers
        
-       
-       
-   
 
 
    def check_off (self, cf_handle, chainObj, parameters, event ):
@@ -31,23 +28,34 @@ class Check_Off(object):
    
    def construct_chains( self , cf ):
        cf.define_chain("check_off_chain", False ) #tested
+       
+       
        cf.insert.log( "check off is active" )
-       cf.insert.send_event("IRI_MASTER_VALVE_SUSPEND",None)
+       cf.insert.send_event("IRI_MASTER_VALVE_SUSPEND",None) # taking over control of master valve
+       
        cf.insert.one_step( self.io_control.disable_all_sprinklers  )
        cf.insert.one_step(  self.io_control.turn_off_master_valves  )# turn turn off master valve
+       
        cf.insert.log( "wait to charge well tank" )
        cf.insert.wait_event_count(  count = 30 )
+       
+       cf.insert.log("turn on master valve and see if any leaks")
        cf.insert.one_step( self.io_control.turn_on_master_valves  )# turn turn on master valve
        cf.insert.one_step(  self.io_control.turn_off_cleaning_valves  )# turn turn off cleaning valve
+       
        cf.insert.log( "wait 5 minutes to charge sprinkler lines" )
        cf.insert.wait_event_count( count = 300 ) 
-       cf.insert.one_step(  self.check_off  )
+       cf.insert.one_step(  self.check_off  ) # make check # in future include pressure gauge
+       
        cf.insert.one_step(  self.io_control.turn_off_master_valves  )# turn turn off master valve
        cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
        cf.insert.log( "check off is terminated" )
-       cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)
+       cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None) # return control of master valve
        cf.insert.terminate(  )
-       return  ["check_off_chain"]
+       Check_Cleaning_Valve("check_off_cleaning_valve",cf,handlers,irrigation_io,irrigation_hash_control)
+       Check_Excessive_Current("check_off_excessive_current",cf,handlers,irrigation_io,irrigation_hash_control)
+       
+       return  ["check_off_chain","check_off_cleaning_valve","check_off_cleaning_valve"]
 
 
    def construct_clusters( self, cluster, cluster_id, state_id ):

@@ -49,8 +49,8 @@ class Clean_Filter(object):
        cf.insert.log( "clean filter is terminated is terminated" )
 
        cf.insert.terminate()
-
-       return  ["clean_filter_action_chain"]
+       Check_Excessive_Current("clean_filter_excessive_current",cf,handlers,irrigation_io,irrigation_hash_control)
+       return  ["clean_filter_action_chain","clean_filter_excessive_current"]
 
 
    def construct_clusters( self, cluster, cluster_id, state_id ):

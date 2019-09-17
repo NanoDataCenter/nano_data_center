@@ -6,7 +6,7 @@ from .irrigation_logging_py3 import Hash_Logging_Object
 class Valve_Resistance_Check(object):
 
    def __init__( self, cf, cluster_control,io_control, handlers,
-               app_files, sys_files,master_valves,cleaning_valves,measurement_depths,mqtt_current_publish,irrigation_hash_control):
+               app_files, sys_files,master_valves,cleaning_valves,measurement_depths,mqtt_current_publish,irrigation_hash_control,Check_Cleaning_Valve):
        self.handlers = handlers
        self.sys_files    = sys_files
        self.app_files    = app_files
@@ -23,13 +23,15 @@ class Valve_Resistance_Check(object):
 
        cf.define_chain("resistance_check",False)        
        cf.insert.send_event("IRI_MASTER_VALVE_SUSPEND",None)
-       cf.insert.one_step( self.assemble_relevant_valves )
+       cf.insert.verify_function_terminate( self, "RELEASE_IRRIGATION_CONTROL" ,None, self.io_control.check_for_all_plcs, *params):
+       
+       cf.insert.one_step( self.assemble_relevant_valves ) #  
        cf.insert.enable_chains(["test_each_valve"])
        cf.insert.wait_event_count( event = "IR_V_Valve_Check_Done" )
        cf.insert.log("event IR_V_Valve_Check_Done")
        cf.insert.one_step(self.log_valve_check)
        cf.insert.send_event("RELEASE_IRRIGATION_CONTROL" ) 
-       cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)
+       #cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None) # done in dispatching thread 
        cf.insert.terminate() 
 
        cf.define_chain("test_each_valve",False,init_function= self.check_queue)
@@ -44,8 +46,9 @@ class Valve_Resistance_Check(object):
                                              function = self.check_queue) 
 
        cf.insert.reset()
-
-       return  ["resistance_check","test_each_valve"]
+       Check_Cleaning_Valve("resistance_clean_valve",cf,handlers,irrigation_io,irrigation_hash_control)
+   
+       return  ["resistance_check","test_each_valve","resistance_clean_valve"]
 
  
 

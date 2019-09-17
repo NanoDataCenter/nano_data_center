@@ -76,7 +76,18 @@ class IO_Control(object):
    def measure_flow_rate( self, remote, io_setup ):           
        return   0
 
-
+   def check_for_all_plcs(self):
+      return True # TBD
+      
+   def check_required_plcs(self,io_setup):
+      return True #TBD
+      
+      
+   def monitor_current(self,current_limits):
+       return True
+   # "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"timestamp":time.time()} }    
+       
+       
 '''
 
 class IO_Control(object):
