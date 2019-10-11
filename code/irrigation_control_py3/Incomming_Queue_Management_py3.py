@@ -161,13 +161,14 @@ class Irrigation_Scheduling(object):
 
 
 
-class Incomming_Queue_Management(object):
-   def __init__(self,cf, cluster_control, handlers,app_files,sys_files,eto_management,irrigation_io,irrigation_hash_control):
+class Process_External_Commands(object):
+   def __init__(self,cf, cluster_control, handlers,app_files,sys_files,eto_management,irrigation_io,irrigation_hash_control,generate_control_events):
        self.cf = cf
        self.handlers = handlers
        self.app_files = app_files
        self.sys_files = sys_files
        
+       self.generate_control_events = generate_control_events
        self.eto_management = eto_management 
        self.irrigation_io = irrigation_io
        self.irrigation_hash_control = irrigation_hash_control
@@ -209,7 +210,7 @@ class Incomming_Queue_Management(object):
                   if isinstance(object_data, str):
                      object_data = json.loads(object_data)
                  
-                  #print("command",object_data["command"])
+                  print("command",object_data["command"])
                   self.commands[object_data["command"]]( object_data )
 
               
@@ -305,13 +306,13 @@ class Incomming_Queue_Management(object):
 
    def open_master_valve( self, object_data ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"OPEN_MASTER_VALVE","level":"YELLOW"})
-       self.cf.send_event("IRI_OPEN_MASTER_VALVE",None)
+       self.generate_control_events.change_to_timed_state()
 
      
   
    def close_master_valve( self, object_data ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"CLOSE_MASTER_VALVE","level":"YELLOW"})
-       self.cf.send_event("IRI_CLOSE_MASTER_VALVE",None)
+       self.generate_control_events.cancel_timed_state()
       
     
  

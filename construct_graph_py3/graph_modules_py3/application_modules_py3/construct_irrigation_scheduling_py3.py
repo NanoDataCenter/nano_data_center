@@ -57,6 +57,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       fields["SLAVE_MAX_CURRENT"] = { "type":"dictionary", "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"timestamp":time.time()} }
       fields["SLAVE_RELAY_STATE"] = { "type":"dictionary", "fields":{'EQUIPMENT_STATE':True,'IRRIGATION_STATE':True,"timestamp":time.time()} }
       fields["INSTANT_CURRENT"] = { "type":"dictionary","fields":{'EQUIPMENT_CURRENT':0,'IRRIGATION_CURRENT':0,"timestamp":time.time()} }
+      fields["CLEANING_FLOW_RATE_ACCUMULATION"]   = { "type":"float","init_value":0 }
       cd.add_managed_hash(name = "IRRIGATION_CONTROL",fields= fields)
       cd.close_package_contruction()
     

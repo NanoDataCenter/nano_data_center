@@ -20,6 +20,7 @@ class Opcodes(object):
        self.opcodes["One_Step"]           = self.one_step_code
        self.opcodes["Send_Event"]         = self.send_event_code 
        self.opcodes["Check_Event"]       = self.check_event_code 
+       self.opcodes["Check_Event_No_Init"] = self.check_event_code_no_init
        self.opcodes["Code"]               = self.code_code 
        self.opcodes["Wait_Tod"]           = self.wait_tod_code 
        self.opcodes["Wait_Tod_GE"]        = self.wait_tod_ge_code 
@@ -119,6 +120,13 @@ class Opcodes(object):
 
         return "DISABLE"
 
+    def check_event_code_no_init(self, cf_handle, chainObj, parameters, event):
+
+
+        if event["name"] == parameters[0]:
+           func = parameters[1]
+           func(cf_handle, chainObj, parameters, event)
+        return "CONTINUE"
 
     def check_event_code(self, cf_handle, chainObj, parameters, event):
 
@@ -431,22 +439,6 @@ class Opcodes(object):
 
         return "CONTINUE"
 
-
-    def verify_fn_code(self, cf_handle, chainObj, parameters, event):
-        
-        reset_event  = parameters[1]
-        reset_flag   = parameters[2]
-        verifyFn     = parameters[0]
-        
-        if verifyFn ():
-            returnValue = "CONTINUE"
-        else:
-    
-            
-            returnValue = self.verify_return_code( cf_handle, reset_event, reset_flag)
-            
-       
-        return returnValue
 
 
       

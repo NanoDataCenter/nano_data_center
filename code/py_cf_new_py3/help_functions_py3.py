@@ -62,6 +62,12 @@ class Help_Functions(object):
    #   Opcode which acts on an event
    #
 
+   def check_event_no_init(self,event,function,*params):
+       
+       list_data = [ event, function ]
+       list_data.extend(params)
+       self.cf.insert_link("Check_Event_No_Init",list_data)
+       
    def check_event( self, event, function, *params ):
        
        list_data = [ event, function ]

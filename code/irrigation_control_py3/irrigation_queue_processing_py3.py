@@ -14,13 +14,13 @@ from core_libraries.irrigation_hash_control_py3 import get_current_limits
 from core_libraries.mqtt_current_monitor_interface_py3 import MQTT_Current_Monitor_Publish
 
 from .common_irrigation_chains_py3       import  Check_Cleaning_Valve
-from .common_irrigation_chains_py3       import  Check_Cleaning_Valve_Idle
-from .common_irrigation_chains_py3       import  Check_Excessive_Current
-from .common_irrigation_chains_py3       import  Check_Excessive_Current_Idle
-from .common_irrigation_chains_py3       import  Check_Excessive_Flow
-from .common_irrigation_chains_py3       import  Check_Excessive_Flow_Idle
 
-class Irrigation_Queue_Management(object):
+from .common_irrigation_chains_py3       import  Check_Excessive_Current
+
+from .common_irrigation_chains_py3       import  Check_Excessive_Flow
+
+
+class Process_Irrigation_Command(object):
 
    def __init__(self,redis_site_data, handlers,cluster_id,cluster_control,cf,app_files,sys_files,manage_eto,irrigation_io,
                 master_valves,cleaning_valves,measurement_depths,eto_management ,irrigation_hash_control,qs  ):
@@ -47,7 +47,9 @@ class Irrigation_Queue_Management(object):
       self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/",qs )
       
       self.check_off     = Check_Off(cf=cf,cluster_control=cluster_control,io_control=irrigation_io, handlers=handlers,
-                                      Check_Cleaning_Valve = Check_Cleaning_Valve, Check_Excessive_Current = Check_Excessive_Current     )
+                                      irrigation_hash_control = irrigation_hash_control,
+                                      Check_Cleaning_Valve = Check_Cleaning_Valve, Check_Excessive_Current = Check_Excessive_Current,
+                                      get_json_object = self.get_json_object  )
      
 
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,
@@ -61,9 +63,13 @@ class Irrigation_Queue_Management(object):
                                                              measurement_depths = measurement_depths,
                                                              mqtt_current_publish = self.mqtt_current_publish,
                                                              irrigation_hash_control = irrigation_hash_control,
-                                                             Check_Cleaning_Valve = Check_Cleaning_Valve)
+                                                             Check_Cleaning_Valve = Check_Cleaning_Valve,
+                                                             get_json_object = self.get_json_object  )
                                                              
-      self.clean_filter = Clean_Filter(cf,cluster_control,irrigation_io, handlers,irrigation_hash_control,Check_Excessive_Current )
+      self.clean_filter = Clean_Filter(cf,cluster_control,irrigation_io, 
+                                       handlers,irrigation_hash_control,Check_Excessive_Current,
+                                       get_json_object = self.get_json_object )
+                                       
       self.irrigation_control  =  Irrigation_Control_Basic(cf = cf,
                                                            cluster_control=cluster_control,
                                                            io_control = irrigation_io,
@@ -79,6 +85,7 @@ class Irrigation_Queue_Management(object):
                                                            Check_Cleaning_Valve = Check_Cleaning_Valve,
                                                            Check_Excessive_Current=Check_Excessive_Current,
                                                            Check_Excessive_Flow=Check_Excessive_Flow)
+                                                         
 
       self.chain_list    = []
       self.chain_list.extend(self.check_off.construct_chains(cf))
@@ -86,8 +93,9 @@ class Irrigation_Queue_Management(object):
       self.chain_list.extend(self.clean_filter.construct_chains(cf))
        
       self.chain_list.extend(self.irrigation_control.construct_chains(cf))
-     
+      
       cluster_control.define_cluster( cluster_id, self.chain_list, [])
+      
       self.check_off.construct_clusters( cluster_control, cluster_id,"CHECK_OFF" )
       self.measure_valve_resistance.construct_clusters(cluster_control, 
                                                      cluster_id,"MEASURE_RESISTANCE" )
@@ -95,7 +103,7 @@ class Irrigation_Queue_Management(object):
       
       self.irrigation_control.construct_clusters( cluster_control, cluster_id,"DIAGNOSITIC_CONTROL" )
       
-  
+      
      
 
  
@@ -116,12 +124,12 @@ class Irrigation_Queue_Management(object):
       cf.insert.one_step(self.clear_json_object)
       cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)
       cf.insert.wait_event_count( count = 1 )  # allow things to settle down
-      cf.insert.enable_chains(["check_excessive_flow_idle","check_excessive_current_idle","check_cleaning_flow_meter_idle"]) 
+      cf.insert.enable_chains(["excessive_current_idle"]) 
       
       
       cf.insert.log( "Checking Irrigation Queue" )
       cf.insert.wait_function( self.check_queue)
-      cf.insert.disable_chains(["check_excessive_flow_idle","check_excessive_current_idle","check_cleaning_flow_meter_idle"])  #### detail this 
+      cf.insert.disable_chains(["excessive_current_idle"])   
       # element is in queue startup irrigation system
       cf.insert.log( "Starting Operational Check" )
       cf.insert.enable_chains(["operational_check"])
@@ -201,12 +209,13 @@ class Irrigation_Queue_Management(object):
       cf.insert.one_step(self.op_check_serious_fault_json_object)
       cf.insert.halt() 
       
-      Check_Cleaning_Valve_Idle(cf,handlers,irrigation_io,irrigation_hash_control)
-      Check_Excessive_Current_Idle(cf,handlers,irrigation_io,irrigation_hash_control)
-      Check_Excessive_Flow_Idle(cf,handlers,irrigation_io,irrigation_hash_control)
-      
-      
- 
+      self.check_cleaning_valve_idle(cf)
+      self.check_excessive_current_idle(cf)
+      self.check_excessive_flow_idle(cf)
+      #### for testing
+      self.handlers["IRRIGATION_PENDING_SERVER"].delete_all()
+      print(self.handlers["IRRIGATION_PENDING_SERVER"].length())
+
      
    def check_queue( self, cf_handle, chainObj, parameters, event):
    
@@ -217,7 +226,7 @@ class Irrigation_Queue_Management(object):
 
        length =    self.handlers["IRRIGATION_PENDING_SERVER"].length()
        
-       
+       print("length",self.handlers["IRRIGATION_PENDING_SERVER"].length())
        if int(length) > 0:
            return_value = True
           
@@ -492,6 +501,94 @@ class Irrigation_Queue_Management(object):
      
 
 
-              
+   def check_cleaning_valve_idle(self,cf):
        
+       cf.define_chain("check_cleaning_flow_meter_idle", False )
+       #cf.insert.log("check_cleaning_flow_meter_idle")  
+       cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None ) 
+        
+       cf.insert.wait_event_count( count = 15 )      
+       cf.insert.assert_function_reset(self.check_cleaning_valve)
+       cf.insert.log("excessive_cleaning_flow_found")
+       cf.insert.one_step(self.irrigation_io.disable_all_sprinklers )
+       cf.insert.disable_chains(["QC_Check_Irrigation_Queue"])
+       cf.insert.terminate()
+       
+        
+      
+   def check_cleaning_valve(self,cf_handle, chainObj, parameters, event):
+       if event["name"] == "INIT":  
+         pass
+       else:
+            
+            gpm = self.irrigation_hash_control.hget("CLEANING_FLOW_METER") # use 15 second interval to speed transistion
+            #print("cleaning gpm",gpm)
+            if gpm != 0:
+              cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
+              json_object = self.get_json_object()
+              details = "Schedule OFFLINE "+ \
+                         "Flow:"+str(gpm)+" Excessive Cleaning Current"
+              self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Excessive Cleaning Valve Flow","details":details,"level":"RED"})
+              return True
+       return False     
 
+
+              
+
+
+   def check_excessive_current_idle(self,cf):
+       
+       cf.define_chain("excessive_current_idle", False )
+       #cf.insert.log("check_excessive_current")   
+       cf.insert.wait_event_count( count = 15 )       
+       cf.insert.assert_function_reset(self.check_excessive_current)
+       cf.insert.log("excessive_current_found")
+       cf.insert.send_event("IRI_CLOSE_MASTER_VALVE",False)
+       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
+       cf.insert.one_step(self.irrigation_io.disable_all_sprinklers )
+       cf.insert.wait_event_count( count = 1 )
+       cf.insert.reset()
+
+
+   def check_excessive_current(self,cf_handle, chainObj, parameters, event):
+       print("check excessive current")
+       return False #TBD       
+
+
+
+   def check_excessive_flow_idle(self,cf):
+      
+      cf.define_chain("check_excessive_flow_idle", False )
+      cf.insert.log("check_excessive_flow")
+      cf.insert.verify_not_event_count_reset( event="RELEASE_IRRIGATION_CONTROL", count = 1, reset_event = None, reset_data = None )
+      cf.insert.wait_function(self.monitor_excessive_flow)
+      cf.insert.log("excessive_flow_found")
+      cf.insert.send_event("IRI_CLOSE_MASTER_VALVE",None)
+      cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
+      cf.insert.one_step(self.irrigation_io.disable_all_sprinklers )
+      cf.insert.wait_event_count( count = 10 )
+      cf.insert.reset()         
+      
+   def monitor_excessive_flow(self,cf_handle, chainObj, parameters, event):
+       if event["name"] == "INIT":
+         
+          self.monitor_excessive_flow_count = 0
+       if event["name"] == "MINUTE_TICK":
+         
+           
+           gpm = self.handlers["MQTT_SENSOR_STATUS"].hget(self.mqtt_flow_name)
+                     
+           if gpm > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_VALUE"]:
+             self.monitor_excessive_flow_count += 1
+           else:
+             self.monitor_excessive_flow_count = 0
+          
+           if self.monitor_excessive_flow_count > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_TIME"]:
+              json_object = self.get_json_object()
+              cf_handle.send_event("RELEASE_IRRIGATION_CONTROL",None) 
+              details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+ \
+                         "Flow:"+str(gpm)+" Excessive Irrigation Current"
+
+              self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Excessive Flow","details":details,"level":"RED"})
+              return True
+       return False      

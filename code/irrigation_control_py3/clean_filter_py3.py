@@ -2,14 +2,16 @@
 import time
 class Clean_Filter(object):
 
-   def __init__( self,cf,cluster_control,irrigation_io, handlers,irrigation_hash_control ):
-
+   def __init__( self,cf,cluster_control,irrigation_io, handlers,irrigation_hash_control,
+                 Check_Excessive_Current,get_json_object ):
+ 
+       self.get_json_object = get_json_object
        self.cf = cf
        self.cluster_control = cluster_control
        self.irrigation_io = irrigation_io
        self.handlers = handlers
        self.irrigation_hash_control = irrigation_hash_control
-       
+       self.Check_Excessive_Current = Check_Excessive_Current
        
    
    def load_duration_counter(self,cf_handle, chainObj, parameters, event):
@@ -49,12 +51,13 @@ class Clean_Filter(object):
        cf.insert.log( "clean filter is terminated is terminated" )
 
        cf.insert.terminate()
-       Check_Excessive_Current("clean_filter_excessive_current",cf,handlers,irrigation_io,irrigation_hash_control)
+       self.Check_Excessive_Current("clean_filter_excessive_current",cf,self.handlers,
+                                     self.irrigation_io,self.irrigation_hash_control,self.get_json_object)
        return  ["clean_filter_action_chain","clean_filter_excessive_current"]
 
 
    def construct_clusters( self, cluster, cluster_id, state_id ):
-       cluster.define_state( cluster_id, state_id,["clean_filter_action_chain"]  )
+       cluster.define_state( cluster_id, state_id,["clean_filter_action_chain","clean_filter_excessive_current"]  )
 
    def clear_cleaning_sum(self, *args):
        self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",0)

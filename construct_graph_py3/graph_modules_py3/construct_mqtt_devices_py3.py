@@ -29,7 +29,7 @@ class Construct_MQTT_Devices(object):
       properties["BASE_TOPIC"] = "/REMOTES"
       self.bc.add_info_node( "MQTT_SERVER","MQTT_SERVER",properties=properties )
       #self.add_security_monitor("GARAGE_MONITOR_1")
-      self.add_current_monitor("CURRENT_MONITOR_1")
+      #self.add_current_monitor("CURRENT_MONITOR_1")
       self.add_well_monitor("WELL_MONITOR_1")
       self.irrigation_hash_fields()
       self.add_minute_average_fields()
@@ -69,20 +69,34 @@ class Construct_MQTT_Devices(object):
  
 
 
-   def add_security_monitor(self,mqtt_tag):
+     
+
+       
+   def add_well_monitor(self,mqtt_tag):
        properties = {}
-       properties["REBOOT_FLAG"] = True
-       properties["REBOOT_KEY"] = "REBOOT"
-       properties["type"] = "SECURITY_MONITOR"
+       properties["type"] = "WELL_MONITOR"
        properties["HEART_BEAT"] = "HEART_BEAT"
        properties["HEART_BEAT_TIME_OUT"] = 120
+       properties["REBOOT_FLAG"] = True
+       properties["REBOOT_KEY"] = "REBOOT"
        properties["topic"] = mqtt_tag
        properties["null_commands"] = {}
        properties["subscriptions"] = {}
        properties["subscriptions"]["REBOOT"] = True
        properties["subscriptions"]["HEART_BEAT"] = True
+ 
+       properties["subscriptions"]['INPUT/AD1/VALUE/RESPONSE'] = {"type":"analog_input","main_field":'MEASUREMENTS' ,"fields":
+          [  {  "name":"WELL_PRESSURE","type":"pressure_gauge","reduction":2,"range":100,"channel_field":'CHANNEL',"channel_value":0},
+             { "name":"INPUT_PUMP_CURRENT","type":"rms_current_transformer","range":50,"channel_field":'CHANNEL',"channel_value":6,"resistor":150},
+             { "name":"OUTPUT_PUMP_CURRENT","type":"rms_current_transformer","range":20,"channel_field":'CHANNEL',"channel_value":7,"resistor":150} ]}
+             
+       properties["subscriptions"]['INPUT/PULSE_COUNT/VALUE'] = {"type":"pulse_flow","main_field":"DATA",  "fields": [
+          {"name":"MAIN_FLOW_METER", "GPIO_PIN":5,"data_field":"COUNTS","conversion":4./2./60./2.0 },
+          {"name":"CLEANING_OUTLET", "GPIO_PIN":18,"data_field":"COUNTS","conversion":4./300./3.78541 }
+          ]}
+
        self.bc.add_info_node( "MQTT_DEVICE",mqtt_tag,properties=properties )
-       
+   '''    
    def add_current_monitor(self,mqtt_tag):
        properties = {}
        properties["type"] = "CURRENT_MONITOR"
@@ -136,28 +150,17 @@ class Construct_MQTT_Devices(object):
  
        self.bc.add_info_node( "MQTT_DEVICE",mqtt_tag,properties=properties )
        
-   def add_well_monitor(self,mqtt_tag):
+   def add_security_monitor(self,mqtt_tag):
        properties = {}
-       properties["type"] = "WELL_MONITOR"
-       properties["HEART_BEAT"] = "HEART_BEAT"
-       properties["HEART_BEAT_TIME_OUT"] = 120
        properties["REBOOT_FLAG"] = True
        properties["REBOOT_KEY"] = "REBOOT"
+       properties["type"] = "SECURITY_MONITOR"
+       properties["HEART_BEAT"] = "HEART_BEAT"
+       properties["HEART_BEAT_TIME_OUT"] = 120
        properties["topic"] = mqtt_tag
        properties["null_commands"] = {}
        properties["subscriptions"] = {}
        properties["subscriptions"]["REBOOT"] = True
        properties["subscriptions"]["HEART_BEAT"] = True
- 
-       properties["subscriptions"]['INPUT/AD1/VALUE/RESPONSE'] = {"type":"analog_input","main_field":'MEASUREMENTS' ,"fields":
-          [  {  "name":"WELL_PRESSURE","type":"pressure_gauge","reduction":2,"range":150,"channel_field":'CHANNEL',"channel_value":0},
-             { "name":"INPUT_PUMP_CURRENT","type":"rms_current_transformer","range":50,"channel_field":'CHANNEL',"channel_value":6,"resistor":150},
-             { "name":"OUTPUT_PUMP_CURRENT","type":"rms_current_transformer","range":20,"channel_field":'CHANNEL',"channel_value":7,"resistor":150} ]}
-             
-       properties["subscriptions"]['INPUT/PULSE_COUNT/VALUE'] = {"type":"pulse_flow","main_field":"DATA",  "fields": [
-          {"name":"MAIN_FLOW_METER", "GPIO_PIN":5,"data_field":"COUNTS","conversion":4./2./60./2.0 },
-          {"name":"CLEANING_OUTLET", "GPIO_PIN":18,"data_field":"COUNTS","conversion":4./300./3.78541 }
-          ]}
-
        self.bc.add_info_node( "MQTT_DEVICE",mqtt_tag,properties=properties )
-       
+   '''

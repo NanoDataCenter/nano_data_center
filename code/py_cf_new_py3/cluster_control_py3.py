@@ -21,9 +21,10 @@ class Cluster_Control(object):
        self.clusters[cluster_id]["initial_chain"] = initial_chain
        self.clusters[cluster_id]["chains"] = set(list_of_chains)
        self.clusters[cluster_id]["states"] = {}
+       self.clusters[cluster_id]["current_state"] = None
        self.clusters[cluster_id]["suspension_state"] = False
        set_intersect = set_chains - self.chain_list
-
+      
        if len( set_intersect ) != len(list_of_chains):
            raise ValueError("the following chains have already been defined ",(set_intersect))
        self.chain_list =  self.chain_list | set_chains
@@ -111,12 +112,13 @@ class Cluster_Control(object):
 
    def enable_cluster_reset_rt( self, cf_handle, cluster_id, state_id ):
        enabled_states, disable_states = self.analyize_cluster_state( cluster_id, state_id)
-       
+       self.clusters[cluster_id]["current_state"] = state_id
        self.disable_cluster_states( cf_handle, disable_states)
        self.reset_cluster_states( cf_handle, enabled_states)
        return "DISABLE"
 
-
+   def get_current_state(self,cluster_id):
+      return self.clusters[cluster_id]["current_state"]
    '''
    Not usefull right now
    # parameter[1] is the cluster id

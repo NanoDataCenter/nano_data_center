@@ -1,13 +1,15 @@
 
 class Check_Off(object):
 
-   def __init__( self,cf,cluster_control,   io_control, handlers,Check_Cleaning_Valve,Check_Excessive_Current):
+   def __init__( self,cf,cluster_control,irrigation_hash_control,  io_control, handlers,Check_Cleaning_Valve,Check_Excessive_Current,get_json_object):
        self.cf = cf
        self.cluster_control = cluster_control
        self.io_control = io_control
        self.handlers = handlers
-       
-
+       self.Check_Cleaning_Valve = Check_Cleaning_Valve
+       self.Check_Excessive_Current = Check_Excessive_Current
+       self.irrigation_hash_control = irrigation_hash_control
+       self.get_json_object = get_json_object
 
    def check_off (self, cf_handle, chainObj, parameters, event ):
         if event["name"] == "INIT":
@@ -52,14 +54,25 @@ class Check_Off(object):
        cf.insert.log( "check off is terminated" )
        cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None) # return control of master valve
        cf.insert.terminate(  )
-       Check_Cleaning_Valve("check_off_cleaning_valve",cf,handlers,irrigation_io,irrigation_hash_control)
-       Check_Excessive_Current("check_off_excessive_current",cf,handlers,irrigation_io,irrigation_hash_control)
        
-       return  ["check_off_chain","check_off_cleaning_valve","check_off_cleaning_valve"]
+       self.Check_Cleaning_Valve("check_off_cleaning_valve",
+                                 cf,
+                                 self.handlers,
+                                 self.io_control,
+                                 self.irrigation_hash_control,
+                                 self.get_json_object)
+       self.Check_Excessive_Current("check_off_excessive_current",
+                                    cf,
+                                    self.handlers,
+                                    self.io_control,
+                                    self.irrigation_hash_control,
+                                    self.get_json_object)
+       
+       return  ["check_off_chain","check_off_cleaning_valve","check_off_excessive_current"]
 
 
    def construct_clusters( self, cluster, cluster_id, state_id ):
-       cluster.define_state( cluster_id,  state_id,["check_off_chain"]  )
+       cluster.define_state( cluster_id,  state_id,["check_off_chain","check_off_cleaning_valve","check_off_excessive_current"]  )
 
  
 if __name__ == "__main__":

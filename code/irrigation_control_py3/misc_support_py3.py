@@ -4,7 +4,14 @@ class IO_Control(object):
       self.irrigation_hash_control = irrigation_hash_control
       self.disable_all_sprinklers()
 
-
+   def turn_on_pump(self,*args):
+       print("turn_on_pump")
+       print("function not currently supported")
+       
+   def turn_off_pump(self,*args):
+       print("turn_off_pump")
+       print("function not currently supported")      
+       
    def read_wd_flag(self,*args ):
        return 1
 

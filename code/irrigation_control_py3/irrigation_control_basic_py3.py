@@ -22,7 +22,9 @@ class Irrigation_Control_Basic(object):
        
        
        self.step_monitor = Irrigation_Step_Monitoring(handlers,manage_eto,io_control,cf,irrigation_hash_control,qs,redis_site)
-     
+       self.Check_Cleaning_Valve = Check_Cleaning_Valve
+       self.Check_Excessive_Current = Check_Excessive_Current
+       self.Check_Excessive_Flow = Check_Excessive_Flow
 
    
 
@@ -40,6 +42,7 @@ class Irrigation_Control_Basic(object):
                                              reset_event_data=None,
                                              function = self.grab_json_data)      
 
+       
        cf.insert.one_step( self.start_logging )
 
        cf.insert.wait_event_count( count= 1 )  # wait till timer tick
@@ -51,7 +54,7 @@ class Irrigation_Control_Basic(object):
        cf.insert.assert_function_terminate(  reset_event = "RELEASE_IRRIGATION_CONTROL",
                                              reset_event_data=None,
                                              function = self.start)
-
+       
        cf.insert.wait_event_count(event = "MINUTE_TICK")
        cf.insert.log("enabling chain ")
        cf.insert.enable_chains( ["IR_D_monitor_irrigation_step" ])
@@ -77,9 +80,15 @@ class Irrigation_Control_Basic(object):
        
        cf.insert.reset()      
 
-       Check_Cleaning_Valve("basic_irrigation_cleaning_valve",cf,handlers,irrigation_io,irrigation_hash_control)
-       Check_Excessive_Current("basic_irrigation_excessive_current",cf,handlers,irrigation_io,irrigation_hash_control)
-       Check_Excessive_Flow("basic_irrigation_excessive_flow",cf,handlers,irrigation_io,irrigation_hash_control)
+       self.Check_Cleaning_Valve("basic_irrigation_cleaning_valve",
+                                 cf,
+                                 self.handlers,self.io_control,self.irrigation_hash_control,self.get_json_object)
+       self.Check_Excessive_Current("basic_irrigation_excessive_current",
+                                     cf,
+                                     self.handlers,self.io_control,self.irrigation_hash_control,self.get_json_object)
+       self.Check_Excessive_Flow("basic_irrigation_excessive_flow",
+                                 cf,
+                                 self.handlers,self.io_control,self.irrigation_hash_control,self.get_json_object)
        
 
       
@@ -91,11 +100,17 @@ class Irrigation_Control_Basic(object):
                 
    def construct_clusters( self, cluster, cluster_id, state_id ):
        cluster.define_state( cluster_id, state_id,
-                          ["IR_D_start_irrigation_step"]  )
+                          ["IR_D_start_irrigation_step","basic_irrigation_cleaning_valve",
+                 "basic_irrigation_excessive_current", "basic_irrigation_excessive_flow"  ]  )
                           
                           
  ################################# Local Functions ################################################################
 
+   def get_json_object(self):
+       if hasattr(self, 'json_object'):
+          return self.json_object()
+       else:
+          return self.handlers["IRRIGATION_CURRENT_SERVER"].show_next_job()[1]
 
    def grab_json_data( self, *args ): #Transfer queue object to class
        try:

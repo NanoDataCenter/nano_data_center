@@ -160,7 +160,7 @@ class CF_Base_Interpreter(object):
 
 
 
-    def send_event(self, event_name, event_data):
+    def send_event(self, event_name, event_data=None):
         event = {}
         event["name"] = event_name
         event["data"] = event_data

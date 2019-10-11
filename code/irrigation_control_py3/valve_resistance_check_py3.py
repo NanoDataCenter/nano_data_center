@@ -5,8 +5,22 @@ import time
 from .irrigation_logging_py3 import Hash_Logging_Object
 class Valve_Resistance_Check(object):
 
-   def __init__( self, cf, cluster_control,io_control, handlers,
-               app_files, sys_files,master_valves,cleaning_valves,measurement_depths,mqtt_current_publish,irrigation_hash_control,Check_Cleaning_Valve):
+   def __init__( self, 
+                 cf, 
+                 cluster_control,
+                 io_control, 
+                 handlers,
+                 app_files, 
+                 sys_files,
+                 master_valves,
+                 cleaning_valves,
+                 measurement_depths,
+                 mqtt_current_publish,
+                 irrigation_hash_control,
+                 Check_Cleaning_Valve,
+                 get_json_object):
+                 
+       self.get_json_object = get_json_object
        self.handlers = handlers
        self.sys_files    = sys_files
        self.app_files    = app_files
@@ -18,12 +32,13 @@ class Valve_Resistance_Check(object):
        self.mqtt_current_publish = mqtt_current_publish
        self.irrigation_hash_control = irrigation_hash_control
        self.hash_logging   = Hash_Logging_Object(self.handlers, "IRRIGATION_VALVE_TEST",measurement_depths["valve_depth"] )
+       self.Check_Cleaning_Valve = Check_Cleaning_Valve
 
    def construct_chains( self, cf):
 
        cf.define_chain("resistance_check",False)        
        cf.insert.send_event("IRI_MASTER_VALVE_SUSPEND",None)
-       cf.insert.verify_function_terminate( self, "RELEASE_IRRIGATION_CONTROL" ,None, self.io_control.check_for_all_plcs, *params):
+       cf.insert.verify_function_terminate( self, "RELEASE_IRRIGATION_CONTROL" ,None, self.io_control.check_for_all_plcs)
        
        cf.insert.one_step( self.assemble_relevant_valves ) #  
        cf.insert.enable_chains(["test_each_valve"])
@@ -46,7 +61,7 @@ class Valve_Resistance_Check(object):
                                              function = self.check_queue) 
 
        cf.insert.reset()
-       Check_Cleaning_Valve("resistance_clean_valve",cf,handlers,irrigation_io,irrigation_hash_control)
+       self.Check_Cleaning_Valve("resistance_clean_valve",cf,self.handlers,self.io_control,self.irrigation_hash_control,self.get_json_object)
    
        return  ["resistance_check","test_each_valve","resistance_clean_valve"]
 

@@ -194,9 +194,12 @@ class MQTT_Log(object):
               processed_data += self.mqtt_messaging.process_mqtt_message(self.mqtt_devices[item[0]]["subscriptions"][item[1]],item[2],data)
           if len(cache[topic]) > 0:
              processed_data = processed_data/len(cache[topic])
-          return_value[key] = processed_data
-          self.ds_handlers["MQTT_SENSOR_STATUS"].hset(key,processed_data)
-       self.ds_handlers["MQTT_SENSOR_QUEUE"].push(return_value)
+             return_value[key] = processed_data
+             self.ds_handlers["MQTT_SENSOR_STATUS"].hset(key,processed_data)
+       #print("return_value",return_value)
+       if len(list(return_value.keys())) > 0:
+
+           self.ds_handlers["MQTT_SENSOR_QUEUE"].push(return_value)
                    
 if __name__ == "__main__":
 
