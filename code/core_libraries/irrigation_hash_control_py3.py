@@ -89,7 +89,7 @@ def get_current_limits(redis_site,qs):
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL" )
     query_list = qs.add_match_terminal( query_list, 
-                                        relationship =  "MQTT_CURRENT_LIMITS" )
+                                        relationship =  "CURRENT_LIMITS" )
                                         
     limits_sets, limit_sources = qs.match_list(query_list) 
     return limit_sources[0]

@@ -1,7 +1,8 @@
 class IO_Control(object):
 
-   def __init__(self,irrigation_hash_control ):
+   def __init__(self,irrigation_hash_control,event_handlers ):
       self.irrigation_hash_control = irrigation_hash_control
+      self.event_handlers = event_handlers
       self.disable_all_sprinklers()
 
    def turn_on_pump(self,*args):
@@ -31,31 +32,51 @@ class IO_Control(object):
      
    def get_master_valve_setup(self):
        return self.irrigation_hash_control.hget("MASTER_VALVE_SETUP")
-       
-       
+
    def disable_all_sprinklers( self,*arg ):
        print("disable all sprinklers")
-       self.irrigation_hash_control.hset("MASTER_VALVE_SETUP",False)
        self.irrigation_hash_control.hset("MASTER_VALVE",False)       
-       
+       self.turn_off_cleaning_valves()
+       self.turn_off_master_valves()
        
    def turn_on_master_valves( self,*arg ):
-       self.irrigation_hash_control.hset("MASTER_VALVE_SETUP",True)
-       self.irrigation_hash_control.hset("MASTER_VALVE",True)       
-       print("turn on master valve")
+       self.event_handlers.change_master_valve_on()
        
    def turn_off_master_valves( self,*arg ):
-       self.irrigation_hash_control.hset("MASTER_VALVE",False) 
+       self.event_handlers.change_master_valve_off()
+
+   def turn_on_master_valves_direct( self,*arg ):
+         
+       self.irrigation_hash_control.hset("MASTER_VALVE",True)   
+            
+       print("turn on master valve")
+       
+   def turn_off_master_valves_direct( self,*arg ):
+       
+       self.irrigation_hash_control.hset("MASTER_VALVE",False)
+       
        print("turn off master valve")
 
 
    def turn_on_cleaning_valves( self,*arg ):
        
-       print("turn on cleaning valve")
+       self.event_handlers.open_cleaning_valve()
             
    def turn_off_cleaning_valves( self,*arg ):
+      self.turn_off_cleaning_valves_direct()  ## added safety
+     
+      self.event_handlers.close_cleaning_valve()
+ 
+   def turn_on_cleaning_valves_direct( self,*arg ):
+       print("turn on cleaning valve")
+            
+   def turn_off_cleaning_valves_direct( self,*arg ):
       print("turn off cleaning valve")
-    
+      
+
+
+
+ 
    def verify_all_devices(self,*args):
        return True
  
@@ -92,7 +113,19 @@ class IO_Control(object):
       
    def monitor_current(self,current_limits):
        return True
-   # "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"timestamp":time.time()} }    
+       
+       
+   def turn_on_equipment_relay(self,*args):
+       pass
+   
+   def check_equipment_relay(self,*args):
+       return True # return true or false depending upon state of relay
+       
+       
+       
+   def check_equipment_current(self,*args):
+       return .30 #
+    
        
        
 '''

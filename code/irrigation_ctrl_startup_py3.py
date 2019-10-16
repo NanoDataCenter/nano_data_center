@@ -11,15 +11,15 @@ class Generate_Control_Events(object):
        self.cf = cf
        
    def open_cleaning_valve(self):
-       self.cf.insert.check_event_no_init("IRI_OPEN_CLEANING_VALVE", self.check_open )  # checking for open cleaning valve command
+      self.cf.send_event("IRI_OPEN_CLEANING_VALVE" ) 
 
    def close_cleaning_valve(self):
        self.cf.send_event("IRI_CLOSE_CLEANING_VALVE" ) 
           
-   def change_cleaning_valve_off(self):
+   def change_cleaning_valve_offline(self,*args):
        self.cf.send_event("IRI_CLEANING_VALVE_MONITOR_OFFLINE") 
           
-   def change_cleaning_valve_online(self):
+   def change_cleaning_valve_online(self,*args):
        self.cf.send_event("IRI_CLEANING_VALVE_MONITOR_ONLINE") 
            
 
@@ -29,10 +29,10 @@ class Generate_Control_Events(object):
    def change_master_valve_on(self):
        self.cf.send_event("IRI_OPEN_MASTER_VALVE") 
           
-   def change_master_valve_offline(self):
+   def change_master_valve_offline(self,*args):
        self.cf.send_event("IRI_MASTER_VALVE_SUSPEND") 
           
-   def change_master_valve_online(self):       
+   def change_master_valve_online(self,*args):       
        self.cf.send_event("IRI_MASTER_VALVE_RESUME") 
           
    def cancel_timed_state(self):
@@ -42,7 +42,14 @@ class Generate_Control_Events(object):
        self.cf.send_event("IRI_EXTERNAL_TIMED_OPEN") 
           
 
-
+def verify_startup(io_control,current_operations,failure_report):
+    # check critical systems
+    # check current controller
+    #self.failure_report(self.current_operation,"MASTER_VALVE","OFF",{"flow_rate":self.master_flow}   )
+    #self.failure_report(self.current_operation,"CLEANING_VALVE",None,{"flow_rate":self.cleaning_flow}   )
+    #self.failure_report(self.current_operations,"EQUIPMENT_OVER_CURRENT",None,{"value":value,"limit":self.equipment_current_limit})
+    #self.failure_report(self.current_operation,"Check_Off",None,{"flow_rate":temp} )
+    return True 
 
 if __name__ == "__main__":
 
@@ -139,12 +146,17 @@ if __name__ == "__main__":
   
     remote_classes = None #construct_classes_py3.Construct_Access_Classes(io_server_ip,io_server_port)
     
+    current_operations = {}
+    current_operations["state"] = "OFFLINE"
+    failure_report_class = Failure_Report(None)  # fill in stream handler later
+    failure_report = failure_report_class.failure_report
+    
     
     cf = CF_Base_Interpreter()
     cluster_control = Cluster_Control(cf)
     generate_control_events = Generate_Control_Events(cf)
     eto_management = ETO_Management(qs,redis_site,app_files)
-
+    io_control = IO_Control(irrigation_hash_control,generate_control_events)
     ##
     ## indicating irrigation reboot
     ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT STARTUP","level":"RED"})
@@ -155,20 +167,34 @@ if __name__ == "__main__":
        temp = status[1]
        ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Deleting_Irrigation_Job","details":{"schedule_name":temp["schedule_name"],"step":temp["step"]},"level":"RED"})
     ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all() # delete current job to prevent circular reboots
+
+
+
    
-    io_control = IO_Control(irrigation_hash_control)
-   
+    
+    while True:
+       if verify_startup(io_control,current_operations,failure_report) == True:
+          break
+          
+          
     #
     # Three items are running at the same time
     # 1.  Monitor Commands coming from other processes job queue "IRRIGATION_JOB_SCHEDULING"
     # 2.  Dispatch Commands individual commands from Outside Processes 
     # 3.  Control Master Valve as Master Valve can be controlled individually from schedued irrigation
     #
-    current_operations = {}
-    current_operations["state"] = "OFFLINE"
-    failure_report_class = Failure_Report(None)  # fill in stream handler later
-    failure_report = failure_report_class.failure_report
-    '''
+
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+    query_list = qs.add_match_relationship( query_list,relationship="IRRIGIGATION_SCHEDULING_CONTROL" )
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship =  "CURRENT_LIMITS" )
+                                        
+    limits_sets, limit_sources = qs.match_list(query_list) 
+    
+    equipment_current_limit =  limit_sources[0]["EQUIPMENT"]
+    print("equipment_current_limit",equipment_current_limit)
+    
     Process_Irrigation_Command( redis_site_data = redis_site,
                                  handlers=ds_handlers,
                                  cluster_id = 1, #### not sure what this is
@@ -183,10 +209,14 @@ if __name__ == "__main__":
                                  measurement_depths =measurement_depths,
                                  eto_management = eto_management,
                                  irrigation_hash_control = irrigation_hash_control,
-                                 qs = qs )
+                                 qs = qs,
+                                 generate_control_events = generate_control_events,
+                                 failure_report = failure_report,
+                                 
+                                 current_operations = current_operations )
                                 
                                  
-    '''           
+               
     Process_External_Commands( cf = cf,
                                     handlers = ds_handlers,
                                     app_files = app_files,
@@ -195,7 +225,10 @@ if __name__ == "__main__":
                                     eto_management = eto_management,
                                     cluster_control = cluster_control,
                                     irrigation_io = io_control,
-                                    generate_control_events = generate_control_events)
+                                    generate_control_events = generate_control_events,
+                                    failure_report = failure_report,
+                                    equipment_current_limit = equipment_current_limit,
+                                    current_operations = current_operations )
     
    
     Master_Valve("MASTER_VALVE", cf,cluster_control, io_control, ds_handlers,current_operations,failure_report,irrigation_excessive_flow_limits)

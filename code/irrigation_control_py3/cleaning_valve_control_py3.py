@@ -13,19 +13,28 @@ class Cleaning_Valve(object):
        self.disable_chain = False
        self.deferred_enable = False
        self.construct_chains( cf)
-       cluster_control.define_cluster( cluster_id, self.state_list ,"CLEANING_EV_HANDLER" )
-       cluster_control.define_state( cluster_id, "ONLINE", ["CLEANING_ONLINE_MONITOR"])
-       cluster_control.define_state( cluster_id, "OFFLINE", ["CLEANING_OFFLINE_MONITOR"])
+       cluster_control.define_cluster( cluster_id, self.state_list ,"CLEANING_INIT" )
+       cluster_control.define_state( cluster_id, "ONLINE", ["CLEANING_EV_HANDLER","CLEANING_ONLINE_MONITOR"])
+       cluster_control.define_state( cluster_id, "OFFLINE", ["CLEANING_EV_HANDLER","CLEANING_OFFLINE_MONITOR"])
        self.irrigation_io.turn_off_cleaning_valves() 
        self.cluster_ctrl.enable_cluster_reset_rt(  self.cf,self.cluster_id, "ONLINE" )
+       
     
 
-
+   def init_startup(self,*parms):
+       self.cluster_ctrl.enable_cluster_reset_rt(  self.cf,self.cluster_id, "ONLINE" )
+   
+   
    def construct_chains( self, cf ):
  
+       cf.define_chain("CLEANING_INIT",True)
+       cf.insert.one_step(self.init_startup )
+       cf.insert.terminate()
 
-       cf.define_chain("CLEANING_EV_HANDLER",True) # this thread is always active
-       #cf.insert.log("Cleaning Monitor chain is active")
+
+
+       cf.define_chain("CLEANING_EV_HANDLER",True) 
+       
        cf.insert.check_event_no_init("IRI_OPEN_CLEANING_VALVE", self.check_open )  # checking for open cleaning valve command
        cf.insert.check_event_no_init("IRI_CLOSE_CLEANING_VALVE", self.check_close ) # checking for close cleaning valve command
        cf.insert.check_event_no_init("IRI_CLEANING_VALVE_MONITOR_OFFLINE", self.change_to_offline_state)
@@ -37,6 +46,7 @@ class Cleaning_Valve(object):
 
 
        cf.define_chain("CLEANING_ONLINE_MONITOR",False) # make sure that there is no flow if cleaning valve is off
+      
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        cf.insert.wait_event_count(count = 10)  # wait 10 seconds to ensure MQTT update of sensor values
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
@@ -54,17 +64,18 @@ class Cleaning_Valve(object):
    def check_open( self, cf_handle, chainObj, parameters, event ):  #event handler for web open command
        if event["name"] == "INIT":
            return
-       if get_current_state(self.cluster_id) ==  "OFFLINE" :       
-          self.irrigation_io.turn_on_cleaning_valves()
+       if self.cluster_ctrl.get_current_state(self.cluster_id) ==  "OFFLINE" :       
+          self.irrigation_io.turn_on_cleaning_valves_direct()
   
        else:
           self.disable_all_sprinklers()
-          raise ValueError("Cannot open cleaning valve in ONLINE STATE")
+          raise ValueError("Cannot open cleaning valve in ONLINE STATE") #  online state is only during filter cleaning
           
    def check_close( self, cf_handle, chainObj, parameters, event ):
        if event["name"] == "INIT":
            return
-       self.irrigation_io.turn_off_cleaning_valves()
+       
+       self.irrigation_io.turn_off_cleaning_valves_direct()
         
    def change_to_offline_state( self, cf_handle, chainObj, parameters, event ):
        if event["name"] == "INIT":
@@ -104,7 +115,9 @@ class Cleaning_Valve(object):
 
    
    def report_cleaning_valve_failure(self, chainObj, parameters, event):
-       self.failure_report(self.current_operation,"CLEANING_VALVE","ONLINE",{"flow_rate":self.cleaning_flow}   )   
-
+       self.failure_report(self.current_operation,"CLEANING_VALVE",None,{"flow_rate":self.cleaning_flow}   )   
+       
+       raise ValueError("Excessive Idle Cleaning Valve Flow  "+self.cleaning_flow)
+       
 if __name__ == "__main__":
    pass

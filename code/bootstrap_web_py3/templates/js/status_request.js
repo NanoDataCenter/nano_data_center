@@ -35,7 +35,7 @@ function status_update( data )
        $("#equipment_current").html("Equipment  Current:  "+parseFloat(data.EQUIPMENT_CURRENT).toFixed(2))
        $("#pump_input_current").html("Pump Input Current: "+parseFloat(data.INPUT_PUMP_CURRENT).toFixed(2))
        $("#pump_output_current").html("Pump Output Current: "+parseFloat(data.OUTPUT_PUMP_CURRENT).toFixed(2))
-       $("#master_valve").html("Master Valve: "+data.MASTER_VALVE_SETUP )
+       $("#master_valve").html("Master Valve: "+data.MASTER_VALVE )
        $("#eto_management").html("ETO Management: "+data.ETO_MANAGEMENT )
  
        $("#suspend").html("Suspension State:  "+data.SUSPEND )

@@ -1,6 +1,9 @@
 
 import time
 import os
+
+
+
 class Irrigation_Scheduling(object):
    def __init__(self,handlers,app_files,sys_files,eto_management,irrigation_hash_control ):
        self.handlers = handlers
@@ -162,19 +165,23 @@ class Irrigation_Scheduling(object):
 
 
 class Process_External_Commands(object):
-   def __init__(self,cf, cluster_control, handlers,app_files,sys_files,eto_management,irrigation_io,irrigation_hash_control,generate_control_events):
+   def __init__(self,cf, cluster_control, handlers,app_files,sys_files,eto_management,irrigation_io,
+                  irrigation_hash_control,generate_control_events,equipment_current_limit ,current_operations,failure_report ):
        self.cf = cf
        self.handlers = handlers
        self.app_files = app_files
        self.sys_files = sys_files
        
+       
        self.generate_control_events = generate_control_events
        self.eto_management = eto_management 
        self.irrigation_io = irrigation_io
        self.irrigation_hash_control = irrigation_hash_control
-       
+       self.equipment_current_limit = equipment_current_limit
+       self.current_operations = current_operations
+       self.failure_report = failure_report       
        self.irrigation_sched = Irrigation_Scheduling(handlers,app_files,sys_files,eto_management,irrigation_hash_control)
-       
+
        self.clear_redis_sprinkler_data()              
        self.commands = {}
 
@@ -222,7 +229,7 @@ class Process_External_Commands(object):
       
 
    def add_chains( self, cf ):
-   
+       self.turn_on_equipment_relay()
        cf.define_chain( "sprinkler_command_queue", True ) 
        #cf.insert.log("sprinkler_command_queue")
        cf.insert.wait_event_count(count = 1 ) # wait 1 seconds
@@ -230,7 +237,11 @@ class Process_External_Commands(object):
        cf.insert.one_step( self.update_time_stamp)       
        cf.insert.reset()
 
-  
+       cf.define_chain("check_equipment_current",True)
+       cf.insert.wait_event_count(count = 15 ) # wait 15 seconds 
+       cf.insert.one_step(self.check_equipment_relay)
+       cf.insert.one_step(self.check_equipment_current)
+       cf.insert.reset()       
 
 
 
@@ -332,10 +343,22 @@ class Process_External_Commands(object):
         json_object["run_time"] = 0
         self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)       
       
-       
-
-       
-
-
+     
+   def turn_on_equipment_relay(self,*args):
+       self.irrigation_io.turn_on_equipment_relay()
+   
+   def check_equipment_relay(self,*args):
+       if self.irrigation_io.check_equipment_relay() != True:
+          self.failure_report(self.current_operations,"EQUIPMENT_RELAY_TRIP",None,{"value":False})
+          time.sleep(5)  # let entry settle in db
+          raise
+          os.system("reboot") 
+   def check_equipment_current(self,*args):
+       if self.irrigation_io.check_equipment_current() > self.equipment_current_limit:
+          self.failure_report(self.current_operations,"EQUIPMENT_OVER_CURRENT",None,{"value":value,"limit":self.equipment_current_limit})
+          time.sleep(5)  # let entry settle in db
+          raise
+          os.system("reboot") 
+          
 
  

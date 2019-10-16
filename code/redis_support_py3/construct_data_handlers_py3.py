@@ -595,6 +595,9 @@ class Stream_Redis_Writer(Redis_Stream):
       self.depth = data["depth"]
       self.add_pad = "~"
       self.redis_stream = Redis_Stream(redis_handle)
+      
+   def save(self):
+       self.redis_handle.save()
 
    def delete_all( self ):
        self.redis_handle.delete(self.key)
