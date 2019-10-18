@@ -29,6 +29,7 @@
                    <li id="equipment_current">Equipment  Current: </li>
                    <li id="pump_input_current">Pump Input Current: </li>
                    <li id="pump_output_current">Pump Output Current: </li>
+                   <li id="well_pressure">Well Pressure;   </li>
                    <li id="rain_day">Rain Day:      </li>        
                    <li id="eto_management">ETO Management: </li>
                    <li id="master_valve">Master Valve State: </li>

@@ -11,6 +11,8 @@ from .irrigation_control_basic_py3      import   Irrigation_Control_Basic
 from core_libraries.irrigation_hash_control_py3 import get_flow_checking_limits
 from core_libraries.irrigation_hash_control_py3 import get_cleaning_limits
 from core_libraries.irrigation_hash_control_py3 import get_current_limits
+from core_libraries.irrigation_hash_control_py3 import get_cleaning_flow_limits
+from core_libraries.irrigation_hash_control_py3 import get_irrigation_current_limit
 from core_libraries.mqtt_current_monitor_interface_py3 import MQTT_Current_Monitor_Publish
 
 
@@ -47,7 +49,8 @@ class Process_Irrigation_Command(object):
     
       self.cleaning_limit      = get_cleaning_limits(redis_site_data,qs) 
       self.current_limit       = get_current_limits(redis_site_data,qs)
-     
+      self.cleaning_flow_limits = get_cleaning_flow_limits(redis_site_data,qs)
+      self.irrigation_current_limit = get_irrigation_current_limit(redis_site_data,qs)
       # connection to local mqtt publish server
       self.mqtt_current_publish = MQTT_Current_Monitor_Publish(redis_site_data,"/REMOTES/CURRENT_MONITOR_1/",qs )
       
@@ -58,7 +61,7 @@ class Process_Irrigation_Command(object):
                                       failure_report=failure_report,
                                       current_operations=current_operations )
      
-      '''
+      
       self.measure_valve_resistance = Valve_Resistance_Check(cf =cf,
                                                              cluster_control = cluster_control,
                                                              io_control = irrigation_io, 
@@ -68,17 +71,20 @@ class Process_Irrigation_Command(object):
                                                              master_valves = master_valves,
                                                              cleaning_valves = cleaning_valves,
                                                              measurement_depths = measurement_depths,
-                                                             mqtt_current_publish = self.mqtt_current_publish,
                                                              irrigation_hash_control = irrigation_hash_control,
-                                                             Check_Cleaning_Valve = Check_Cleaning_Valve,
-                                                             get_json_object = self.get_json_object  )
-      '''                                                      
+                                                             get_json_object = self.get_json_object,
+                                                             current_operations=current_operations,
+                                                             generate_control_events = generate_control_events,
+                                                             irrigation_current_limit = self.irrigation_current_limit)
+                                                            
+                                                      
       self.clean_filter = Clean_Filter(cf,cluster_control,irrigation_io, 
                                        handlers,irrigation_hash_control,Check_Excessive_Current,
                                        get_json_object = self.get_json_object,
                                        failure_report=failure_report,
                                        current_operations=current_operations,
-                                       generate_control_events = generate_control_events  )
+                                       generate_control_events = generate_control_events,
+                                       cleaning_flow_limits = self.cleaning_flow_limits )
       '''                                 
       self.irrigation_control  =  Irrigation_Control_Basic(cf = cf,
                                                            cluster_control=cluster_control,
@@ -99,7 +105,7 @@ class Process_Irrigation_Command(object):
       '''
       self.chain_list    = []
       self.chain_list.extend(self.check_off.construct_chains(cf))
-      #self.chain_list.extend(self.measure_valve_resistance.construct_chains(cf))
+      self.chain_list.extend(self.measure_valve_resistance.construct_chains(cf))
       self.chain_list.extend(self.clean_filter.construct_chains(cf))
        
       #self.chain_list.extend(self.irrigation_control.construct_chains(cf))
@@ -107,7 +113,7 @@ class Process_Irrigation_Command(object):
       cluster_control.define_cluster( cluster_id, self.chain_list, [])
       
       self.check_off.construct_clusters( cluster_control, cluster_id,"CHECK_OFF" )
-      #self.measure_valve_resistance.construct_clusters(cluster_control, cluster_id,"MEASURE_RESISTANCE" )
+      self.measure_valve_resistance.construct_clusters(cluster_control, cluster_id,"MEASURE_RESISTANCE" )
       self.clean_filter.construct_clusters( cluster_control, cluster_id,"CLEAN_FILTER" )
       
       
@@ -247,7 +253,7 @@ class Process_Irrigation_Command(object):
        #
        
        cleaning_sum      = self.irrigation_hash_control.hget("CLEANING_ACCUMULATION")
-       if cleaning_sum > 1000000000 : #self.cleaning_limit:
+       if cleaning_sum > self.cleaning_limit:
            json_object = {}
            json_object["type"] = "CLEAN_FILTER"
            json_object["command"]     = "CLEAN_FILTER"
@@ -275,7 +281,7 @@ class Process_Irrigation_Command(object):
            return
        
        if json_object["type"] == "RESISTANCE_CHECK":
-           cf_handle.disable_chain_base(["check_excessive_current"])
+           
            self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
            self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"MEASURE_RESISTANCE" )
            return
@@ -413,13 +419,7 @@ class Process_Irrigation_Command(object):
           return False
          
        
-   # Purpose is to check current controller is operational
-   def check_current_controller(self, cf_handle, chainObj, parameters, event):
-       
-       if event["name"] == "INIT":
-          return "CONTINUE"
-       else:
-          return False
+
        
  
       
@@ -463,17 +463,9 @@ class Process_Irrigation_Command(object):
          self.mqtt_current_publish.read_relay_states()         
          
          
-   def turn_on_power_relays(self,cf_handle,chainObj,parameters,event):
-       if event["name"] == "INIT":
-          return "CONTINUE"
-       else:
-         pass
+
          
-   def clear_max_currents(self,cf_handle,chainObj,parameters,event):
-       if event["name"] == "INIT":
-          return "CONTINUE"
-       else:
-         pass
+
          
      
 
@@ -484,10 +476,6 @@ class Process_Irrigation_Command(object):
 
 
 
-
-   def check_excessive_current(self,cf_handle, chainObj, parameters, event):
-       print("check excessive current")
-       return False #TBD       
 
 
 

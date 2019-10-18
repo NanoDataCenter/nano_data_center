@@ -14,11 +14,13 @@ class Valve_Resistance_Check(object):
                  sys_files,
                  master_valves,
                  cleaning_valves,
-                 measurement_depths,
-                 mqtt_current_publish,
+                 measurement_depths,                 
                  irrigation_hash_control,
-                 Check_Cleaning_Valve,
-                 get_json_object):
+                 get_json_object,
+                 current_operations,
+                 generate_control_events,
+                 irrigation_current_limit):
+                 
                  
        self.get_json_object = get_json_object
        self.handlers = handlers
@@ -29,16 +31,22 @@ class Valve_Resistance_Check(object):
        self.io_control      = io_control
        self.master_valves = master_valves
        self.cleaning_valves = cleaning_valves   
-       self.mqtt_current_publish = mqtt_current_publish
+       self.current_operations = current_operations
+      
+       self.current_operations=current_operations
+       self.generate_control_events = generate_control_events
+       self.irrigation_current_limit = irrigation_current_limit
+       
        self.irrigation_hash_control = irrigation_hash_control
        self.hash_logging   = Hash_Logging_Object(self.handlers, "IRRIGATION_VALVE_TEST",measurement_depths["valve_depth"] )
-       self.Check_Cleaning_Valve = Check_Cleaning_Valve
+       
 
    def construct_chains( self, cf):
 
        cf.define_chain("resistance_check",False)        
-       cf.insert.send_event("IRI_MASTER_VALVE_SUSPEND",None)
-       cf.insert.verify_function_terminate( self, "RELEASE_IRRIGATION_CONTROL" ,None, self.io_control.check_for_all_plcs)
+       cf.insert.one_step(self.generate_control_events.change_master_valve_offline)
+       cf.insert.one_step(self.generate_control_events.change_master_valve_offline)
+       cf.insert.assert_function_terminate( "RELEASE_IRRIGATION_CONTROL" ,None, self.io_control.check_for_all_plcs)
        
        cf.insert.one_step( self.assemble_relevant_valves ) #  
        cf.insert.enable_chains(["test_each_valve"])
@@ -46,24 +54,24 @@ class Valve_Resistance_Check(object):
        cf.insert.log("event IR_V_Valve_Check_Done")
        cf.insert.one_step(self.log_valve_check)
        cf.insert.send_event("RELEASE_IRRIGATION_CONTROL" ) 
-       #cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None) # done in dispatching thread 
+       cf.insert.one_step(self.generate_control_events.change_master_valve_online)
+       cf.insert.one_step(self.generate_control_events.change_cleaning_valve_online)
        cf.insert.terminate() 
 
        cf.define_chain("test_each_valve",False,init_function= self.check_queue)
        cf.insert.wait_event_count( count = 1 ) #synchronize on second tick
        cf.insert.one_step(self.valve_setup)
-       cf.insert.wait_event_count(count =1)
-       cf.insert.one_step(self.request_measurements)
-       cf.insert.wait_event_count(count =6)
+
+       cf.insert.wait_event_count(count =2)
        cf.insert.one_step( self.valve_measurement)
        cf.insert.verify_function_terminate(  reset_event = "IR_V_Valve_Check_Done",
                                              reset_event_data=None,
                                              function = self.check_queue) 
 
        cf.insert.reset()
-       self.Check_Cleaning_Valve("resistance_clean_valve",cf,self.handlers,self.io_control,self.irrigation_hash_control,self.get_json_object)
+       
    
-       return  ["resistance_check","test_each_valve","resistance_clean_valve"]
+       return  ["resistance_check","test_each_valve"]
 
  
 
@@ -151,18 +159,14 @@ class Valve_Resistance_Check(object):
        if json_object[0] == True:
           json_object = json_object[1]
           
-          self.io_control.load_duration_counters( 1  ) 
+          self.io_control.load_duration_counters( 5  ) 
           self.io_control.turn_on_valve(  [{"remote": json_object[0], "bits":[int(json_object[1])]}] ) #  {"remote":xxxx,"bits":[] } 
           self.remote = json_object[0]
           self.output = json_object[1]
-          self.mqtt_current_publish.clear_max_currents()
-          self.mqtt_current_publish.enable_equipment_relay()
+          self.io_control.clear_max_currents()
+          self.io_control.enable_irrigation_relay()
 
-   def request_measurements(self, cf_handle, chainObj, parameters, event):
-       if event["name"] == "INIT":
-          return "CONTINUE"      
-       self.mqtt_current_publish.read_max_currents()
-       self.mqtt_current_publish.read_relay_states()    
+ 
            
    def valve_measurement(self, cf_handle, chainObj, parameters, event ):
        if event["name"] == "INIT":
@@ -171,42 +175,39 @@ class Valve_Resistance_Check(object):
        #
        #
        #
-          
-       coil_current = self.measure_current()
+       relay_state = self.io_control.get_irrigation_relay_state()
+       coil_current = self.io_control.get_max_current()
+       if relay_state == False:
+          details["remote"] = self.valve_object[0]
+          details["bit"]    = self.valve_object[1]
+          details["relay_state"] = False
+        
+          self.current_operation= {}
+          self.current_operation["state"] = "MEASURE_RESISTANCE"
+          self.failure_report(self.current_operation,"MEASURE_RESISTANCE_RELAY",None,details )
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"measure_resistance","details":details,"level":"RED"})
+       
+       if coil_current > self.irrigation_current_limit:
+          details["remote"] = self.valve_object[0]
+          details["bit"]    = self.valve_object[1]
+          details["relay_state"] = relay_state
+          details["current"] = coil_current
+          details["limit"] = self.irrigation_current_limit
+        
+          self.current_operation= {}
+          self.current_operation["state"] = "MEASURE_RESISTANCE"
+          self.failure_report(self.current_operation,"MEASURE_RESISTANCE_CURRENT",None,details )
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"measure_resistance","details":details,"level":"RED"})
+             
+       
        
        self.hash_logging.log_value(self.remote+":"+str(self.output),coil_current )
        self.io_control.disable_all_sprinklers()
  
 
    def measure_current(self):
-      
-       max_current = self.irrigation_hash_control.hget("SLAVE_MAX_CURRENT")
-       relay_state = self.irrigation_hash_control.hget("SLAVE_RELAY_STATE")
-       return_value = False
-       print("max_current",max_current)
-       print("relay_state",relay_state)
-       ref_time = time.time()
-       plc_flag = False
-       if max_current == None:
-          plc_flag = True
-       if relay_state == None:
-         plc_flag = True
-       if ref_time - max_current["timestamp"] > 6: # results greater than one minute ago
-           plc_flag = True
-       if ref_time - relay_state["timestamp"] >  6: # results greater than one minute ago
-           plc_flag = True
-           
-       if plc_flag == True:
-         return_value =  self.io_controlmeasure_valve_current()
-               
-       
-       elif relay_state['IRRIGATION_STATE'] == False:
-         return_value =  max_current['MAX_IRRIGATION_CURRENT']
-         detail = {"current":return_value,"valve":self.valve_object[1]}   
-         self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"valve_short","details":detail})
-       else:
-         return_value =  max_current['MAX_IRRIGATION_CURRENT']
-       print("valve",self.valve_object[1],return_value)
+       # measure relay current      
+
        return return_value
  
    def log_valve_check( self,*args):

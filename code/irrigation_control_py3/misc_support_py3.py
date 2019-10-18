@@ -104,7 +104,7 @@ class IO_Control(object):
    def measure_flow_rate( self, remote, io_setup ):           
        return   0
 
-   def check_for_all_plcs(self):
+   def check_for_all_plcs(self,*parms):
       return True # TBD
       
    def check_required_plcs(self,io_setup):
@@ -127,7 +127,18 @@ class IO_Control(object):
        return .30 #
     
        
+   def clear_max_currents(self,*args):
+       pass
        
+   def enable_irrigation_relay(self,*args):
+       pass   
+       
+       
+   def get_irrigation_relay_state(self,*args):
+       return True
+       
+   def get_max_current(self,*args):
+       return .333
 '''
 
 class IO_Control(object):

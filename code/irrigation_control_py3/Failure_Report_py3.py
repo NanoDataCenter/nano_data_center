@@ -10,7 +10,9 @@ class Failure_Report(object):
        self.add_failure_point("EQUIPMENT_RELAY_TRIP",set([]))
        self.add_failure_point("EQUIPMENT_OVER_CURRENT",set([]))
        self.add_failure_point("CHECK_OFF",set([]) )
-
+       self.add_failure_point("CLEAN_FILTER",set([]) )
+       self.add_failure_point("MEASURE_RESISTANCE_CURRENT",set([]))
+       self.add_failure_point("MEASURE_RESISTANCE_RELAY",set([]))
        
    def add_failure_point(self,failure_point,valid_states):
        self.valid_failure[failure_point] = valid_states

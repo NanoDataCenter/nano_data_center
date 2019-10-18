@@ -60,7 +60,8 @@ class Master_Valve(object):
        cf.insert.reset()
 
        cf.define_chain("MV_ON_MONITOR",False) # make sure that there is no flow if master valve is off
-       cf.insert.wait_event_count( event = "MINUTE_TICK" ) # 5 seconds
+       cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
+       #cf.insert.log("mv on monitor")
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
                                         function = self.monitor_master_valve_open )
        cf.insert.one_step(self.turn_off_master_valves)
@@ -84,6 +85,7 @@ class Master_Valve(object):
 
        cf.define_chain("MV_OFF_MONITOR",False) # make sure that there is no flow if master valve is off
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
+       #cf.insert.log("mv off monitor")
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
                                         function = self.monitor_master_valve_close )
        cf.insert.one_step(self.irrigation_io.turn_off_pump) # currently system doesnot have this capability
@@ -95,6 +97,7 @@ class Master_Valve(object):
        #
        #
        cf.define_chain("MV_OFFLINE_EV_HANDLER",False)
+       #cf.insert.log("off line state")
        cf.insert.check_event_no_init("IRI_OPEN_MASTER_VALVE",self.turn_on_master_valves)
        cf.insert.check_event_no_init("IRI_CLOSE_MASTER_VALVE", self.turn_off_master_valves )
        #cf.insert.check_event_no_init("IRI_MASTER_VALVE_SUSPEND", #### ) ####

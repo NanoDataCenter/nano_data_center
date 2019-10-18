@@ -20,8 +20,10 @@ class Construct_Irrigation_Scheduling_Control(object):
       cd.add_redis_stream("IRRIGATION_PAST_ACTIONS",2000)
       cd.close_package_contruction()
       bc.add_info_node("CURRENT_LIMITS","CURRENT_LIMITS",properties = {"EQUIPMENT":1.0 ,"IRRIGATION": 1.75} )
+      bc.add_info_node("IRRIGATION_VALVE_CURRENT_LIMIT","IRRIGATION_VALVE_CURRENT_LIMIT",properties ={ "limit":.5 } )
       bc.add_info_node("EXCESSIVE_FLOW_LIMITS","EXCESSIVE_FLOW_LIMITS",properties={ "EXCESSIVE_FLOW_VALUE":30,"EXCESSIVE_FLOW_TIME":5 } )
       bc.add_info_node("CLEANING_LIMITS","CLEANING_LIMITS",properties={ "limit":25000 } )
+      bc.add_info_node("CLEANING_FLOW_LIMITS","CLEANING_FLOW_LIMITS",properties={ "limit":2 } )
       bc.add_info_node("MASTER_VALVES","MASTER_VALVES",properties={"MASTER_VALVES":[ {"remote":"satellite_1","pins":[43] } ]} )
       bc.add_info_node("CLEANING_VALVES","CLEANING_VALVES",properties= {"CLEANING_VALVES":[ {"remote":"satellite_1","pins":[44] } ]} )
       bc.add_info_node("LOGGING_DEPTH","LOGGING_DEPTH",properties = {"valve_depth":20} )   
@@ -57,7 +59,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       fields["SLAVE_MAX_CURRENT"] = { "type":"dictionary", "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"timestamp":time.time()} }
       fields["SLAVE_RELAY_STATE"] = { "type":"dictionary", "fields":{'EQUIPMENT_STATE':True,'IRRIGATION_STATE':True,"timestamp":time.time()} }
       fields["INSTANT_CURRENT"] = { "type":"dictionary","fields":{'EQUIPMENT_CURRENT':0,'IRRIGATION_CURRENT':0,"timestamp":time.time()} }
-      fields["CLEANING_FLOW_RATE_ACCUMULATION"]   = { "type":"float","init_value":0 }
+      
       cd.add_managed_hash(name = "IRRIGATION_CONTROL",fields= fields)
       cd.close_package_contruction()
     

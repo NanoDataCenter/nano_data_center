@@ -80,12 +80,14 @@ class Cleaning_Valve(object):
    def change_to_offline_state( self, cf_handle, chainObj, parameters, event ):
        if event["name"] == "INIT":
            return
+       
        self.irrigation_io.turn_off_cleaning_valves()    
        self.cluster_ctrl.enable_cluster_reset_rt(  self.cf,self.cluster_id, "OFFLINE" )
        
    def change_to_online_state( self, cf_handle, chainObj, parameters, event ):
        if event["name"] == "INIT":
            return
+       
        self.irrigation_io.turn_off_cleaning_valves()    
        self.cluster_ctrl.enable_cluster_reset_rt(  self.cf,self.cluster_id, "ONLINE" )
 
@@ -96,6 +98,7 @@ class Cleaning_Valve(object):
           pass
           
        else:
+         
          self.master_flow = self.handlers["MQTT_SENSOR_STATUS"].hget("CLEANING_FLOW_METER")
          
          if self.master_flow > 0:
