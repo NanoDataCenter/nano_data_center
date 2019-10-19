@@ -85,7 +85,7 @@ class Process_Irrigation_Command(object):
                                        current_operations=current_operations,
                                        generate_control_events = generate_control_events,
                                        cleaning_flow_limits = self.cleaning_flow_limits )
-      '''                                 
+                                      
       self.irrigation_control  =  Irrigation_Control_Basic(cf = cf,
                                                            cluster_control=cluster_control,
                                                            io_control = irrigation_io,
@@ -97,12 +97,14 @@ class Process_Irrigation_Command(object):
                                                            irrigation_hash_control = irrigation_hash_control,
                                                            qs = qs,
                                                            redis_site = redis_site_data ,
-                                                           current_limit = self.current_limit,
-                                                           Check_Cleaning_Valve = Check_Cleaning_Valve,
-                                                           Check_Excessive_Current=Check_Excessive_Current,
-                                                           Check_Excessive_Flow=Check_Excessive_Flow)
+                                                           current_limit = self.current_limit,                                                       
+                                                           Check_Excessive_Current=Check_Excessive_Current,                                                         
+                                                           failure_report=failure_report,
+                                                           current_operations=current_operations,
+                                                           generate_control_events = generate_control_events,
+                                                           cleaning_flow_limits = self.cleaning_flow_limits )
                                                          
-      '''
+      
       self.chain_list    = []
       self.chain_list.extend(self.check_off.construct_chains(cf))
       self.chain_list.extend(self.measure_valve_resistance.construct_chains(cf))

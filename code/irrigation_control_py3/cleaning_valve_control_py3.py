@@ -95,19 +95,19 @@ class Cleaning_Valve(object):
        
    def monitor_cleaning_valve_close(self,cf_handle, chainObj, parameters, event):
        if event["name"] == "INIT":
-          pass
+          self.cleaning_valve_close_count = 0
           
        else:
          
-         self.master_flow = self.handlers["MQTT_SENSOR_STATUS"].hget("CLEANING_FLOW_METER")
+         self.cleaning_flow = self.handlers["MQTT_SENSOR_STATUS"].hget("CLEANING_FLOW_METER")
          
-         if self.master_flow > 0:
+         if self.cleaning_flow > 0:
             
-            self.master_valve_close_count +=1
-            if self.master_valve_close_count > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_TIME"]:
+            self.cleaning_valve_close_count +=1
+            if self.cleaning_valve_close_count > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_TIME"]:
                 return True
          else:
-             self.master_valve_close_count = 0
+             self.cleaning_valve_close_count = 0
                
        return False
             

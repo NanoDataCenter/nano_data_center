@@ -26,7 +26,7 @@ class Irrigation_Step_Monitoring(object):
 
 
    def initialize_logging(self,json_object):
-       self.handlers["IRRIGATION_TIME_HISTORY"].delete_all()
+       self.handlers["IRRIGATION_TIME_HISTORY"].delete_all()  # for test purposes only
        self.working_key = self.form_key(json_object)
        time_history = self.handlers["IRRIGATION_TIME_HISTORY"].hget(self.working_key)
       

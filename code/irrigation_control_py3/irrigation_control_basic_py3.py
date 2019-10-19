@@ -7,7 +7,8 @@ class Irrigation_Control_Basic(object):
    def __init__( self,   cf,cluster_control,io_control,handlers,
                         app_files, sys_files, manage_eto,measurement_depths,
                         irrigation_hash_control,qs,redis_site,current_limit,
-                        Check_Cleaning_Valve ,Check_Excessive_Current,Check_Excessive_Flow):
+                        Check_Excessive_Current,failure_report,current_operations,generate_control_events,cleaning_flow_limits):
+
                         
        self.cf = cf
        self.cluster_ctrl   = cluster_control 
@@ -19,12 +20,13 @@ class Irrigation_Control_Basic(object):
        self.sys_files     = sys_files
        self.irrigation_hash_control = irrigation_hash_control
        self.current_limit = current_limit
-       
-       
+       self.failure_report=failure_report
+       self.current_operations=current_operations,
+       self.generate_control_events = generate_control_events
+ 
        self.step_monitor = Irrigation_Step_Monitoring(handlers,manage_eto,io_control,cf,irrigation_hash_control,qs,redis_site)
-       self.Check_Cleaning_Valve = Check_Cleaning_Valve
        self.Check_Excessive_Current = Check_Excessive_Current
-       self.Check_Excessive_Flow = Check_Excessive_Flow
+   
 
    
 
@@ -80,28 +82,22 @@ class Irrigation_Control_Basic(object):
        
        cf.insert.reset()      
 
-       self.Check_Cleaning_Valve("basic_irrigation_cleaning_valve",
-                                 cf,
-                                 self.handlers,self.io_control,self.irrigation_hash_control,self.get_json_object)
+
        self.Check_Excessive_Current("basic_irrigation_excessive_current",
                                      cf,
                                      self.handlers,self.io_control,self.irrigation_hash_control,self.get_json_object)
-       self.Check_Excessive_Flow("basic_irrigation_excessive_flow",
-                                 cf,
-                                 self.handlers,self.io_control,self.irrigation_hash_control,self.get_json_object)
+
        
 
       
 
 
-       return [ "IR_D_start_irrigation_step","IR_D_monitor_irrigation_step","basic_irrigation_cleaning_valve",
-                 "basic_irrigation_excessive_current", "basic_irrigation_excessive_flow"      ]
+       return [ "IR_D_start_irrigation_step","IR_D_monitor_irrigation_step","basic_irrigation_excessive_current"     ]
                 
                 
    def construct_clusters( self, cluster, cluster_id, state_id ):
        cluster.define_state( cluster_id, state_id,
-                          ["IR_D_start_irrigation_step","basic_irrigation_cleaning_valve",
-                 "basic_irrigation_excessive_current", "basic_irrigation_excessive_flow"  ]  )
+                          ["IR_D_start_irrigation_step","basic_irrigation_excessive_current"  ]  )
                           
                           
  ################################# Local Functions ################################################################

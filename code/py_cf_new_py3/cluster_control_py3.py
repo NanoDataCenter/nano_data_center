@@ -88,7 +88,7 @@ class Cluster_Control(object):
 
    def resume_cluster_rt( self, cf_handle,cluster_id ):
        if self.clusters[cluster_id]["suspension_state"] == True:
-          self.clusters[cluster_id]["suspension_state"] = True
+          self.clusters[cluster_id]["suspension_state"] = False
           for i in self.clusters[cluster_id]["chains"]:
               position = cf_handle.chain_map[i]
               chain    = cf_handle.chains[position]

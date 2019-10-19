@@ -118,16 +118,17 @@ class Master_Valve(object):
        #
        #
        cf.define_chain("MV_TIME_EV_HANDLER",False)
+       #cf.insert.log("mv time ev handler")
        cf.insert.check_event_no_init("IRI_OPEN_MASTER_VALVE",self.turn_on_master_valves)
        #cf.insert.check_event_no_init("IRI_CLOSE_MASTER_VALVE",self.set_timed_close_flag  )####
        cf.insert.check_event_no_init("IRI_MASTER_VALVE_SUSPEND", self.change_to_offline_state ) ####
        #cf.insert.check_event_no_init("IRI_MASTER_VALVE_RESUME", #### ) ######
-       cf.insert.check_event_no_init("IRI_EXTERNAL_CLOSE", self.exit_timed_state )
+       cf.insert.check_event_no_init("IRI_EXTERNAL_CLOSE", self.cancel_timed_state )
        cf.insert.check_event_no_init("IRI_EXTERNAL_TIMED_OPEN",self.change_to_timed_state)    
        cf.insert.reset()
        
        cf.define_chain("MV_TIME_TURN_OFF",False) # thread becomes active if web commanded it to
-       #cf.insert.log("mv time turn on")
+       cf.insert.log("mv time turn on")
        cf.insert.one_step(self.irrigation_io.turn_on_pump)
        cf.insert.one_step( self.turn_on_master_valves_timed )
        cf.insert.wait_function( self.determine_time_out ) 
@@ -164,18 +165,20 @@ class Master_Valve(object):
    # State Change functions
    #   
    def change_to_off_state(self,*parms):
+      #print("change_to_off_state")
       self.master_valve_close_count = 0
       self.turn_off_master_valves()
       self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,"MV_OFF" )
       
    def change_to_on_state(self,*parms):
+       #print("change_to_on_state")
        self.monitor_excessive_flow_count = 0
        self.turn_on_master_valves()
        self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,"MV_ON" )
 
    
    def change_to_offline_state(self,*parms):
-      
+      #print("change to offline state")
       self.turn_off_master_valves()
       self.current_state = self.cluster_ctrl.get_current_state(self.cluster_id)
       self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,"MV_OFFLINE" )
@@ -184,31 +187,39 @@ class Master_Valve(object):
    def offline_state_exit(self,*parms):
       if self.current_state == "MV_TIME_CYCLE_DEFERED":
          self.change_to_timed_state()
+      elif self.current_state == "MV_OFF":
+         self.change_to_off_state()
+      elif self.current_state == "MV_ON":
+         self.change_to_on_state()
       else:
-         self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,self.current_state )
+          raise ValueError("Improper state  "+self.current_state)
+        
+      self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,self.current_state )
    
    def change_to_timed_defered(self,*parms):
+       #print("change_timed_defered_state")
        self.current_state = "MV_TIME_CYCLE_DEFERED"
  
  
  
    def change_to_timed_state(self,*parms):
+       #print("change to timed state")
        self.turn_off_master_valves()
-       self.ref_time = time.time() + 30 #3600*8 # 8 hour time in future
+       self.ref_time = time.time() + 3600*8 # 8 hour time in future
        self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,"MV_TIME_CYCLE" )
    
    def cancel_timed_state(self,*parms):
-       if event["name"] == "INIT":
-         return
+       #print("cancel timed state")
+
        self.ref_time = time.time()
    
    def exit_timed_state(self,*parms):
- 
+       #print("exit time state") 
        self.ref_time = time.time()
        if self.master_valve_state == True:
-         self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,"MV_ON" )
+         self.change_to_on_state()
        else:
-         self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,"MV_OFF" )
+         self.change_to_off_state()
  
    def set_timed_close_flag(self,*params):
        self.master_valve_state = False
@@ -217,9 +228,7 @@ class Master_Valve(object):
        self.master_valve_state = True
        self.irrigation_io.turn_on_master_valves_direct()
 
-   def turn_off_master_valves(self,*parms):
-       self.master_valve_state = True
-       self.irrigation_io.turn_off_master_valves_direct() 
+
  
    def turn_off_master_valves(self,*parms):
        self.master_valve_state = False
@@ -236,28 +245,33 @@ class Master_Valve(object):
    #
    # 
    def monitor_master_valve_open(self,cf_handle, chainObj, parameters, event):
- 
+       
+       if event["name"] == "INIT":
+          self.monitor_excessive_flow_count = 0
+          
+           
        if event["name"] == "MINUTE_TICK":
-         
+           
            
            self.master_flow = self.handlers["MQTT_SENSOR_STATUS"].hget("MAIN_FLOW_METER")
-                             
+           print("master flow",self.master_flow)          
            if self.master_flow > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_VALUE"]:
              self.monitor_excessive_flow_count += 1
            else:
              self.monitor_excessive_flow_count = 0
           
            if self.monitor_excessive_flow_count > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_TIME"]:
-
+              print("return value true")
               return True
        return False  
       
       
    def monitor_master_valve_close(self,cf_handle, chainObj, parameters, event):
        if event["name"] == "INIT":
-          pass
+          self.monitor_excessive_flow_count = 0
           
        else:
+         
          self.master_flow = self.handlers["MQTT_SENSOR_STATUS"].hget("MAIN_FLOW_METER")
          
          if self.master_flow > 1:
@@ -276,6 +290,8 @@ class Master_Valve(object):
    #
    #
    def determine_time_out(self,*parms):
+      #print(time.time(),self.ref_time)
+      print(time.time() > self.ref_time)
       if time.time() > self.ref_time:
          return True
       else:
@@ -292,7 +308,7 @@ class Master_Valve(object):
    def report_master_valve_failure(self,*parms):
      self.failure_report(self.current_operation,"MASTER_VALVE","OFF",{"flow_rate":self.master_flow}   )
      
-     raise ValueError("Excessive Idle Cleaning Valve Flow  "+str(self.master_flow))
+     raise ValueError("Excessive Idle Master Valve Flow  "+str(self.master_flow))
     
    
    def report_excessive_flow(self,*parms):
