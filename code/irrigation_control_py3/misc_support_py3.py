@@ -3,12 +3,14 @@ from plc_control_py3.construct_classes_py3 import Construct_Access_Classes
 
 class IO_Control(object):
 
-   def __init__(self,irrigation_hash_control,event_handlers,qs,redis_site ):
+   def __init__(self,irrigation_hash_control,event_handlers,qs,redis_site,generate_handlers ):
       self.irrigation_hash_control = irrigation_hash_control
       self.event_handlers = event_handlers
+      self.generate_handlers = generate_handlers
       self.plc_classes = Construct_Access_Classes()
       self.construct_plc_elements(qs,redis_site)
-      print(self.plc_table)
+      self.ir_ctrl = self.find_irrigation_controllers() 
+      
       
       #
       # Build device tables
@@ -159,21 +161,47 @@ class IO_Control(object):
        query_list = qs.add_match_terminal( query_list,relationship="PLC_SERVER" )
        plc_server_field, plc_server_nodes = qs.match_list(query_list)
        for i in plc_server_nodes:
-          
+           handler = self.generate_rpc_client_handler(qs,redis_site,i["name"])
            query_list = []
            query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
            query_list = qs.add_match_relationship( query_list,relationship="PLC_SERVER",label=i["name"] )
            query_list = qs.add_match_terminal( query_list,relationship="REMOTE_UNIT" )
            plc_field, plc_nodes = qs.match_list(query_list)
            for j in plc_nodes:
-               j["redis_rpc_queue"]  =i["redis_rpc_queue"]
+               j["handler"]         = handler
                self.plc_table[j["name"]] = j
-               print(j["name"],i["redis_rpc_queue"])
+       
+               
     
        
+   def generate_rpc_client_handler(self,qs,redis_site,name): 
+       query_list = []   
+       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+       query_list = qs.add_match_relationship( query_list,relationship="PLC_SERVER",label=name )
+       query_list = qs.add_match_terminal( query_list, 
+                                           relationship = "PACKAGE", 
+                                           property_mask={"name":"PLC_SERVER_DATA"} )
+                                           
+       package_sets, package_sources = qs.match_list(query_list)
        
-'''
+       package = package_sources[0]    
+       data_structures = package["data_structures"]
+       handler = self.generate_handlers.construct_rpc_client(data_structures["PLC_RPC_CLIENT"] )
+       return handler
+       
+   def find_irrigation_controllers(self):
+       return_value = []
+       for key ,item in self.plc_table.items():
+          if "irrigation" in item["function"]:
+              return_value.append(item)
+       print("return_value",return_value)
+       quit()
+       return return_value       
 
+   
+'''
+           if "irrigation" in element["function"]:
+              self.ir_ctrl.append(element)  # finding irrigation controllers.
 class IO_Control(object):
 
    def __init__(self,  graph_management, construct_class, redis_old_handle, redis_new_handle ):

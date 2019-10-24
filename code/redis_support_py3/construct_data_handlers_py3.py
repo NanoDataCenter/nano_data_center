@@ -16,22 +16,23 @@ class Field_Not_Defined(Exception):
 class FIELD_TYPE_ERROR(Exception):
    pass
    
-class Redis_Rpc_Client(object):
+class Redis_RPC_Client(object):
 
-   def __init__( self ):
+   def __init__( self,redis_handle,data,rpc_queue ):
        self.redis_handle = redis_handle
-      
+       self.data = data
+       self.rpc_queue = rpc_queue
    
      
        
-   def send_rpc_message( self, rpc_queue, method,parameters,timeout=30 ):
+   def send_rpc_message( self, method,parameters,timeout=30 ):
         request = {}
         request["method"] = method
         request["params"] = parameters
         request["id"]   = str(uuid.uuid1())    
         request_msg = msgpack.packb( request )
         self.redis_handle.delete(request["id"] )
-        self.redis_handle.lpush(redis_rpc_queue, request_msg)
+        self.redis_handle.lpush(self.redis_rpc_queue, request_msg)
         data =  self.redis_handle.brpop(request["id"],timeout = timeout )
         
         self.redis_handle.delete(request["id"] )
@@ -42,7 +43,7 @@ class Redis_Rpc_Client(object):
         return response
                 
 class RPC_Server(object):
-    def __init__( self, redis_handle ,data, key ):
+    def __init__( self, redis_handle ,data, redis_rpc_queue ):
        self.data = data
        self.redis_handle = redis_handle
        self.redis_rpc_queue = redis_rpc_queue
@@ -779,12 +780,12 @@ class Generate_Handlers(object):
          return Job_Queue_Server(self.redis_handle,data,key,self.cloud_handler)
 
    def construct_rpc_client(self,data):
-         assert(data["type"] ==  "RPC")
+         assert(data["type"] ==  "RPC_CLIENT")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Redis_Rpc_Client(self.redis_handle,data,key)
+         return Redis_RPC_Client(self.redis_handle,data,key)
 
    def construct_rpc_sever(self,data):
-         assert(data["type"] ==  "RPC")
+         assert(data["type"] ==  "RPC_SERVER")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return RPC_Server(self.redis_handle,data,key )
     

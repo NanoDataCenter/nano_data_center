@@ -158,7 +158,7 @@ if __name__ == "__main__":
     generate_control_events = Generate_Control_Events(cf)
     eto_management = ETO_Management(qs,redis_site,app_files)
     
-    io_control = IO_Control(irrigation_hash_control,generate_control_events,qs,redis_site)
+    io_control = IO_Control(irrigation_hash_control,generate_control_events,qs,redis_site,generate_handlers)
     ##
     ## indicating irrigation reboot
     ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"REBOOT STARTUP","level":"RED"})
