@@ -15,7 +15,32 @@ class Field_Not_Defined(Exception):
       
 class FIELD_TYPE_ERROR(Exception):
    pass
+   
+class Redis_Rpc_Client(object):
 
+   def __init__( self ):
+       self.redis_handle = redis_handle
+      
+   
+     
+       
+   def send_rpc_message( self, rpc_queue, method,parameters,timeout=30 ):
+        request = {}
+        request["method"] = method
+        request["params"] = parameters
+        request["id"]   = str(uuid.uuid1())    
+        request_msg = msgpack.packb( request )
+        self.redis_handle.delete(request["id"] )
+        self.redis_handle.lpush(redis_rpc_queue, request_msg)
+        data =  self.redis_handle.brpop(request["id"],timeout = timeout )
+        
+        self.redis_handle.delete(request["id"] )
+        if data == None:
+            raise Rpc_No_Communication("No Communication with Modbus Server")
+        response = msgpack.unpackb(data[1])
+        
+        return response
+                
 class RPC_Server(object):
     def __init__( self, redis_handle ,data, key ):
        self.data = data

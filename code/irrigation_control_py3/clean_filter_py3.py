@@ -103,7 +103,7 @@ class Clean_Filter(object):
     
    
    def accumulate_cleaning_flow(self, cf_handle, chainObj, parameters, event ):
-        print("cleaning flow",self.handlers["MQTT_SENSOR_STATUS"].hget("CLEANING_FLOW_METER"))
+        #print("cleaning flow",self.handlers["MQTT_SENSOR_STATUS"].hget("CLEANING_FLOW_METER"))
         self.cleaning_valve_flow += self.handlers["MQTT_SENSOR_STATUS"].hget("CLEANING_FLOW_METER") 
         
    

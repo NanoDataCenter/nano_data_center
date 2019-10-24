@@ -1,9 +1,20 @@
+
+from plc_control_py3.construct_classes_py3 import Construct_Access_Classes
+
 class IO_Control(object):
 
-   def __init__(self,irrigation_hash_control,event_handlers ):
+   def __init__(self,irrigation_hash_control,event_handlers,qs,redis_site ):
       self.irrigation_hash_control = irrigation_hash_control
       self.event_handlers = event_handlers
+      self.plc_classes = Construct_Access_Classes()
+      self.construct_plc_elements(qs,redis_site)
+      print(self.plc_table)
+      
+      #
+      # Build device tables
+      #
       self.disable_all_sprinklers()
+      
 
    def turn_on_pump(self,*args):
        print("turn_on_pump")
@@ -139,6 +150,28 @@ class IO_Control(object):
        
    def get_max_current(self,*args):
        return .333
+       
+       
+   def construct_plc_elements(self,qs,redis_site):
+       self.plc_table = {}  # indexed by logical name
+       query_list = []
+       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+       query_list = qs.add_match_terminal( query_list,relationship="PLC_SERVER" )
+       plc_server_field, plc_server_nodes = qs.match_list(query_list)
+       for i in plc_server_nodes:
+          
+           query_list = []
+           query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+           query_list = qs.add_match_relationship( query_list,relationship="PLC_SERVER",label=i["name"] )
+           query_list = qs.add_match_terminal( query_list,relationship="REMOTE_UNIT" )
+           plc_field, plc_nodes = qs.match_list(query_list)
+           for j in plc_nodes:
+               j["redis_rpc_queue"]  =i["redis_rpc_queue"]
+               self.plc_table[j["name"]] = j
+               print(j["name"],i["redis_rpc_queue"])
+    
+       
+       
 '''
 
 class IO_Control(object):

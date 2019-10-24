@@ -110,7 +110,7 @@ class Process_Irrigation_Command(object):
       self.chain_list.extend(self.measure_valve_resistance.construct_chains(cf))
       self.chain_list.extend(self.clean_filter.construct_chains(cf))
        
-      #self.chain_list.extend(self.irrigation_control.construct_chains(cf))
+      self.chain_list.extend(self.irrigation_control.construct_chains(cf))
       
       cluster_control.define_cluster( cluster_id, self.chain_list, [])
       
@@ -119,7 +119,7 @@ class Process_Irrigation_Command(object):
       self.clean_filter.construct_clusters( cluster_control, cluster_id,"CLEAN_FILTER" )
       
       
-      #self.irrigation_control.construct_clusters( cluster_control, cluster_id,"DIAGNOSITIC_CONTROL" )
+      self.irrigation_control.construct_clusters( cluster_control, cluster_id,"DIAGNOSITIC_CONTROL" )
       
       
      

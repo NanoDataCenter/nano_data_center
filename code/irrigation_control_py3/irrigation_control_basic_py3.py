@@ -60,13 +60,20 @@ class Irrigation_Control_Basic(object):
        cf.insert.wait_event_count(event = "MINUTE_TICK")
        cf.insert.log("enabling chain ")
        cf.insert.enable_chains( ["IR_D_monitor_irrigation_step" ])
+       cf.insert.wait_event_count( event = "IR_D_END_IRRIGATION" ,count = 1)
+       cf.insert.disable_chains( ["IR_D_monitor_irrigation_step" ])
+       cf.insert.wait_event_count( count = 1 )
+       cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
+       cf.insert.log("RELEASE_IRRIGATION_CONTROL sent")
        cf.insert.terminate()      
       
       
        ## monitor chain ##########################################################
       
 
-
+      
+      
+      
        cf.define_chain("IR_D_monitor_irrigation_step", False )
        cf.insert.log("monitor irrigation  step")
        cf.insert.wait_event_count(event = "MINUTE_TICK")
@@ -163,12 +170,16 @@ class Irrigation_Control_Basic(object):
       return_value = True
       if event["name"] == "INIT":
            return True
-      print("json_object",self.json_object)
+      #print("json_object",self.json_object)
       self.json_object["elasped_time"]  =      self.json_object["elasped_time"] +1
       self.io_control.turn_on_master_valves()
       self.io_control.turn_on_valve(self.json_object['io_setup'])
+      # update duration counter  -- so we can have large runtimes
+      # update selective plc watchdogs
       self.update_json_object(self.json_object)
-      self.manage_eto.update_eto_queue_minute( self.json_object['eto_list'] )
+      if self.json_object[ 'eto_list'] != None:
+            self.manage_eto.update_eto_queue_minute( self.json_object['eto_list'] )
+      print(self.json_object["elasped_time"] , self.json_object["run_time"])
       if self.json_object["elasped_time"] <= self.json_object["run_time"]  :
            self.step_monitor.step_logging(self.json_object)       
  

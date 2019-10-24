@@ -45,12 +45,12 @@ class Irrigation_Step_Monitoring(object):
 
    def step_logging(self, json_object):
        time_history = self.handlers["IRRIGATION_TIME_HISTORY"].hget(self.working_key)
-       print("time_history",time_history)
+       #print("time_history",time_history)
        working_entry = time_history[-1]
-       print("working_entry",working_entry)
+       #print("working_entry",working_entry)
        self.add_new_data(working_entry,self.get_new_data())
-       print(self.get_new_data())
-       print(time_history)
+       #print(self.get_new_data())
+       #print(time_history)
        self.handlers["IRRIGATION_TIME_HISTORY"].hset(self.working_key,time_history)
        
    def finalize_logging(self):
@@ -60,8 +60,8 @@ class Irrigation_Step_Monitoring(object):
        self.compute_mean(working_entry)
        self.compute_standard_deviation(working_entry)
        working_entry["summarized"] = True
-       print("time_history",time_history)
-       print("working_entry",working_entry)
+       #print("time_history",time_history)
+       #print("working_entry",working_entry)
        self.handlers["IRRIGATION_TIME_HISTORY"].hset(self.working_key,time_history)
 
 

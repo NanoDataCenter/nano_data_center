@@ -60,6 +60,7 @@ class Master_Valve(object):
        cf.insert.reset()
 
        cf.define_chain("MV_ON_MONITOR",False) # make sure that there is no flow if master valve is off
+       # take care of plc controller and master valves
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        #cf.insert.log("mv on monitor")
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
@@ -84,6 +85,7 @@ class Master_Valve(object):
        cf.insert.reset()
 
        cf.define_chain("MV_OFF_MONITOR",False) # make sure that there is no flow if master valve is off
+       # take care of plc controller and master valves
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        #cf.insert.log("mv off monitor")
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
@@ -136,8 +138,9 @@ class Master_Valve(object):
        cf.insert.log("mv turn exit")
        cf.insert.terminate()
        
-       cf.define_chain("MV_TIME_CYCLE_MONITOR",False) # make sure that there is no flow if master valve is off
-       cf.insert.wait_event_count( event = "MINUTE_TICK" ) # 5 seconds
+       cf.define_chain("MV_TIME_CYCLE_MONITOR",False) 
+       # take care of plc controller and master valves
+       cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
                                         function = self.monitor_master_valve_open )
        cf.insert.one_step(self.turn_off_master_valves)
@@ -254,7 +257,7 @@ class Master_Valve(object):
            
            
            self.master_flow = self.handlers["MQTT_SENSOR_STATUS"].hget("MAIN_FLOW_METER")
-           print("master flow",self.master_flow)          
+           #print("master flow",self.master_flow)          
            if self.master_flow > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_VALUE"]:
              self.monitor_excessive_flow_count += 1
            else:
@@ -291,7 +294,7 @@ class Master_Valve(object):
    #
    def determine_time_out(self,*parms):
       #print(time.time(),self.ref_time)
-      print(time.time() > self.ref_time)
+      #print(time.time() > self.ref_time)
       if time.time() > self.ref_time:
          return True
       else:

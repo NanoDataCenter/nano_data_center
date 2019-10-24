@@ -200,8 +200,9 @@ class Valve_Resistance_Check(object):
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"measure_resistance","details":details,"level":"RED"})
              
        
-       
-       self.hash_logging.log_value(self.remote+":"+str(self.output),coil_current )
+       logging_key = self.remote+":"+str(self.output)
+       #print(logging_key)
+       self.hash_logging.log_value(logging_key,coil_current )
        self.io_control.disable_all_sprinklers()
  
 
