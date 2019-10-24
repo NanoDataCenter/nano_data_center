@@ -7,8 +7,10 @@ class Construct_PLC_Devices(object):
        bc.add_header_node("PLC_SYSTEM")
        bc.add_header_node("PLC_SERVERS") # mulitple plc servers are allowed
       
-       bc.add_header_node( "PLC_SERVER","MAIN_SERVER",properties={"redis_rpc_queue":"#_RPC_QUEUE_"} )
-       # add rpc as a data structure
+       bc.add_header_node( "PLC_SERVER","MAIN_SERVER",properties={} )
+       cd.construct_package("PLC_SERVER_DATA")
+       cd.add_rpc_client("PLC_RPC_CLIENT")
+       cd.close_package_contruction()
        properties                           = {}
        properties["type"]                  = "rs485_modbus",
        properties["interface_parameters"]  =  { "interface":None, "timeout":.05, "baud_rate":38400 }

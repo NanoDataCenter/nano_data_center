@@ -86,7 +86,14 @@ class Construct_Data_Structures(object):
    def add_rpc_server(self,name,depth):
        assert(name not in self.properties )
        properties = {}
-       properties["namde"] = name
+       properties["name"] = name
        properties["depth"] = depth
        properties["type"]  = "RPC"
        self.properties["data_structures"][name] = properties 
+      
+   def add_rpc_client(self,name):
+       assert(name not in self.properties )
+       properties = {}
+       properties["name"] = name
+       properties["type"]  = "RPC_CLIENT"
+       self.properties["data_structures"][name] = properties
