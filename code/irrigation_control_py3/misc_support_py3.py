@@ -51,6 +51,13 @@ class IO_Control(object):
        self.irrigation_hash_control.hset("MASTER_VALVE",False)       
        self.turn_off_cleaning_valves()
        self.turn_off_master_valves()
+             
+       
+
+       for item in self.ir_ctrl:
+           
+           action_class = self.find_class(item["type"])
+           action_class.disable_all_sprinklers( item, [] )
        
    def turn_on_master_valves( self,*arg ):
        self.event_handlers.change_master_valve_on()
@@ -195,7 +202,6 @@ class IO_Control(object):
           if "irrigation" in item["function"]:
               return_value.append(item)
        print("return_value",return_value)
-       quit()
        return return_value       
 
    
