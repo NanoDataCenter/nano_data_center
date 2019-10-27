@@ -149,7 +149,7 @@ class Irrigation_Control_Basic(object):
    
    def start(self,*args):
      
-      self.io_control.load_duration_counters(self.json_object['run_time']+2)
+      
       # turn on master valve
       self.io_control.turn_on_valve(self.json_object['io_setup'])
       self.update_json_object(self.json_object)

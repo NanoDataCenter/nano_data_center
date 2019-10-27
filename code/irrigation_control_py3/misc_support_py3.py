@@ -1,6 +1,7 @@
 
 from plc_control_py3.construct_classes_py3 import Construct_Access_Classes
-
+from core_libraries.irrigation_hash_control_py3 import get_master_valves
+from core_libraries.irrigation_hash_control_py3 import get_cleaning_valves
 class IO_Control(object):
 
    def __init__(self,irrigation_hash_control,event_handlers,qs,redis_site,generate_handlers ):
@@ -9,14 +10,38 @@ class IO_Control(object):
       self.generate_handlers = generate_handlers
       self.plc_classes = Construct_Access_Classes()
       self.construct_plc_elements(qs,redis_site)
+      self.master_valves = get_master_valves(redis_site,qs)
+      self.cleaning_valves = get_cleaning_valves(redis_site,qs)
       self.ir_ctrl = self.find_irrigation_controllers() 
-      
+      self.find_class = self.plc_classes.find_class
       
       #
       # Build device tables
       #
       self.disable_all_sprinklers()
-      
+ 
+   def read_wd_flag(self,io_list ):
+       for item in self.io_list: 
+           remote = item[0]       
+           control_block = self.plc_table[remote]
+           modbus_address = control_block["modbus_address"]
+           rpc_queue      = control_block["rpc_queue"]
+           type           = control_block["type"]       
+           action_class = self.find_class( type,rpc_queue)
+           action_class.read_wd_flag( item["modbus_address"] )
+
+   def write_wd_flag(self,io_list ):
+       for item in self.io_list: 
+           remote = item[0]       
+           control_block = self.plc_table[remote]
+           modbus_address = control_block["modbus_address"]
+           rpc_queue      = control_block["rpc_queue"]
+           type           = control_block["type"]       
+           action_class = self.find_class( type,rpc_queue)
+           action_class.write_wd_flag( item["modbus_address"] )
+
+
+ 
 
    def turn_on_pump(self,*args):
        print("turn_on_pump")
@@ -26,18 +51,6 @@ class IO_Control(object):
        print("turn_off_pump")
        print("function not currently supported")      
        
-   def read_wd_flag(self,*args ):
-       return 1
-
-   def write_wd_flag(self,*args):
-       pass
-
-   def read_mode_switch( self,*args ):
-       pass
-
-   def read_mode( self,*args ):
-       pass
- 
 
    def measure_valve_current( self,*args):
        return 1
@@ -47,35 +60,47 @@ class IO_Control(object):
        return self.irrigation_hash_control.hget("MASTER_VALVE_SETUP")
 
    def disable_all_sprinklers( self,*arg ):
-       print("disable all sprinklers")
+       
        self.irrigation_hash_control.hset("MASTER_VALVE",False)       
        self.turn_off_cleaning_valves()
        self.turn_off_master_valves()
-             
-       
-
+ 
        for item in self.ir_ctrl:
-           
-           action_class = self.find_class(item["type"])
-           action_class.disable_all_sprinklers( item, [] )
+           control_block = self.plc_table[item]
+           modbus_address = control_block["modbus_address"]
+           rpc_queue      = control_block["rpc_queue"]
+           type           = control_block["type"]
+
+           action_class = self.find_class( type,rpc_queue)
+           action_class.disable_all_sprinklers( modbus_address, [] )
        
    def turn_on_master_valves( self,*arg ):
        self.event_handlers.change_master_valve_on()
        
    def turn_off_master_valves( self,*arg ):
+       #print("turn off master valve") 
        self.event_handlers.change_master_valve_off()
 
    def turn_on_master_valves_direct( self,*arg ):
-         
-       self.irrigation_hash_control.hset("MASTER_VALVE",True)   
-            
-       print("turn on master valve")
+    
+       self.irrigation_hash_control.hset("MASTER_VALVE",False)
+      
+       for io_setup in self.master_valves:
+            temp = {}
+            temp["remote"] = io_setup["remote"]
+            temp["bits"] = io_setup["pins"]
+            self.turn_on_valve( temp )
+
        
    def turn_off_master_valves_direct( self,*arg ):
-       
+       #print("turn off master valve direct")
        self.irrigation_hash_control.hset("MASTER_VALVE",False)
-       
-       print("turn off master valve")
+      
+       for io_setup in self.master_valves:
+            temp = {}
+            temp["remote"] = io_setup["remote"]
+            temp["bits"] = io_setup["pins"]
+            self.turn_off_valve( temp )
 
 
    def turn_on_cleaning_valves( self,*arg ):
@@ -83,56 +108,105 @@ class IO_Control(object):
        self.event_handlers.open_cleaning_valve()
             
    def turn_off_cleaning_valves( self,*arg ):
+      #print("turn off cleaning valve") 
       self.turn_off_cleaning_valves_direct()  ## added safety
      
       self.event_handlers.close_cleaning_valve()
  
    def turn_on_cleaning_valves_direct( self,*arg ):
-       print("turn on cleaning valve")
+        #print("turn on cleaning valve")
+        for io_setup in self.cleaning_valves:
+            temp = {}
+            temp["remote"] = io_setup["remote"]
+            temp["bits"] = io_setup["pins"]
+            self.turn_on_valve( temp )
+       
             
    def turn_off_cleaning_valves_direct( self,*arg ):
-      print("turn off cleaning valve")
+        #print("turn off cleaning valve direct")
+        for io_setup in self.cleaning_valves:
+            temp = {}
+            temp["remote"] = io_setup["remote"]
+            temp["bits"] = io_setup["pins"]
+            self.turn_off_valve( temp )
       
 
 
 
  
    def verify_all_devices(self,*args):
-       return True
+       for i,control_block in self.plc_table.items():
+           modbus_address = control_block["modbus_address"]
+           rpc_queue      = control_block["rpc_queue"]
+           type           = control_block["type"]
+           action_class = self.find_class( type,rpc_queue)
+           #print("turn_off_cleaning_valves_direct")
+           action_class.write_wd_flag(  modbus_address )           
+       return True    
+           
+   def verify_irrigation_controllers(self,*args):
+      #print("verify irrigation controllers",self.ir_ctrl)
+      for item in self.ir_ctrl:
+           control_block = self.plc_table[item]
+           modbus_address = control_block["modbus_address"]
+           rpc_queue      = control_block["rpc_queue"]
+           type           = control_block["type"]
+           action_class = self.find_class( type,rpc_queue)       
+           action_class.write_wd_flag(  modbus_address ) 
+      return True           
+           
+   def verify_selected_devices(self,device_list):
+       for remote in device_list:
+           control_block = self.plc_table[remote]
+           modbus_address = control_block["modbus_address"]
+           rpc_queue      = control_block["rpc_queue"]
+           type           = control_block["type"]
+           action_class = self.find_class( type,rpc_queue)
+           action_class.write_wd_flag(  modbus_address )    
  
- 
-   #
-   #  Clearing Duration counter is done through a falling edge
-   #  going from 1 to 0 generates the edge
-   def clear_duration_counters( self,*arg ):
-       print("clear duration counters")
+
+          
 
 
-   def load_duration_counters( self, time_duration ,*arg):
-      print("load_duration_counters",time_duration)
-               
+   def turn_on_valves(self,io_setup):
+       for i in io_setup:
+          self.turn_on_valve(i)
 
    def turn_on_valve( self ,io_setup ):
-       print("turn_on_valve",io_setup)
- 
-   def measure_flow_rates ( self, *args ):
-         return [4]
-
-   def get_corrected_flow_rate(self):
-       return 0
+           # io_setup is a list of dict { "remote":xx , "bits":[1,2,3,4] }
+           #print("turn_on_valve",io_setup)
+        
+           pins = io_setup["bits"]
+           remote = io_setup["remote"]           
+           control_block = self.plc_table[remote]
+           modbus_address = control_block["modbus_address"]
+           rpc_queue      = control_block["rpc_queue"]
+           type           = control_block["type"]
+           action_class = self.find_class( type,rpc_queue)
+           action_class.turn_on_valves(  modbus_address, pins)
+           action_class.load_duration_counters( modbus_address,10 ) # refresh duration counter
+           action_class.write_wd_flag( modbus_address )
        
-   def measure_flow_rate( self, remote, io_setup ):           
-       return   0
 
-   def check_for_all_plcs(self,*parms):
-      return True # TBD
-      
-   def check_required_plcs(self,io_setup):
-      return True #TBD
-      
-      
-   def monitor_current(self,current_limits):
-       return True
+   def turn_off_valves(self,io_setup):
+       for i in io_setup:
+          self.turn_off_valve(i)
+       
+   def turn_off_valve( self ,io_setup ):
+           print(io_setup)   
+           pins = io_setup["bits"]
+           remote = io_setup["remote"]           
+           control_block = self.plc_table[remote]
+           modbus_address = control_block["modbus_address"]
+           rpc_queue      = control_block["rpc_queue"]
+           type           = control_block["type"]
+           action_class = self.find_class( type,rpc_queue)
+           action_class.turn_off_valves(  modbus_address, pins)
+           action_class.write_wd_flag( modbus_address )
+ 
+
+       
+       
        
        
    def turn_on_equipment_relay(self,*args):
@@ -168,20 +242,20 @@ class IO_Control(object):
        query_list = qs.add_match_terminal( query_list,relationship="PLC_SERVER" )
        plc_server_field, plc_server_nodes = qs.match_list(query_list)
        for i in plc_server_nodes:
-           handler = self.generate_rpc_client_handler(qs,redis_site,i["name"])
+           rpc_queue = self.generate_rpc_client_queue(qs,redis_site,i["name"])
            query_list = []
            query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
            query_list = qs.add_match_relationship( query_list,relationship="PLC_SERVER",label=i["name"] )
            query_list = qs.add_match_terminal( query_list,relationship="REMOTE_UNIT" )
            plc_field, plc_nodes = qs.match_list(query_list)
            for j in plc_nodes:
-               j["handler"]         = handler
+               j["rpc_queue"]         = rpc_queue
                self.plc_table[j["name"]] = j
        
                
     
        
-   def generate_rpc_client_handler(self,qs,redis_site,name): 
+   def generate_rpc_client_queue(self,qs,redis_site,name): 
        query_list = []   
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
        query_list = qs.add_match_relationship( query_list,relationship="PLC_SERVER",label=name )
@@ -200,8 +274,8 @@ class IO_Control(object):
        return_value = []
        for key ,item in self.plc_table.items():
           if "irrigation" in item["function"]:
-              return_value.append(item)
-       print("return_value",return_value)
+              return_value.append(key)
+       
        return return_value       
 
    
@@ -218,7 +292,7 @@ class IO_Control(object):
        self.redis_old_handle = redis_old_handle
        self.redis_new_handle = redis_new_handle
        temp_controllers     = self.gm.match_terminal_relationship(  "REMOTE_UNIT")  #find remote controllers
-       self.ir_ctrl         = [] #irrigation controllers
+       
        #print("temp_controllers",temp_controllers)
        self.irrigation_controllers = self.gm.to_dictionary(temp_controllers,"name")
        #print("irrigation_controllers",irrigation_controllers)
@@ -355,8 +429,8 @@ class IO_Control(object):
    #
    #  Clearing Duration counter is done through a falling edge
    #  going from 1 to 0 generates the edge
-   def clear_duration_counters( self,*arg ):
-       for item in self.ir_ctrl:
+   def clear_duration_counters( self,remote ):
+           item = 
            action_class = self.find_class(item["type"])
            action_class.clear_duration_counters( item["modbus_address"] )
 

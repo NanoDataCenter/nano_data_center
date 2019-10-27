@@ -29,18 +29,21 @@ class Redis_Rpc_Client(object):
 
    def __init__( self,redis_handle,redis_rpc_queue ):
        self.redis_handle = redis_handle
-      
+       self.redis_rpc_queue = redis_rpc_queue
    
-     
+   def set_rpc_queue(self,queue):
+       #self.rpc_queue = queue
+       pass
        
-   def send_rpc_message( self, rpc_queue, method,parameters,timeout=30 ):
+   def send_rpc_message( self,  method,parameters,timeout=30 ):
+
         request = {}
         request["method"] = method
         request["params"] = parameters
         request["id"]   = str(uuid.uuid1())    
         request_json = json.dumps( request )
         self.redis_handle.delete(request["id"] )
-        self.redis_handle.lpush(redis_rpc_queue, request_json)
+        self.redis_handle.lpush(self.redis_rpc_queue, request_json)
         data =  self.redis_handle.brpop(request["id"],timeout = timeout )
         
         self.redis_handle.delete(request["id"] )
@@ -64,12 +67,11 @@ class Modbus_Instrument:
 
 
 
+    def set_rpc_queue(self,queue):
+       self.redis_rpc_client.set_rpc_queue(queue)
 
 
 
-    #sets the ip and port of udp server
-    def set_rpc_queue( rpc_queue ):
-         self.rpc_queue = rpc_queue
 
 #read_bits
 #Request
@@ -399,6 +401,8 @@ class Modbus_Instrument:
        raise IOError('No communication with the instrument (no answer)')
     '''
     def _communicate(self, message, number_of_bytes_to_read= 1024):
+        print("_communicate message ",len(message),message)
+        return
         message = base64.b64encode(message).decode()
         return_value = self.redis_rpc_client.send_rpc_message( "modbus_relay",message,timeout=30 )
         return_value = base64.b64decode(return_value)

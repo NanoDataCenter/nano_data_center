@@ -192,9 +192,7 @@ class Process_Irrigation_Command(object):
       cf.insert.wait_event_count( event = "MQTT_DEVICE_OK" ,count = 1)
       cf.insert.log("check mqtt devices end")
       cf.insert.one_step(self.op_check_plc_device_json_object)
-      cf.insert.enable_chains(["plc_device_check"])
-      cf.insert.wait_event_count( event = "PLC_OPERATION_OK" ,count = 1)
-      cf.insert.log("check plc end")
+
       cf.insert.send_event( "IRRIGATION_OPERATION_OK")
       cf.insert.terminate()
 
@@ -211,10 +209,7 @@ class Process_Irrigation_Command(object):
       cf.insert.reset()
     
       
-      cf.define_chain("plc_device_check",False)     
-      cf.insert.assert_function_terminate( "PLC_OPERATION_OK" ,None,self.check_plc_devices) # False is pass     
-      cf.insert.wait_event_count( event="MINUTE_TICK",count = 1)
-      cf.insert.reset()
+
       
       
    
@@ -437,14 +432,7 @@ class Process_Irrigation_Command(object):
        
  
 
-   def check_plc_devices(self, cf_handle, chainObj, parameters, event):
-       
-       if self.irrigation_io.verify_all_devices() == True:
-          return_value =  False
-       else:
-          return_value = True
-       print("plc_return_value",return_value)
-       return return_value       
+      
     
 
 

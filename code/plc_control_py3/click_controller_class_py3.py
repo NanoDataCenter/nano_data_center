@@ -98,8 +98,13 @@ class Click_Controller_Base_Class(object):
        for i in range(1,999):
            temp = "SC"+str(i)
            self.click_bit_address[temp] = 0xf000 + i-1
+
+
        
-   def disable_all_sprinklers( self, modbus_address, input_list ):
+   def disable_all_sprinklers( self, modbus_address, input_list =[] ):
+    
+      
+     
       write_bit      = self.click_bit_address["C1"]
       
       self.instrument.write_bits(modbus_address,write_bit, [0] )
@@ -125,8 +130,8 @@ class Click_Controller_Base_Class(object):
           self.instrument.write_bits( modbus_address, bit_address,[0])
 
 
-   def load_duration_counters( self, modbus_address,input_list  ):
-        duration = input_list[0]
+   def load_duration_counters( self, modbus_address,duration  ):
+        
         write_bit      = self.click_bit_address["C2"]
         write_register = self.click_reg_address["DS2"]
         self.instrument.write_registers( modbus_address, write_register, [duration] )

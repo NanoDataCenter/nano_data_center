@@ -61,6 +61,7 @@ class Master_Valve(object):
 
        cf.define_chain("MV_ON_MONITOR",False) # make sure that there is no flow if master valve is off
        # take care of plc controller and master valves
+       cf.insert.one_step(self.turn_on_master_valves)
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        #cf.insert.log("mv on monitor")
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
@@ -86,6 +87,7 @@ class Master_Valve(object):
 
        cf.define_chain("MV_OFF_MONITOR",False) # make sure that there is no flow if master valve is off
        # take care of plc controller and master valves
+       cf.insert.one_step(self.turn_off_master_valves)
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        #cf.insert.log("mv off monitor")
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
@@ -140,6 +142,7 @@ class Master_Valve(object):
        
        cf.define_chain("MV_TIME_CYCLE_MONITOR",False) 
        # take care of plc controller and master valves
+       cf.insert.one_step(self.turn_on_master_valves_timed)
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
                                         function = self.monitor_master_valve_open )

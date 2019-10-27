@@ -19,7 +19,7 @@ class Construct_Access_Classes(object):
    def __init__( self ):
        # find ip and port for ip server
        instrument  =  Modbus_Instrument()
-          
+       self.instrument = instrument   
 
        self.access_classes = {}
        self.type_classes   = {}
@@ -31,7 +31,8 @@ class Construct_Access_Classes(object):
        self.type_classes["io_controller"]   = IO_Controller( instrument )
        self.type_classes["esp32_relay"]     = Esp32_Controller_Base_Class(instrument)
    
-   def find_class( self, type ):
+   def find_class( self, type,rpc_queue ):
+       self.instrument.set_rpc_queue(rpc_queue)
        return self.type_classes[type]  
 
  

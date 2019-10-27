@@ -44,12 +44,11 @@ class Esp32_Controller_Base_Class(object):
 
  
        
-   def disable_all_sprinklers( self, modbus_address,input_list ):
+ 
       
-      
+   def disable_all_sprinklers( self, modbus_address, input_list = [] ):
+ 
       self.instrument.write_registers(modbus_address,self.disable_reg,  [1] )
-
-
 
 
    def turn_on_valves( self, modbus_address, input_list ):
@@ -64,8 +63,8 @@ class Esp32_Controller_Base_Class(object):
           self.instrument.write_bits( modbus_address,valve-1,[1])
 
 
-   def load_duration_counters( self, modbus_address, input_list  ):
-        duration = input_list[0]
+   def load_duration_counters( self, modbus_address, duration ):
+        
         self.instrument.write_registers(modbus_address,self.load_duration_reg, [duration] )
 
 

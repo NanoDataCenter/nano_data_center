@@ -46,7 +46,8 @@ class Valve_Resistance_Check(object):
        cf.define_chain("resistance_check",False)        
        cf.insert.one_step(self.generate_control_events.change_master_valve_offline)
        cf.insert.one_step(self.generate_control_events.change_master_valve_offline)
-       cf.insert.assert_function_terminate( "RELEASE_IRRIGATION_CONTROL" ,None, self.io_control.check_for_all_plcs)
+       cf.insert.assert_function_terminate( "RELEASE_IRRIGATION_CONTROL" ,
+                                             None, self.io_control.verify_irrigation_controllers)
        
        cf.insert.one_step( self.assemble_relevant_valves ) #  
        cf.insert.enable_chains(["test_each_valve"])
@@ -88,7 +89,7 @@ class Valve_Resistance_Check(object):
        
        
        
-       self.handlers["VALVE_JOB_QUEUE_CLIENT"].delete_all()
+       self.job_queue = []
        sprinkler_ctrl = self.app_files.load_file("sprinkler_ctrl.json")
 
        for j in sprinkler_ctrl:
@@ -116,7 +117,7 @@ class Valve_Resistance_Check(object):
           
           for pin in pins:
              self.update_entry( remote,pin )
-       
+ 
                
    def add_resistance_entry( self, remote,pin ):
        entry = str(remote)+":"+str(pin)
@@ -125,7 +126,7 @@ class Valve_Resistance_Check(object):
                self.job_dictionary.add( entry)
                
                json_object = [ remote,pin]
-               self.handlers["VALVE_JOB_QUEUE_CLIENT"].push(json_object)
+               self.job_queue.append(json_object)
               
 
 
@@ -133,7 +134,7 @@ class Valve_Resistance_Check(object):
        
      
        
- 
+       
        self.add_resistance_entry( remote, pin)
 
           
@@ -141,7 +142,7 @@ class Valve_Resistance_Check(object):
 
    def check_queue( self,*args ):
 
-       length = self.handlers["VALVE_JOB_QUEUE_SERVER"].length()
+       length = len(self.job_queue)
       
        if length > 0:
            return_value = True
@@ -154,17 +155,18 @@ class Valve_Resistance_Check(object):
    def valve_setup(self, cf_handle, chainObj, parameters, event ):
        if event["name"] == "INIT":
           return "CONTINUE" 
-       json_object = self.handlers["VALVE_JOB_QUEUE_SERVER"].pop()
+       json_object = self.job_queue.pop()
+       
        self.valve_object = json_object
-       if json_object[0] == True:
-          json_object = json_object[1]
+      
+      
           
-          self.io_control.load_duration_counters( 5  ) 
-          self.io_control.turn_on_valve(  [{"remote": json_object[0], "bits":[int(json_object[1])]}] ) #  {"remote":xxxx,"bits":[] } 
-          self.remote = json_object[0]
-          self.output = json_object[1]
-          self.io_control.clear_max_currents()
-          self.io_control.enable_irrigation_relay()
+          
+       self.io_control.turn_on_valves(  [{"remote": json_object[0], "bits":[int(json_object[1])]}] ) #  {"remote":xxxx,"bits":[] } 
+       self.remote = json_object[0]
+       self.output = json_object[1]
+       self.io_control.clear_max_currents()
+       self.io_control.enable_irrigation_relay()
 
  
            

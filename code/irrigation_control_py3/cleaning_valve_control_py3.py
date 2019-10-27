@@ -46,8 +46,9 @@ class Cleaning_Valve(object):
 
 
        cf.define_chain("CLEANING_ONLINE_MONITOR",False) # make sure that there is no flow if cleaning valve is off
-      
+       cf.insert.one_step(self.check_close)
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
+       
        cf.insert.wait_event_count(count = 10)  # wait 10 seconds to ensure MQTT update of sensor values
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
                                         function = self.monitor_cleaning_valve_close )
@@ -81,14 +82,14 @@ class Cleaning_Valve(object):
        if event["name"] == "INIT":
            return
        
-       self.irrigation_io.turn_off_cleaning_valves()    
+       self.irrigation_io.turn_off_cleaning_valves_direct()    
        self.cluster_ctrl.enable_cluster_reset_rt(  self.cf,self.cluster_id, "OFFLINE" )
        
    def change_to_online_state( self, cf_handle, chainObj, parameters, event ):
        if event["name"] == "INIT":
            return
        
-       self.irrigation_io.turn_off_cleaning_valves()    
+       self.irrigation_io.turn_off_cleaning_valves_direct()    
        self.cluster_ctrl.enable_cluster_reset_rt(  self.cf,self.cluster_id, "ONLINE" )
 
 
