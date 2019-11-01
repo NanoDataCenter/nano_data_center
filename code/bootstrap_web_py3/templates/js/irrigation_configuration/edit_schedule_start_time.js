@@ -2,9 +2,25 @@
 
 function initialize_time_control()
 {
-  ; // nothing for now
+   $( "#day_sched" ).bind( "click", select_day_scheduling_method );
+
 }
 
+function select_day_scheduling_method()
+{
+    
+ if($("#day_sched").val() == 0)
+   {
+      $("#dow_times").show();
+      $("#day_mod_times").hide();
+   }
+   else
+   {
+      $("#day_mod_times").show();
+      $("#dow_times").hide(); 
+   }
+    
+}
       
 function show_time_panel()
 {
@@ -19,6 +35,40 @@ function hide_time_panel()
 
 function time_load_controls(working_data)
 {
+   if( !('day_flag' in working_data))
+   {
+      alert("initialize day flay")
+      working_data["day_flag"] = 0
+    
+   }
+   if( working_data["day_flag"] == 0)
+   {
+      $("#dow_times").show();
+      $("#day_mod_times").hide();
+   }
+   else
+   {
+      $("#day_mod_times").show();
+      $("#dow_times").hide(); 
+   }
+   if( !('day_div' in working_data))
+   {
+      alert("initialize day_divisor")
+      working_data["day_div"] = 0
+    
+   }   
+   if( !('day_mod' in working_data))
+   {
+      alert("initialize day_divisor")
+      working_data["day_mod"] = 0
+    
+   }
+   
+   $("#day_sched")[0].selectedIndex =  working_data["day_flag"];
+   $("#day_div")[0].selectedIndex =  working_data["day_div"]-1;
+   $("#day_mod")[0].selectedIndex =  working_data["day_mod"];
+   
+   
    temp_start_times = working_data["start_time"]
    temp_end_times   = working_data["end_time"]
    temp_index       = temp_start_times[0]*4;
@@ -68,10 +118,14 @@ function get_data_time_page( working_data)
      dow.push( dow_filter("saturday") )
 
      
-
+     alert($("#day_sched").val())
+     alert($("#day_div").val())
+     alert($("#day_mod").val())
      working_data["dow"] = dow;     
      working_data["start_time"]  =  eval($("#starting_time").val()) 
      working_data["end_time"] =  eval($("#ending_time").val()) 
-
-
+     working_data["day_flag"] =  $("#day_sched").val() -1
+     working_data["day_div"]  =  $("#day_div").val() -1
+     working_data["day_mod"]  =  $("#day_mod").val() -1
+   
 }

@@ -93,23 +93,55 @@ class Monitoring_Base(object):
                 return_value = True
        #print("return_value",return_value)
        return return_value
+
+
+   def schedule_doy(self,j,doy):
+      divisor = j["day_div"] +1
+      modulus = j["day_mod"]
+      result = doy % divisor
+      #print(j)
+      #print(doy,result,modulus)
+      if result == modulus:
+        return True
+      else:
+        return False
+
+   def schedule_dow(self,j,dow):
+       if j["dow"][dow] != 0 :
+          return True
+       else:
+          return False
+
+
+   def check_for_proper_date(self, j,dow,doy):
+       if "day_mod" not in j:
+         #print("111",j["name"])
+         return self.schedule_dow(j,dow)
+       elif j["day_mod"] == 0:
+         #print("222",j["name"])
+         return self.schedule_dow(j,dow)
+       else:
+         #print("3333")
+         return self.schedule_doy(j,doy)
      
    def check_for_schedule_activity( self, *args):
+      #print("made it here")
       if self.active_function != None:
          if self.active_function() == False:
-            return  # something like rain day has occurred
+           return  # something like rain day has occurred
             
       temp = datetime.datetime.today()
       dow_array = [ 1,2,3,4,5,6,0]
       dow = datetime.datetime.today().weekday()
+      doy = datetime.datetime.today().timetuple().tm_yday
       dow = dow_array[dow]
       st_array = [temp.hour,temp.minute]
       item_control = self.app_file.load_file(self.file_name)
       for j in item_control:
           name = j["name"]
           #print( "checking schedule",name )
-          
-          if j["dow"][dow] != 0 :
+          if self.check_for_proper_date(j,dow,doy) == True:
+         
 	    
             start_time = j["start_time"]
             end_time   = j["end_time"]
@@ -135,14 +167,15 @@ class Monitoring_Base(object):
       dow_array = [ 1,2,3,4,5,6,0]
       dow = datetime.datetime.today().weekday()
       dow = dow_array[dow]
+      doy = datetime.datetime.today().timetuple().tm_yday
       st_array = [temp.hour,temp.minute]
       sprinkler_ctrl = self.app_file.load_file("system_actions.json")
       for j in sprinkler_ctrl:
           
           name     = j["name"]
           command  = j["command_string"]
-          #print( "checking schedule",name)
-          if j["dow"][dow] != 0 :
+          #print( "checking activity",name)
+          if self.check_for_proper_date(j,dow,doy) == True:
             
             start_time = j["start_time"]
             end_time   = j["end_time"]
