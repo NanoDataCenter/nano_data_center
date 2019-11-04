@@ -401,7 +401,7 @@ class Modbus_Instrument:
        raise IOError('No communication with the instrument (no answer)')
     '''
     def _communicate(self, message, number_of_bytes_to_read= 1024):
-        print("_communicate message ",len(message),message)
+        #print("_communicate message ",len(message),message)
         return
         message = base64.b64encode(message).decode()
         return_value = self.redis_rpc_client.send_rpc_message( "modbus_relay",message,timeout=30 )

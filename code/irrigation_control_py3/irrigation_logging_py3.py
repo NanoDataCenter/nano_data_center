@@ -9,7 +9,7 @@ class Hash_Logging_Object(object):
        self.logging_key = logging_key
        self.depth       = depth
        self.handler = self.handlers[logging_key]
-       self.handler.delete_all()
+       #self.handler.delete_all() # usefull for testing
        
    def log_value(self,key,measurement):
        if self.handler.hexists(key) == False: 

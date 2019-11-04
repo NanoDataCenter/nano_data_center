@@ -281,6 +281,7 @@ class Process_Irrigation_Command(object):
            
            self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
            self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"MEASURE_RESISTANCE" )
+           
            return
        
  

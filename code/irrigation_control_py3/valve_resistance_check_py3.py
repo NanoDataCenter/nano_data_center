@@ -158,15 +158,15 @@ class Valve_Resistance_Check(object):
        json_object = self.job_queue.pop()
        
        self.valve_object = json_object
-      
+       #print("valve object",self.valve_object)
       
           
-          
-       self.io_control.turn_on_valves(  [{"remote": json_object[0], "bits":[int(json_object[1])]}] ) #  {"remote":xxxx,"bits":[] } 
-       self.remote = json_object[0]
-       self.output = json_object[1]
        self.io_control.clear_max_currents()
        self.io_control.enable_irrigation_relay()
+          
+       self.io_control.turn_on_valves(  [{"remote": json_object[0], "bits":[int(json_object[1])]}] ) 
+       self.remote = json_object[0]
+       self.output = json_object[1]
 
  
            
@@ -203,15 +203,12 @@ class Valve_Resistance_Check(object):
              
        
        logging_key = self.remote+":"+str(self.output)
-       #print(logging_key)
+       print(logging_key,coil_current)
        self.hash_logging.log_value(logging_key,coil_current )
        self.io_control.disable_all_sprinklers()
  
 
-   def measure_current(self):
-       # measure relay current      
 
-       return return_value
  
    def log_valve_check( self,*args):
         

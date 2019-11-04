@@ -128,10 +128,10 @@
             </div>
             <div class="modal-body">
                 <ul >
-                   <li><a href="/composite_statistics/0/0" target="_self">Composite Statistics</a></li>        
-                   <li><a href="/detail_statistics/0/0/0/0" target="_self">Detail Statistics</a></li>
-                   <li><a href="/time_series_statistics/0/0/0/0/10" target="_self">Irrigation Time Profile</a></li>
-                   <li><a href="/valve_resistance/0" target="_self">Valve Resistance</a></li>
+                   <li><a href="/irrigation_statistics/composite_statistics/0" target="_self">Composite Statistics</a></li>        
+                   <li><a href="/irrigation_statistics/detail_statistics/0" target="_self">Detail Statistics</a></li>
+
+                   <li><a href="/irrigation_statistics/valve_resistance" target="_self">Valve Resistance</a></li>
        
                 </ul>
             </div>
