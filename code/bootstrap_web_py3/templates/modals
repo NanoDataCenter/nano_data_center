@@ -128,7 +128,7 @@
             </div>
             <div class="modal-body">
                 <ul >
-                   <li><a href="/irrigation_statistics/composite_statistics/0" target="_self">Composite Statistics</a></li>        
+                   <li><a href="/irrigation_statistics/composite_statistics" target="_self">Composite Statistics</a></li>        
                    <li><a href="/irrigation_statistics/detail_statistics/0" target="_self">Detail Statistics</a></li>
 
                    <li><a href="/irrigation_statistics/valve_resistance" target="_self">Valve Resistance</a></li>

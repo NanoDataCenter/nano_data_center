@@ -31,7 +31,7 @@ from bootstrap_web_py3.load_process_control_py3 import Load_Process_Management
 from bootstrap_web_py3.load_configuration_py3 import Load_Configuration_Data
 from bootstrap_web_py3.load_irrigation_control_py3 import Load_Irrigation_Pages
 from bootstrap_web_py3.load_mqtt_management_py3 import Load_MQTT_Pages
-from bootstrap_web_py3.load_irrigation_statistics import Load_Irrigation_Statistic_Pages
+from bootstrap_web_py3.load_irrigation_statistics import Load_Irrigation_Statistics
 
 class PI_Web_Server(object):
 
@@ -76,9 +76,11 @@ class PI_Web_Server(object):
        self.load_redis_monitoring()
        self.load_process_management()
        self.load_configuration_management()
-       self.load_irrigation_control()
+       
        self.load_mqtt_management()
        self.load_irrigation_statistics()
+      
+       self.load_irrigation_control()
  
 
    def get_pw( self,username):
@@ -253,7 +255,8 @@ class PI_Web_Server(object):
        generate_handlers = Generate_Handlers(package,self.qs)
        ds_handlers = {}
        ds_handlers["IRRIGATION_VALVE_TEST"] = generate_handlers.construct_hash(data_structures["IRRIGATION_VALVE_TEST"])
-       Load_Irrigation_Statistic_Pages(self.app, 
+       irrigation_control = generate_irrigation_control(self.redis_site_data,self.qs)
+       Load_Irrigation_Statistics(self.app, 
                                        self.auth,request, 
                                        app_files=self.app_files, 
                                        sys_files=self.sys_files,
