@@ -241,6 +241,12 @@ class PI_Web_Server(object):
     
     
    def load_irrigation_statistics(self):
+       query_list = []
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+       query_list = self.qs.add_match_terminal( query_list,relationship="VALVE_CURRENT_LIMITS",
+         label="VALVE_CURRENT_LIMITS" )
+       control_field, control_field_nodes = self.qs.match_list(query_list)
+       valve_current_limits = control_field_nodes[0] 
     
        query_list = []
        query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
@@ -263,7 +269,8 @@ class PI_Web_Server(object):
                                        render_template=render_template, 
                                        redis_handle= self.data_structure_redis_handle, 
                                        handlers= ds_handlers ,
-                                       irrigation_control=irrigation_control)  
+                                       irrigation_control=irrigation_control,
+                                       valve_current_limits= valve_current_limits)  
 
 
 

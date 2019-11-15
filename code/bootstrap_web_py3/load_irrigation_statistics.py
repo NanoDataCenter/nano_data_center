@@ -4,10 +4,11 @@ from datetime import datetime
 import time
 from .base_stream_processing_py3 import Base_Stream_Processing
 from  collections import OrderedDict
+from statistics import median
 class Load_Irrigation_Statistics(Base_Stream_Processing):
 
    def __init__( self, app, auth, request, app_files, sys_files,
-                   render_template,redis_handle, handlers,irrigation_control):
+                   render_template,redis_handle, handlers,irrigation_control,valve_current_limits):
        self.app      = app
        self.auth     = auth
        self.request  = request
@@ -17,6 +18,7 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        self.redis_handle = redis_handle
        self.handlers = handlers
        self.irrigation_control = irrigation_control
+       self.valve_current_limits = valve_current_limits
                                       
 
 
@@ -41,23 +43,27 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        valve_dict = self.handlers["IRRIGATION_VALVE_TEST"]
        keys = valve_dict.hkeys()
        data = valve_dict.hgetall()
-       controllers,measurement_list = self.sort_irrigation_data(keys,data)
+       controllers,measurement_list,median_list,value_colors = self.sort_valve_resistance_irrigation_data(keys,data)
        controller_keys = list(controllers.keys())
        controller_keys.sort()
  
        #
-       return self.render_template( "streams/bar_graph",
+       return self.render_template( "streams/valve_resistance_bar_graph",
                                      title = "Valve Current Measurement",
                                      controller_keys = controller_keys,
                                      controllers     = controllers,
-                                     measurement_list = measurement_list)
+                                     measurement_list = measurement_list,
+                                     median_list = median_list,
+                                     value_colors = value_colors)
                                 
        
    ###################################### Local Functions ##################################
       
-   def sort_irrigation_data(self,valve_dict,data):
+   def sort_valve_resistance_irrigation_data(self,valve_dict,data):
       return_value = {}
       measurement_list = {}
+      median_list = {}
+      value_colors = {}
       for i in valve_dict:
          temp = i.split(":")
          controller = temp[0]
@@ -71,14 +77,28 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
          
       for i in return_value.keys():
          if i not in measurement_list:
-            measurement_list[i] = {}
+            measurement_list[i] = []
+            median_list[i] =[]
+            value_colors[i] = []
          for j in return_value[i]:
-            if j not in measurement_list[i]:
-               measurement_list[i][j] = []
+            
             key = str(i)+":"+str(j)
-            measurement_list[i][j]=data[key]
-      print(return_value,measurement_list)
-      return return_value,measurement_list
+            measurement_list[i].append(data[key][0])
+            median_list[i].append(median(data[key]))
+            if data[key][0] > self.valve_current_limits["high"]:
+                value_colors[i].append('rgba(255,0,0,1.0)')
+            elif data[key][0] <self.valve_current_limits["low"]:
+                value_colors[i].append('rgba(255,0,0,1.0)')
+            else:
+                 value_colors[i].append('rgba(0,255,0,1.0)')
+            
+      for i in return_value.keys():
+         temp = []
+         for j in return_value[i]:
+            temp.append("Channel "+str(j))
+         return_value[i] = temp
+     
+      return return_value,measurement_list,median_list,value_colors
 
               
 

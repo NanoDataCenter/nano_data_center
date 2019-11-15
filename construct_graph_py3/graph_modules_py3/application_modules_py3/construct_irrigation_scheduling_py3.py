@@ -26,7 +26,8 @@ class Construct_Irrigation_Scheduling_Control(object):
       bc.add_info_node("CLEANING_FLOW_LIMITS","CLEANING_FLOW_LIMITS",properties={ "limit":2 } )
       bc.add_info_node("MASTER_VALVES","MASTER_VALVES",properties={"MASTER_VALVES":[ {"remote":"satellite_1","pins":[43] } ]} )
       bc.add_info_node("CLEANING_VALVES","CLEANING_VALVES",properties= {"CLEANING_VALVES":[ {"remote":"satellite_1","pins":[44] } ]} )
-      bc.add_info_node("LOGGING_DEPTH","LOGGING_DEPTH",properties = {"valve_depth":20} )   
+      bc.add_info_node("LOGGING_DEPTH","LOGGING_DEPTH",properties = {"valve_depth":20} ) 
+      bc.add_info_node("VALVE_CURRENT_LIMITS","VALVE_CURRENT_LIMITS",properties={"low":.25,"high":.41} )     
       bc.add_info_node("IRRIGATION_LOGGING","IRRIGATION_LOGGING",properties={"log_length": 50,"settling_time":5})
       
 
