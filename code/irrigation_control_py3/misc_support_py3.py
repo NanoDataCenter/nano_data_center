@@ -19,6 +19,10 @@ class IO_Control(object):
       # Build device tables
       #
       self.disable_all_sprinklers()
+      
+      
+      
+ 
  
    def read_wd_flag(self,io_list ):
        for item in self.io_list: 
@@ -132,7 +136,17 @@ class IO_Control(object):
       
 
 
-
+   def check_required_plcs(self,setup):
+       for i in setup:
+          remote = i["remote"]
+ 
+          control_block = self.plc_table[remote]
+          modbus_address = control_block["modbus_address"]
+          rpc_queue      = control_block["rpc_queue"]
+          type           = control_block["type"]       
+          action_class = self.find_class( type,rpc_queue)
+          action_class.write_wd_flag( modbus_address )
+      
  
    def verify_all_devices(self,*args):
        for i,control_block in self.plc_table.items():
@@ -174,7 +188,7 @@ class IO_Control(object):
 
    def turn_on_valve( self ,io_setup ):
            # io_setup is a list of dict { "remote":xx , "bits":[1,2,3,4] }
-           #print("turn_on_valve",io_setup)
+           print("turn_on_valve",io_setup)
         
            pins = io_setup["bits"]
            remote = io_setup["remote"]           
@@ -278,4 +292,5 @@ class IO_Control(object):
        
        return return_value       
 
-   
+   def monitor_current(self,current_limit):
+       return True

@@ -44,7 +44,7 @@ class Irrigation_Control_Basic(object):
                                              reset_event_data=None,
                                              function = self.grab_json_data)      
 
-       
+        
        cf.insert.one_step( self.start_logging )
 
        cf.insert.wait_event_count( count= 1 )  # wait till timer tick
@@ -124,13 +124,14 @@ class Irrigation_Control_Basic(object):
                                   ["run_time","step","elasped_time"])
           return True
        except:
+         
           details = {}
           details["schedule_name"] = self.json_object["schedule_name"]
           details["step"]          = self.json_object["step"]
           details["run_time"]      = self.json_object["run_time"]
           details["io_setup"]      = self.json_object["io_setup"]
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"BAD_IRRIGATION_DATA","details":details,"level":"RED"})
-
+          return False
    def convert_to_integers( self, dictionary, list_elements):
        for i in list_elements:
            dictionary[i] = int(dictionary[i] )
@@ -144,17 +145,28 @@ class Irrigation_Control_Basic(object):
 
 
    def check_required_plcs(self,cf_handle, chainObj, parameters, event):
-      return_value = self.io_control.check_required_plcs(self.json_object['io_setup'])
-      return return_value       
+      try:
+          self.io_control.check_required_plcs(self.json_object['io_setup'])
+          return True
+      except:
+          details = {}
+          details["schedule_name"] = self.json_object["schedule_name"]
+          details["step"]          = self.json_object["step"]
+          details["run_time"]      = self.json_object["run_time"]
+          details["io_setup"]      = self.json_object["io_setup"]
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Non Operational PLC's","details":details,"level":"RED"})
+          return False       
    
    def start(self,*args):
      
-      
+   
       # turn on master valve
-      self.io_control.turn_on_valve(self.json_object['io_setup'])
+      self.io_control.turn_on_valves(self.json_object['io_setup'])
       self.update_json_object(self.json_object)
       time.sleep(5)
+     
       if self.io_control.monitor_current(self.current_limit):
+         
          return True
       else:
           details = {}
@@ -163,6 +175,7 @@ class Irrigation_Control_Basic(object):
           details["run_time"]      = self.json_object["run_time"]
           details["io_setup"]      = self.json_object["io_setup"]
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_EXCESSIVE_START_CURRENT","details":details,"level":"RED"})
+          
           return False
 
 
@@ -173,7 +186,7 @@ class Irrigation_Control_Basic(object):
       #print("json_object",self.json_object)
       self.json_object["elasped_time"]  =      self.json_object["elasped_time"] +1
       self.io_control.turn_on_master_valves()
-      self.io_control.turn_on_valve(self.json_object['io_setup'])
+      self.io_control.turn_on_valves(self.json_object['io_setup'])
       # update duration counter  -- so we can have large runtimes
       # update selective plc watchdogs
       self.update_json_object(self.json_object)

@@ -17,9 +17,7 @@ class Clean_Filter(object):
        self.generate_control_events = generate_control_events
        self.cleaning_flow_limits = cleaning_flow_limits
    
-   def load_duration_counter(self,cf_handle, chainObj, parameters, event):
-         
-          self.irrigation_io.load_duration_counters(parameters[1])
+
 
  
    
@@ -35,7 +33,7 @@ class Clean_Filter(object):
        cf.insert.one_step(  self.irrigation_io.turn_off_cleaning_valves  )# turn off cleaning valve
        cf.insert.wait_event_count(count = 2)
        cf.insert.one_step(  self.irrigation_io.turn_on_master_valves  )# turn turn on master valve
-       cf.insert.one_step(  self.load_duration_counter,5)
+     
        cf.insert.log( "Clean Step 2")
        cf.insert.wait_event_count(event = "MINUTE_TICK",count = 2)
        cf.insert.wait_event_count(count=1) # one second delay to allow minute tick to settle out
