@@ -13,6 +13,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       cd.add_hash("SYSTEM_COMPLETION_DICTIONARY")
       cd.add_hash("IRRIGATION_VALVE_TEST")
       cd.add_hash("IRRIGATION_TIME_HISTORY")
+      cd.add_hash("IRRIGATION_MARK_DATA")
       cd.add_job_queue("IRRIGATION_VALVE_JOB_QUEUE",250)
       cd.add_job_queue("IRRIGATION_JOB_SCHEDULING",100,forward=False)
       cd.add_job_queue("IRRIGATION_PENDING",100)

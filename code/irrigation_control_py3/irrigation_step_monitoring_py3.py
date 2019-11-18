@@ -46,17 +46,10 @@ class Irrigation_Step_Monitoring(object):
 
 
    def initialize_logging(self,json_object):
-       self.handlers["IRRIGATION_TIME_HISTORY"].delete_all()  # for test purposes only
+       #self.handlers["IRRIGATION_TIME_HISTORY"].delete_all()  # for test purposes only
        self.working_key = self.form_key(json_object)
-       self.time_history = self.handlers["IRRIGATION_TIME_HISTORY"].hget(self.working_key)
-      
-       if self.time_history == None:
-          self.time_history = []
-       
-       self.time_history.append(self.format_entry())
-      
-       if len(self.time_history) > self.log_length:
-           self.time_history = self.time_history[1:]
+       self.irrigation_run_history = self.format_entry()
+
 
        
            
@@ -64,15 +57,24 @@ class Irrigation_Step_Monitoring(object):
 
 
    def step_logging(self, json_object):
-       working_entry = self.time_history[-1]
-       self.add_new_data(working_entry,self.get_new_data())
+       self.get_new_data(self.irrigation_run_history)
 
-       
+  
        
    def finalize_logging(self):
+       self.sumarize_data(self.irrigation_run_history)
+       self.time_history = self.handlers["IRRIGATION_TIME_HISTORY"].hget(self.working_key)
+      
+       if self.time_history == None:
+          self.time_history = []
+       
+       self.time_history.append(self.irrigation_run_history)
+      
+       if len(self.time_history) > self.log_length:
+           self.time_history = self.time_history[1:]
        working_entry = self.time_history[-1]
-       self.time_history[-1] = self.sumarize_data(working_entry)
-       print(self.time_history)
+       
+       
        self.handlers["IRRIGATION_TIME_HISTORY"].hset(self.working_key,self.time_history)
 
 
@@ -89,27 +91,32 @@ class Irrigation_Step_Monitoring(object):
       
    def format_entry(self):
       entry = {}
-      entry["mean"] = {}
-      entry["sd"]  = {}
-      entry["data"] = []
-     
+      for i in self.key_list:
+          temp = {}
+          temp["mean"] = 0.
+          temp["sd"]  = 0.
+          temp["data"] = []
+          entry[i] = temp
       return entry
       
-   def get_new_data(self):
+   def get_new_data(self,current_history):
       new_data = {}
       for i in range(0,len(self.key_list)):
-         new_data[self.key_list[i]] = self.irrigation_hash_control.hget(self.sensor_list[i])
+         key = self.key_list[i]
+         current_history[key]["data"].append(self.irrigation_hash_control.hget(self.sensor_list[i]))
+         
       return new_data
       
-   def add_new_data(self,entry,new_data):
-      entry["data"].append(new_data)   
+     
       
-   def sumarize_data(self,working_entry):
-       print(working_entry)
+   def sumarize_data(self,current_history):
+       
        for i in self.key_list:
-          working_entry["mean"][i] = mean(working_entry["data"][i][self.settling_time:])
-          working_entry["sd"][i]  = pstdev(working_entry["data"][i][self.settling_time:])
-          form of data  need to restructure
-          [{'IRRIGATION_CURRENT': 0.1420000046491623, 'MAIN_FLOW_METER': 0.0, 'WELL_PRESSURE': 55.50770163536072, 'OUTPUT_PUMP_CURRENT': -0.07856567700703923, 'EQUIPMENT_CURRENT': 0.3908296525478363, 'INPUT_PUMP_CURRENT': -0.40452753504117345, 'CLEANING_FLOW_METER': 0.0}, {'IRRIGATION_CURRENT': 0.1420000046491623, 'MAIN_FLOW_METER': 0.0, 'WELL_PRESSURE': 55.48233985900879, 'OUTPUT_PUMP_CURRENT': -0.09210189183553102, 'EQUIPMENT_CURRENT': 0.3908296525478363, 'INPUT_PUMP_CURRENT': -0.4483915865421294, 'CLEANING_FLOW_METER': 0.0}, {'IRRIGATION_CURRENT': 0.1420000046491623, 'MAIN_FLOW_METER': 0.0, 'WELL_PRESSURE': 55.62085509300232, 'OUTPUT_PUMP_CURRENT': -0.0769250591595974, 'EQUIPMENT_CURRENT': 0.3908296525478363, 'INPUT_PUMP_CURRENT': -0.4002446929613754, 'CLEANING_FLOW_METER': 0.0}, {'IRRIGATION_CURRENT': 0.1420000046491623, 'MAIN_FLOW_METER': 0.0, 'WELL_PRESSURE': 55.464619398117065, 'OUTPUT_PUMP_CURRENT': -0.07806549469629911, 'EQUIPMENT_CURRENT': 0.3908296525478363, 'INPUT_PUMP_CURRENT': -0.39949839313824986, 'CLEANING_FLOW_METER': 0.0}, {'IRRIGATION_CURRENT': 0.1420000046491623, 'MAIN_FLOW_METER': 0.0, 'WELL_PRESSURE': 53.26618552207947, 'OUTPUT_PUMP_CURRENT': -0.1388791203498841, 'EQUIPMENT_CURRENT': 0.3908296525478363, 'INPUT_PUMP_CURRENT': -0.6025888025760656, 'CLEANING_FLOW_METER': 0.0}, {'IRRIGATION_CURRENT': 0.1420000046491623, 'MAIN_FLOW_METER': 0.0
-          
+           try:
+               current_history[i]["mean"] = mean(current_history[i]["data"][self.settling_time:])
+               current_history[i]["sd"]  = pstdev(current_history[i]["data"][self.settling_time:])
+             
+           except:
+               print("bad current history")
+       return current_history
  

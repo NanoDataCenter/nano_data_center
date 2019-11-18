@@ -1,0 +1,69 @@
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+   <script type="text/javascript" >
+       control_data_json = '{{ control_data_json }}'                
+     
+      
+     </script>
+        
+     <script type="text/javascript">
+       {% include "js/irrigation_functions/manage_paramters.js" %}
+     </script>
+
+{% endblock %}
+
+
+
+{% block application %}
+  <div data-role="page"> 
+ 
+        
+   <h4><br>Current Rain Day Setting: </h4> 
+	  <select id="rain_flag">
+	     <option value=0>Off</option>
+	     <option value=1>On</option>
+	  </select>
+
+   <button type="button" id="change_rain_flag">Click to Change Rain Flag </button>
+   <br><br><br>
+
+
+   <h4>ETO Management Setting </h4>       
+	   <select id="eto_flag"> 
+       <option value=0>Off</option>
+	      <option  value=1>On</option>
+	   </select>
+
+    <button type="button" id="change_eto_flag">Click to Change ETO Management </button>
+    <br><br><br>
+
+   <div data-role="fieldcontain" id="cleaning_interval_field">
+   <h4 id ="cleaing_interval_display">Gallons to Initiate Automatic Cleaning </h4>  
+  <input type="range"  id="cleaning_interval" value="10000" 
+                    min="0" max="100000" data-highlight="true" step="100" /> 
+    
+  </div>
+  <button type="button" id="change_gallon_trigger">Click to Change Cleaning Interval </button>
+
+  <br><br><br>
+   <div data-role="fieldcontain" id="flow_rate_field">     
+  <h4 id ="flow_rate_display">Flow Limit to Initiate Cut Off </h4>    
+  <input type="range"  id="max_rate" value="{{5}}" 
+                    min="0" max={{40}} data-highlight="true" step="1" /> 
+
+   </div>
+   <button type="button" id="cut_off_trigger_id">Click to Change Cut Off Rate </button>
+   
+  </div>
+
+
+   
+</div>
+</div><!-- /page -->
+{% endblock %}
