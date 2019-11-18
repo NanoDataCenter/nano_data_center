@@ -1,0 +1,35 @@
+{% extends "base_template" %}
+
+{% block application_javascript %}
+  <script type="text/javascript" >
+       {% include "js/ajax_functions.js" %}
+       {% include "js/redis_functions.js" %}
+  </script>
+
+   <script type="text/javascript" >
+                   
+     
+      
+     </script>
+        
+     <script type="text/javascript">
+       {% include "js/irrigation_statistics/reset_valve_statistics.js" %}
+     </script>
+
+{% endblock %}
+
+
+
+{% block application %}
+  <div data-role="page"> 
+ 
+        
+   
+   <h3>Reset Valve Statistics</h3>
+   <button type="button" id="reset_valve_statistics">Reset Valve Statistics </button>
+
+
+   
+</div>
+</div><!-- /page -->
+{% endblock %}

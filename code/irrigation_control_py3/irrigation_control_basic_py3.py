@@ -197,6 +197,7 @@ class Irrigation_Control_Basic(object):
            self.step_monitor.step_logging(self.json_object)       
  
       else:
+           
            self.step_monitor.finalize_logging()
            details = {}
            details["schedule_name"] = self.json_object["schedule_name"]

@@ -132,13 +132,15 @@ function generate_valve_list()
                
                for(i = 0; i< schedules_pins[schedule_selection].length;i++)
                {
-                   format_step(valve_dict ,schedules_pins[schedule_selection][i])
-                   //return_value.push(temp)
+                   return_value.push(format_step(valve_dict ,schedules_pins[schedule_selection][i]))
+                   
                }
                
                break;
           case 1:
-               return_value = []
+               schedule_selection = $("#manual_schedule").val()
+               step_selection = $("#manual_step").val()
+               return_value.push(format_step(valve_dict,schedules_pins[schedule_selection][step_selection-1]))
                break;
           case 2:
                 return_value =JSON.parse(valve_keys_json)          
@@ -149,19 +151,26 @@ function generate_valve_list()
 
 function format_step(valve_dict,step_entry)
 {
-    
+   return_value = ""
    for( j = 0;j<step_entry.length;j++)
    {
-       format_entry(valve_dict,step_entry[i])
+       if( return_value == "")
+       {
+        return_value = format_entry(valve_dict,step_entry[j])
+       }
+       else
+       {
+           return_value = return_value+"/"+format_entry(valve_dict,step_entry[j])
+       }
    }
+   return return_value
     
     
 }
 
 function format_entry(valve_dict,entry)
 {
-    alert(entry)
-    alert(entry.length)
+    return entry[0]+":"+entry[1]
 }
 
 $(document).ready(

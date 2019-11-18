@@ -30,6 +30,10 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        a1= auth.login_required( self.irrigation_detail_statistics )
        app.add_url_rule("/irrigation_statistics/detail_statistics/<valve_id>","irrigation_detail_statistics",a1)
        
+       
+       a1= auth.login_required( self.irrigation_time_history )
+       app.add_url_rule("/irrigation_statistics/time_history/<valve_id>","irrigation_time_history",a1)
+       
        a1= auth.login_required( self.mark_irrigation_statistics )
        app.add_url_rule("/irrigation_statistics/mark_irrigation_run","mark_irrigation_statistics",a1)
        
@@ -60,7 +64,52 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
      
    def irrigation_detail_statistics(self,valve_id):
        return "Irrigation Detailed Statistics"
- 
+
+   def irrigation_time_history(self,valve_id):
+       valve_id = int(valve_id)
+       valve_dict = self.handlers["IRRIGATION_TIME_HISTORY"]
+       mark_dict  = self.handlers["IRRIGATION_MARK_DATA"]
+       valves = valve_dict.hkeys()
+       valves.sort()
+       
+       if valve_dict.hexists(valves[valve_id]) == True:
+            data = valve_dict.hget(valves[valve_id])
+            data.reverse()
+            print(len(data))
+            if mark_dict.hexists(valves[valve_id]) != True:
+               mark_dict.hset(valves[valve_id],data[0])
+            mark_data = mark_dict.hget(valves[valve_id])
+            
+            print(mark_data)
+             
+            
+            chart_title = " Irrigation Stream Data For : "+valves[valve_id]
+       
+            #stream_keys,stream_range,stream_data = self.format_data(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
+       
+       
+            return self.render_template( "streams/stream_multi_curve",
+                                     stream_data = [],
+                                     stream_keys = [],
+                                     titles = [],
+                                     stream_range = [],
+                                     valves = valves ,
+                                     valve_id = valve_id,
+                                     title = "Irrigation Time History",
+                                     header = "Time History for Selected Valve"
+                                     )
+       else:
+           return self.render_template( "streams/stream_multi_curve",
+                                     stream_data = [],
+                                     stream_keys = [],
+                                     titles = [],
+                                     stream_range = [],
+                                     valves = valves ,
+                                     valve_id = valve_id,
+                                     title = "Irrigation Time History",
+                                     header = "Selected Valve Has No Data"
+                                     )       
+       
    def mark_irrigation_statistics(self):
        schedule_data = self.schedule_data()
        
@@ -69,7 +118,7 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
                                     valve_keys_json = json.dumps(self.handlers["IRRIGATION_VALVE_TEST"].hkeys())) 
    
    def reset_irrigation_statistics(self):
-       return "reset irrigation statistics"
+       return self.render_template("irrigation_statistics/reset_irrigation_statistics")
  
    def irrigation_valve_resistance(self):
        valve_dict = self.handlers["IRRIGATION_VALVE_TEST"]
@@ -92,28 +141,33 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
 
 
    def reset_irrigation_valve_resistance(self):
-       return "irrigation valve resistance"
+       
        return self.render_template( "irrigation_statistics/reset_valve_statistics")
    
    ####################################### Ajax Functions #################################
    def mark_irrigation_data(self):
        json_object = self.request.json
        valve_list = json_object["valve_list"]
-       print(valve_list)
-       return json.dumps("SUCCESS") 
+ 
        for i in valve_list:
-           reference_data = self.handlers["IRRIGATION_TIME_HISTORY"].hget(i)
-           reference_entry = reference_data[0]
-           reference_entry["time_stamp"] = time.time()
-           self.handlers["IRRIGATION_MARK_DATA"].hset(reference_entry)
+           if self.handlers["IRRIGATION_TIME_HISTORY"].hexists(i):
+               #print("updating ",i)
+               reference_data = self.handlers["IRRIGATION_TIME_HISTORY"].hget(i)
+               reference_entry = reference_data[-1]
+               reference_entry["time_stamp"] = time.time()
+               self.handlers["IRRIGATION_MARK_DATA"].hset(i,reference_entry)
        return json.dumps("SUCCESS")    
           
        
    def reset_irrigation_data(self):
+      print("reset irrigation data")
+      return json.dumps("SUCCESS")
       self.handlers["IRRIGATION_TIME_HISTORY"].delete_all()
       self.handlers["IRRIGATION_MARK_DATA"].delete_all()
       return json.dumps("SUCCESS")
    def reset_valve_data(self):
+       print("reset valve data")
+       return json.dumps("SUCCESS")
        self.handlers["IRRIGATION_VALVE_TEST"].delete_all()
        return json.dumps("SUCCESS")
        

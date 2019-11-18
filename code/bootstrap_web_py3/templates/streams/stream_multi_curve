@@ -1,0 +1,104 @@
+{% extends "base_template"  %}
+{% block application_javascript %}
+<script src="/static/js/plotly-latest.min.js"></script> 
+ 
+
+      <script type="text/javascript">
+         True = true
+         False = false
+         stream_data = []
+         stream_keys = []
+         titles  = []
+         steam_range = [] 
+                 
+     </script>
+    
+<script type="text/javascript">
+
+
+
+
+function change_valve(event,ui)
+{
+  
+  current_page = window.location.href
+  
+  
+  page_list = current_page.split("/")
+ 
+  page_list = page_list.slice(0,-1)
+  
+  current_page = page_list.join("/")+"/"
+  
+  current_page = current_page+$("#valve_select")[0].selectedIndex
+  
+  window.location.href = current_page
+}
+$(document).ready(
+ function()
+ {
+   $("#valve_select").bind('change',change_valve)
+   $("#valve_select").val( {{ valve_id|int  }});
+ }
+)
+ 
+</script>
+
+
+{% endblock %}
+{% block application_header %}
+
+<div style="margin-top:20px"></div>
+
+
+{% endblock %}
+{% block application %}
+
+<div style="margin-top:20px"></div>
+<div id="Valve_tag">
+<center>
+<h4>Select Irrigation Valve</h4>
+</center>
+</div>
+<div id="select_tag">
+<center>
+<select id="valve_select">
+  {% for item in valves %}
+  <option value="{{loop.index0}}">{{item}}</option>
+  {% endfor %}
+  
+</select>
+<h3>{{header}}</h3>
+</center>
+</div>
+{% for i in stream_range %}
+
+<div style="margin-top:50px"></div>
+<div class="container">
+
+
+
+<div id="{{titles[i].replace(".","_").replace("-","_")}}" style="width:100%;height:600pts;"></div>
+
+ <script>
+
+ data = stream_data[stream_keys[{{i}}]]
+ trace= data["data"]
+ layout = data["layout"]
+
+ 
+ for( i = 0;i< trace.x.length; i++)
+ { 
+    trace.x[i] = new Date(trace.x[i]*1000)
+ } 
+
+ Plotly.newPlot("{{titles[i].replace(".","_").replace("-","_")}}", [trace],layout);
+    
+</script>
+
+</div>
+
+
+{% endfor %}
+{% block application_footer %}{% endblock %}
+{% endblock %}    

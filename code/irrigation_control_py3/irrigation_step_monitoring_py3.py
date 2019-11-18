@@ -64,15 +64,14 @@ class Irrigation_Step_Monitoring(object):
    def finalize_logging(self):
        self.sumarize_data(self.irrigation_run_history)
        self.time_history = self.handlers["IRRIGATION_TIME_HISTORY"].hget(self.working_key)
-      
+       
        if self.time_history == None:
           self.time_history = []
        
        self.time_history.append(self.irrigation_run_history)
       
-       if len(self.time_history) > self.log_length:
+       if len(self.time_history) >= self.log_length:
            self.time_history = self.time_history[1:]
-       working_entry = self.time_history[-1]
        
        
        self.handlers["IRRIGATION_TIME_HISTORY"].hset(self.working_key,self.time_history)

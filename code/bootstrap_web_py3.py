@@ -261,6 +261,9 @@ class PI_Web_Server(object):
        generate_handlers = Generate_Handlers(package,self.qs)
        ds_handlers = {}
        ds_handlers["IRRIGATION_VALVE_TEST"] = generate_handlers.construct_hash(data_structures["IRRIGATION_VALVE_TEST"])
+       ds_handlers["IRRIGATION_TIME_HISTORY"] = generate_handlers.construct_hash(data_structures["IRRIGATION_TIME_HISTORY"])
+       ds_handlers["IRRIGATION_MARK_DATA"] = generate_handlers.construct_hash(data_structures["IRRIGATION_MARK_DATA"])
+         
        irrigation_control = generate_irrigation_control(self.redis_site_data,self.qs)
        Load_Irrigation_Statistics(self.app, 
                                        self.auth,request, 
