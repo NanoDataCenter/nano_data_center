@@ -1,0 +1,149 @@
+{% extends "base_template"  %}
+{% block application_javascript %}
+<script src="/static/js/plotly-latest.min.js"></script> 
+ 
+
+      <script type="text/javascript">
+         True = true
+         False = false
+         stream_length = {{stream_length}}
+         measurement_length  = {{measurement_length}}
+         data_x =  {{data_x}},
+         data_y =  {{data_y}},
+         ref_x  =  {{ref_x}},
+         ref_y =   {{ref_y}}
+         names   = {{names}}
+     </script>
+ 
+<script type="text/javascript">
+
+
+
+
+function change_valve(event,ui)
+{
+  
+  current_page = window.location.href
+  
+  
+  page_list = current_page.split("/")
+ 
+  page_list = page_list.slice(0,-3)
+  
+  current_page = page_list.join("/")
+ 
+  
+  current_page = current_page+"/"+$("#valve_select")[0].selectedIndex
+  current_page = current_page+"/"+$("#start_select")[0].selectedIndex
+  current_page = current_page+"/"+$("#curve_select").val()
+ 
+  window.location.href = current_page
+}
+$(document).ready(
+ function()
+ {
+   $("#change_setting").bind('click',change_valve)
+   $("#valve_select").val( {{ valve_id|int  }});
+   $("#start_select").val( {{ start_id|int  }});
+   $("#curve_select").val( {{ curve_number|int}});
+ }
+)
+ 
+</script>
+
+
+{% endblock %}
+{% block application_header %}
+
+<div style="margin-top:20px"></div>
+
+
+{% endblock %}
+{% block application %}
+
+<div style="margin-top:20px"></div>
+
+<div >
+<center>
+<h5>Select Irrigation Valve</h5>
+<select id="valve_select">
+  {% for item in valves %}
+  <option value="{{loop.index0}}">{{item}}</option>
+  {% endfor %}
+  
+</select>
+<h5>Select Irrigation Run Index</h5>
+<select id="start_select">
+  {% for item in range(1,21) %}
+  <option value="{{loop.index0}}">{{item}}</option>
+  {% endfor %}
+  
+</select>
+<h5>Select Number of Curves to Display</h5>
+<select id="curve_select">
+  {% for item in range(1,10) %}
+  <option value="{{item}}">{{item}}</option>
+  {% endfor %}
+  
+</select>
+<div style="margin-top:10px"></div>
+<button type="button" id=change_setting>Change Graph Setting</button>
+<div style="margin-top:20px"></div>
+<h3>{{header}}</h3>
+</center>
+
+</div>
+{% for i in names %}
+
+<div style="margin-top:50px"></div>
+<div class="container">
+
+
+
+<div id="Axxx{{i}}" }" style="width:100%;height:1000pts;"></div>
+
+ <script>
+  
+ trace = []
+ trace.push({
+  type: 'line',
+  x: ref_x["{{i}}"],
+  y: ref_y["{{i}}"],
+  mode: 'lines',
+  name: "{{names[i]}}  Reference Value",
+  line: {
+    color: 'rgb(255,0,0)',
+    width: 10
+  }})
+ 
+ {% for j in range(0, measurement_length) %}
+ trace.push({
+  type: 'line',
+  x: data_x["{{i}}"][{{j|int}}],
+  y: data_y["{{i}}"][{{j|int}}],
+  mode: 'lines',
+  name: "{{i}} {{j+1}}",
+  line: {
+    color: 'rgb({{10*j}},{{15*j}},{{20*j}})',
+    width: {{measurement_length-j}},
+  }}
+ )
+ {% endfor %}
+
+ var layout = {
+  title: "Graph for {{i}}}"
+};
+
+ 
+ Plotly.newPlot("Axxx{{i}}", trace,layout);
+    
+</script>
+
+</div>
+
+
+
+
+{% endfor %}
+{% block application_footer %}{% endblock %}
+{% endblock %}    

@@ -32,7 +32,7 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        
        
        a1= auth.login_required( self.irrigation_time_history )
-       app.add_url_rule("/irrigation_statistics/time_history/<valve_id>","irrigation_time_history",a1)
+       app.add_url_rule("/irrigation_statistics/time_history/<valve_id>/<start_id>/<curve_number>","irrigation_time_history",a1)
        
        a1= auth.login_required( self.mark_irrigation_statistics )
        app.add_url_rule("/irrigation_statistics/mark_irrigation_run","mark_irrigation_statistics",a1)
@@ -65,8 +65,10 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
    def irrigation_detail_statistics(self,valve_id):
        return "Irrigation Detailed Statistics"
 
-   def irrigation_time_history(self,valve_id):
+   def irrigation_time_history(self,valve_id,start_id,curve_number):
        valve_id = int(valve_id)
+       start_id = int(start_id)
+       curve_number = int(curve_number)
        valve_dict = self.handlers["IRRIGATION_TIME_HISTORY"]
        mark_dict  = self.handlers["IRRIGATION_MARK_DATA"]
        valves = valve_dict.hkeys()
@@ -75,26 +77,52 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        if valve_dict.hexists(valves[valve_id]) == True:
             data = valve_dict.hget(valves[valve_id])
             data.reverse()
-            print(len(data))
+            
             if mark_dict.hexists(valves[valve_id]) != True:
                mark_dict.hset(valves[valve_id],data[0])
+               temp = mark_dict.hget(valves[valve_id])
+               temp["time_stamp"] = time.time()
+               mark_dict.hset(valves[valve_id],temp)
             mark_data = mark_dict.hget(valves[valve_id])
             
-            print(mark_data)
+            
              
             
-            chart_title = " Irrigation Stream Data For : "+valves[valve_id]
+            stream_length = 0
+            measurement_length = 0
+            # find names
+            
+            
+           
+           
+            time_stamp = mark_data["time_stamp"]
+            date_time =  datetime.fromtimestamp(time_stamp)
+            date_time_string = date_time.strftime("%m/%d/%Y, %H:%M:%S")
+            if curve_number > len(data):
+                curve_number = len(data)
+            names = self.assemble_names(data,mark_data)
+            names.sort()
+            
+            
+            ref_x,ref_y = self.assemble_time_reference_data(names,mark_data)
+            
+            
+            data_x,data_y = self.assemble_time_data(curve_number,names,data)
+                        
        
-            #stream_keys,stream_range,stream_data = self.format_data(temp_data,title=chart_title,title_y="Deg F",title_x="Date")
-       
-       
-            return self.render_template( "streams/stream_multi_curve",
-                                     stream_data = [],
-                                     stream_keys = [],
-                                     titles = [],
-                                     stream_range = [],
+            return self.render_template( "streams/stream_irrigation_time_history",
+                                    date_string = date_time_string,
+                                    stream_length = len(names),
+                                    measurement_length  = curve_number,
+                                    data_x =  data_x,
+                                    data_y =  data_y,
+                                    ref_x  =  ref_x,
+                                     ref_y =  ref_y,
+                                     names   = names,
                                      valves = valves ,
                                      valve_id = valve_id,
+                                     start_id = start_id,
+                                     curve_number = curve_number,
                                      title = "Irrigation Time History",
                                      header = "Time History for Selected Valve"
                                      )
@@ -246,3 +274,39 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        return len(returnValue), returnValue, controller_pins      
 
 
+   def assemble_names(self,data,mark_data):
+       names_set = set(list(mark_data.keys()))
+       for i in data:
+           names_set &= set(list(i.keys()))
+                  
+       return list(names_set)
+       
+       
+   def assemble_time_reference_data(self,names,mark_data):
+        mark_x = {}
+        mark_y = {}
+        for i in names:
+            temp = mark_data[i]["data"]
+            mark_x[i] = list(range(1,len(temp)+1))
+            mark_y[i] = temp
+        return mark_x,mark_y
+        
+        
+   def assemble_time_data(self,curve_number,names,data):
+       data_x = {}
+       data_y = {}
+       
+       length = curve_number
+       if length > len(data):
+          length = len(data)
+       
+       for j in range(0,length):
+           for i in names:
+               if i not in data_x:
+                   data_x[i] = []
+                   data_y[i] = []
+               temp = data[j][i]["data"]
+               data_x[i].append(list(range(1,len(temp)+1)))
+               data_y[i].append(temp)
+              
+       return data_x,data_y       
