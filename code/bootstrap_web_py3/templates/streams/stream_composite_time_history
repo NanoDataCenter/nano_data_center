@@ -1,0 +1,151 @@
+{% extends "base_template"  %}
+{% block application_javascript %}
+<script src="/static/js/plotly-latest.min.js"></script> 
+ 
+
+      <script type="text/javascript">
+         True = true
+         False = false
+
+         valves  =  {{valves}}
+         ref_std =  {{ref_std}}
+         ref_flow =  {{ref_flow}}
+         data_std =  {{data_std}}
+         data_flow = {{data_flow}}
+ 
+     </script>
+ 
+<script>
+$(document).ready(
+ function()
+ {
+   ;
+ }
+)
+ 
+</script>
+
+
+{% endblock %}
+{% block application_header %}
+
+<div style="margin-top:20px"></div>
+
+
+{% endblock %}
+{% block application %}
+
+<div style="margin-top:20px"></div>
+
+<div >
+<center>
+
+<h3>{{header}}</h3>
+<h4>Data Baselined on {{date_string}}</h4>
+</center>
+
+</div>
+
+
+<div style="margin-top:50px"></div>
+<div class="container">
+
+
+<div id="Axxx{{i}}" }" style="width:100%;height:3000pts;"></div>
+
+ <script>
+  
+ trace = []
+ trace.push({
+  type: 'bar',
+  y: valves,
+  x: ref_flow,
+  orientation:'h',
+  name: "Avg Flow Ref",
+  marker: {
+    color: 'rgb(255,0,0)',
+   
+  }})
+ 
+ 
+ trace.push({
+  type: 'bar',
+  y: valves,
+  x: data_flow,
+  orientation:'h',
+  name: "Avg Flow",
+  marker: {
+    color: 'rgb({0,0,0}})',
+    
+  }}
+ )
+
+var layout = {
+  title: 'Average Flow',
+  xaxis: {
+    tickangle: -90
+  },
+   
+  barmode: 'group'
+};
+
+ 
+ Plotly.newPlot("Axxx", trace,layout);
+    
+</script>
+
+</div>
+
+<div id="Bxxx" }" style="width:100%;height:3000pts;"></div>
+
+ <script>
+  
+ trace = []
+ trace.push({
+  type: 'bar',
+  x: ref_std,
+  y: valves,
+  orientation:'h',
+  name: "Ref Std",
+  marker: {
+    color: 'rgb(255,0,0)'
+    
+  }
+  })
+ 
+ 
+ trace.push({
+  type: 'bar',
+  y: valves,
+  x: data_std,
+  name: "Std",
+  orientation:'h',
+  marker: {
+    color: 'rgb({0,0,0}})',
+    
+  }},
+   
+ )
+
+ var layout = {
+  title: 'Std Comparison',
+  xaxis: {
+    tickangle: -90,
+   
+  },
+   
+  barmode: 'group'
+};
+
+ 
+ Plotly.newPlot("Bxxx", trace,layout);
+    
+</script>
+
+</div>
+
+
+
+
+{% block application_footer %}{% endblock %}
+{% endblock %}    

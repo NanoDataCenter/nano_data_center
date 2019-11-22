@@ -19,17 +19,18 @@
 <div class="container">
 {% for i in controller_keys  %}
 <h3>Data For Controller {{i}} </h3>
-
+<h4>Data Baselined on {{date_string}}</h4>
 
 <div style="margin-top:50px"></div>
 <div class="container">
 
-<div id="A{{i}}" style="width:100%;height:300pt;"></div>
+<div id="A{{i}}" style="width:100%;height:500pt;"></div>
 <script>
 
 var trace1 = {
-  x: controllers["{{i}}"],
-  y: measurement_list["{{i}}"],
+  y: controllers["{{i}}"],
+  x: measurement_list["{{i}}"],
+  orientation:'h',
   type: 'bar',
   name: 'Valve Current',
   marker: {
@@ -38,8 +39,9 @@ var trace1 = {
   }
 };
 var trace2 = {
-  x: controllers["{{i}}"],
-  y: median_list["{{i}}"],
+  y: controllers["{{i}}"],
+  x: median_list["{{i}}"],
+  orientation:'h',
   type: 'bar',
   name: 'Valve Current Median',
   marker: {

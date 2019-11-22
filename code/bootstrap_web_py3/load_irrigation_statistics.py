@@ -26,11 +26,7 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        a1= auth.login_required( self.irrigation_composite_statistics )
        app.add_url_rule("/irrigation_statistics/composite_statistics","irrigation_composite_statistics",a1)
        
-      
-       a1= auth.login_required( self.irrigation_detail_statistics )
-       app.add_url_rule("/irrigation_statistics/detail_statistics/<valve_id>","irrigation_detail_statistics",a1)
-       
-       
+ 
        a1= auth.login_required( self.irrigation_time_history )
        app.add_url_rule("/irrigation_statistics/time_history/<valve_id>/<start_id>/<curve_number>","irrigation_time_history",a1)
        
@@ -60,10 +56,55 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        app.add_url_rule('/ajax/reset_valve_logs',"reset_valve_logs",a1, methods=["POST"])        
        
    def irrigation_composite_statistics(self):
-       return "Irrigation Composite Statistisc"
+
+       valve_dict = self.handlers["IRRIGATION_TIME_HISTORY"]
+       mark_dict  = self.handlers["IRRIGATION_MARK_DATA"]
+       valves = valve_dict.hkeys()
+       valves.sort()
+       
+    
+       all_data = valve_dict.hgetall()
+
+       ref_std =  []
+       ref_flow =  []
+       data_std =  []
+       data_flow = []
+       for i in valves:
+            
+            data_flow.append(all_data[i][0]["MAIN_FLOW_METER"]["mean"])
+            data_std.append(all_data[i][0]["MAIN_FLOW_METER"]["sd"])
+ 
+            if mark_dict.hexists(i) != True:
+               data = all_data[i]
+               mark_dict.hset(i,data)
+               temp = mark_dict.hget(i)
+               temp["time_stamp"] = time.time()
+               mark_dict.hset(i,temp)
+            mark_data = mark_dict.hget(i)
+            ref_flow.append(all_data[i][0]["MAIN_FLOW_METER"]["mean"])
+            ref_std.append(all_data[i][0]["MAIN_FLOW_METER"]["sd"])           
+            time_stamp = mark_data["time_stamp"]
+            date_time =  datetime.fromtimestamp(time_stamp)
+            date_time_string = date_time.strftime("%m/%d/%Y, %H:%M:%S")
+
+
+                        
+       
+       return self.render_template( "streams/stream_composite_time_history",
+                                    date_string = date_time_string,
+                                    ref_std =  ref_std,
+                                    ref_flow =  ref_flow,
+                                    data_std =  data_std,
+                                    data_flow = data_flow,
+                                   
+                                     valves = valves ,
+                                     
+                                     title = "Irrigation Composite History",
+                                     header = "Irrigation Composite History"
+                                     )
+
      
-   def irrigation_detail_statistics(self,valve_id):
-       return "Irrigation Detailed Statistics"
+ 
 
    def irrigation_time_history(self,valve_id,start_id,curve_number):
        valve_id = int(valve_id)
