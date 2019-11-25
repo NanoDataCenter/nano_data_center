@@ -71,18 +71,17 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        data_flow = []
        for i in valves:
             
-            data_flow.append(all_data[i][0]["MAIN_FLOW_METER"]["mean"])
-            data_std.append(all_data[i][0]["MAIN_FLOW_METER"]["sd"])
- 
+            data_std.append(all_data[i][-1]["MAIN_FLOW_METER"]["sd"])
+            data_flow.append(all_data[i][-1]["MAIN_FLOW_METER"]["mean"])
             if mark_dict.hexists(i) != True:
-               data = all_data[i]
+               data = all_data[i][-1]
                mark_dict.hset(i,data)
                temp = mark_dict.hget(i)
                temp["time_stamp"] = time.time()
                mark_dict.hset(i,temp)
             mark_data = mark_dict.hget(i)
-            ref_flow.append(all_data[i][0]["MAIN_FLOW_METER"]["mean"])
-            ref_std.append(all_data[i][0]["MAIN_FLOW_METER"]["sd"])           
+            ref_flow.append(mark_data["MAIN_FLOW_METER"]["mean"])
+            ref_std.append(mark_data["MAIN_FLOW_METER"]["sd"])           
             time_stamp = mark_data["time_stamp"]
             date_time =  datetime.fromtimestamp(time_stamp)
             date_time_string = date_time.strftime("%m/%d/%Y, %H:%M:%S")
