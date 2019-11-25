@@ -64,7 +64,7 @@ class IO_Control(object):
        return self.irrigation_hash_control.hget("MASTER_VALVE_SETUP")
 
    def disable_all_sprinklers( self,*arg ):
-       
+       print("disable all sprinklers")
        self.irrigation_hash_control.hset("MASTER_VALVE",False)       
        self.turn_off_cleaning_valves()
        self.turn_off_master_valves()
@@ -86,7 +86,7 @@ class IO_Control(object):
        self.event_handlers.change_master_valve_off()
 
    def turn_on_master_valves_direct( self,*arg ):
-    
+       print("turn on master valve direct")
        self.irrigation_hash_control.hset("MASTER_VALVE",False)
       
        for io_setup in self.master_valves:
@@ -97,7 +97,7 @@ class IO_Control(object):
 
        
    def turn_off_master_valves_direct( self,*arg ):
-       #print("turn off master valve direct")
+       print("turn off master valve direct")
        self.irrigation_hash_control.hset("MASTER_VALVE",False)
       
        for io_setup in self.master_valves:
@@ -118,7 +118,7 @@ class IO_Control(object):
       self.event_handlers.close_cleaning_valve()
  
    def turn_on_cleaning_valves_direct( self,*arg ):
-        #print("turn on cleaning valve")
+        print("turn on cleaning valve")
         for io_setup in self.cleaning_valves:
             temp = {}
             temp["remote"] = io_setup["remote"]
@@ -127,7 +127,7 @@ class IO_Control(object):
        
             
    def turn_off_cleaning_valves_direct( self,*arg ):
-        #print("turn off cleaning valve direct")
+        print("turn off cleaning valve direct")
         for io_setup in self.cleaning_valves:
             temp = {}
             temp["remote"] = io_setup["remote"]
@@ -180,7 +180,20 @@ class IO_Control(object):
  
 
           
-
+   def load_duration_counters(self,json_object):
+           print("json_object",json_object)
+           run_time  = json_object["run_time"]
+           io_setup_list  =  json_object["io_setup"]
+           for io_setup in io_setup_list:
+                remote = io_setup["remote"]           
+                control_block = self.plc_table[remote]
+                modbus_address = control_block["modbus_address"]
+                rpc_queue      = control_block["rpc_queue"]
+                type           = control_block["type"]
+                action_class = self.find_class( type,rpc_queue)
+           
+                #duration counter ticks in 100 ms refresh for 10 minutes
+                action_class.load_duration_counters( modbus_address,10*60*10 ) # refresh duration counter
 
    def turn_on_valves(self,io_setup):
        for i in io_setup:
@@ -198,7 +211,8 @@ class IO_Control(object):
            type           = control_block["type"]
            action_class = self.find_class( type,rpc_queue)
            action_class.turn_on_valves(  modbus_address, pins)
-           action_class.load_duration_counters( modbus_address,10 ) # refresh duration counter
+           #duration counter ticks in 100 ms refresh for 10 minutes
+           
            action_class.write_wd_flag( modbus_address )
        
 
@@ -207,7 +221,7 @@ class IO_Control(object):
           self.turn_off_valve(i)
        
    def turn_off_valve( self ,io_setup ):
-           #print(io_setup)   
+           print("turn off valve",io_setup)   
            pins = io_setup["bits"]
            remote = io_setup["remote"]           
            control_block = self.plc_table[remote]

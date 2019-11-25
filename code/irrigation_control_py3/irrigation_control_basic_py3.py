@@ -161,6 +161,8 @@ class Irrigation_Control_Basic(object):
      
    
       # turn on master valve
+      self.io_control.load_duration_counters(self.json_object)
+      self.io_control.turn_on_master_valves()
       self.io_control.turn_on_valves(self.json_object['io_setup'])
       self.update_json_object(self.json_object)
       time.sleep(5)

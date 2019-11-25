@@ -62,7 +62,7 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        valves = valve_dict.hkeys()
        valves.sort()
        
-    
+       date_time_string = ""
        all_data = valve_dict.hgetall()
 
        ref_std =  []
@@ -115,7 +115,7 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
        valves = valve_dict.hkeys()
        valves.sort()
        
-       if valve_dict.hexists(valves[valve_id]) == True:
+       if (len(valves)> valve_id) and (valve_dict.hexists(valves[valve_id]) == True):
             data = valve_dict.hget(valves[valve_id])
             data.reverse()
             
@@ -168,13 +168,16 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
                                      header = "Time History for Selected Valve"
                                      )
        else:
-           return self.render_template( "streams/stream_multi_curve",
-                                     stream_data = [],
-                                     stream_keys = [],
-                                     titles = [],
-                                     stream_range = [],
+           return self.render_template( "streams/stream_irrigation_time_history",
+                                     data_x =  [],
+                                    data_y =  [],
+                                    ref_x  =  [],
+                                     ref_y =  [],
+                                     names   = [],
                                      valves = valves ,
                                      valve_id = valve_id,
+                                     start_id = start_id,
+                                     curve_number = curve_number,
                                      title = "Irrigation Time History",
                                      header = "Selected Valve Has No Data"
                                      )       
@@ -229,14 +232,14 @@ class Load_Irrigation_Statistics(Base_Stream_Processing):
           
        
    def reset_irrigation_data(self):
-      print("reset irrigation data")
-      return json.dumps("SUCCESS")
+
       self.handlers["IRRIGATION_TIME_HISTORY"].delete_all()
       self.handlers["IRRIGATION_MARK_DATA"].delete_all()
       return json.dumps("SUCCESS")
+      
    def reset_valve_data(self):
        print("reset valve data")
-       return json.dumps("SUCCESS")
+      
        self.handlers["IRRIGATION_VALVE_TEST"].delete_all()
        return json.dumps("SUCCESS")
        

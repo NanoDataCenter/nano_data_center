@@ -402,7 +402,7 @@ class Modbus_Instrument:
     '''
     def _communicate(self, message, number_of_bytes_to_read= 1024):
         #print("_communicate message ",len(message),message)
-        return
+        
         message = base64.b64encode(message).decode()
         return_value = self.redis_rpc_client.send_rpc_message( "modbus_relay",message,timeout=30 )
         return_value = base64.b64decode(return_value)
