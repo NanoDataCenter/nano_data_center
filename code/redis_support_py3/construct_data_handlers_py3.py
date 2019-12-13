@@ -50,8 +50,8 @@ class RPC_Server(object):
        self.handler = {}
        self.redis_handle.delete(redis_rpc_queue)
        self.timeout_function = None
-       self.timeout_value  = data["timeout"]
-
+       #self.timeout_value  = data["timeout"]
+       self.timeout_value = 5.0 # five seconds
 
     def add_time_out_function(self,time_out_function):
        self.timeout_function = time_out_function
@@ -781,12 +781,12 @@ class Generate_Handlers(object):
 
    def construct_rpc_client(self,data):
          assert(data["type"] ==  "RPC_CLIENT")
-         key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
+         key = self.package["namespace"]+"["+data["name"] +"]"
          return Redis_RPC_Client(self.redis_handle,data,key)
 
    def construct_rpc_sever(self,data):
          assert(data["type"] ==  "RPC_SERVER")
-         key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
+         key = self.package["namespace"]+"["+data["name"] +"]"
          return RPC_Server(self.redis_handle,data,key )
     
 if __name__== "__main__":

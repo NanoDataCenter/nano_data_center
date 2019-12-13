@@ -2,7 +2,127 @@
 import time
 import base64
 from datetime import datetime
+import sys
+import json
+from redis_support_py3.graph_query_support_py3 import  Query_Support
+from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
+from    modbus_redis_server_py3.modbus_serial_ctrl_py3  import ModbusSerialCtrl
 
+def contruct_device_map(interfaces):
+   return_value = {}
+   for i,item in interfaces.items():
+      for j in item["remote_dict"].keys():
+        return_value[j]=i
+   return return_value
+
+def find_remotes(qs,link_name):
+   return_value = {}
+   query_list = []      
+   query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+   query_list = qs.add_match_relationship( query_list,relationship="PLC_SERVER",label=plc_server_name )
+   query_list = qs.add_match_relationship( query_list, relationship = "IO_LINK",label=link_name) 
+   query_list = qs.add_match_terminal( query_list,  relationship = "REMOTE_UNIT")
+                                                                               
+   remote_sets, remote_sources = qs.match_list(query_list)
+   for i in remote_sources:
+
+      return_value[i["modbus_address"]] = i["parameters"]
+ 
+   return return_value
+
+if __name__ == "__main__":
+   plc_server_name =  sys.argv[1]
+   file_handle = open("system_data_files/redis_server.json",'r')
+   data = file_handle.read()
+   file_handle.close()
+   redis_site = json.loads(data)
+   qs = Query_Support( redis_site )
+   query_list = []   
+   query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+   query_list = qs.add_match_relationship( query_list,relationship="PLC_SERVER",label=plc_server_name )
+   query_list = qs.add_match_terminal( query_list, 
+                                           relationship = "PACKAGE", 
+                                           property_mask={"name":"PLC_SERVER_DATA"} )
+                                           
+   package_sets, package_sources = qs.match_list(query_list)
+       
+   package = package_sources[0] 
+   generate_handlers = Generate_Handlers(package,qs)   
+   data_structures = package["data_structures"]
+   rpc_server_handle = generate_handlers.construct_rpc_sever(data_structures["PLC_RPC_SERVER"] )
+   query_list = []
+   query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+   query_list = qs.add_match_relationship( query_list,relationship="PLC_SERVER",label=plc_server_name )
+   query_list = qs.add_match_terminal( query_list, relationship = "IO_LINK") 
+                                     
+   serial_sets, serial_sources = qs.match_list(query_list)
+   
+   interfaces = {}
+   
+   for item in serial_sources:
+       
+       item["remote_dict"] = find_remotes(qs,item["name"])
+       interfaces[item["name"]]= item
+     
+   device_map = contruct_device_map(interfaces)
+   print(device_map)
+      
+   
+   
+   
+  
+'''   
+   
+   for i,item in serial_links.items():
+       remote_dict = setup.find_and_register_remotes( item , rs485_interface, msg_mgr )
+       temp_dict = {}
+       temp_dict[i] = item
+       modbus_serial_ctrl  = ModbusSerialCtrl( temp_dict, remote_dict, msg_mgr)
+       for j,k in remote_dict.items():
+           msg_mgr.add_device( k["modbus_address"], modbus_serial_ctrl )  
+           master_remote_dictionary.append(k["modbus_address"])           
+       msg_mgr.add_device( 255,    redis_handle) 
+   
+   print(msg_mgr.ping_devices([100]))
+  
+   Modbus_Server( redis_handle, redis_rpc_handle,msg_mgr, server_dict, master_remote_dictionary,"modbus_relay","ping_message"  )       
+'''       
+'''   
+   from redis_graph_py3.farm_template_py3 import Graph_Management
+
+   
+   
+   server_index = 0
+   
+   server_name =  sys.argv[1]
+   
+   gm = Graph_Management("PI_1","main_remote","LaCima_DataStore")
+   setup  = Setup_Remote_Devices(gm)
+   server_dict = setup.find_server( server_name )
+   serial_links      = setup.find_serial_links( server_name )
+   
+  
+   rs485_interface =   RS485_Mgr() 
+   msg_mgr = MessageManager()
+   redis_rpc_handle   =  redis.StrictRedis(  server_dict["ip"] , 6379, server_dict["redis_rpc_db"],decode_responses=True )
+   redis_handle       =  redis.StrictRedis(  server_dict["ip"] , 6379, 0,decode_responses=True )
+   master_remote_dictionary = []
+   for i,item in serial_links.items():
+       remote_dict = setup.find_and_register_remotes( item , rs485_interface, msg_mgr )
+       temp_dict = {}
+       temp_dict[i] = item
+       modbus_serial_ctrl  = ModbusSerialCtrl( temp_dict, remote_dict, msg_mgr)
+       for j,k in remote_dict.items():
+           msg_mgr.add_device( k["modbus_address"], modbus_serial_ctrl )  
+           master_remote_dictionary.append(k["modbus_address"])           
+       msg_mgr.add_device( 255,    redis_handle) 
+   
+   print(msg_mgr.ping_devices([100]))
+  
+   Modbus_Server( redis_handle, redis_rpc_handle,msg_mgr, server_dict, master_remote_dictionary,"modbus_relay","ping_message"  )
+    
+'''
+'''
 class No_Server_In_Graph(Exception):
     """Base class for exceptions in this module."""
     pass
@@ -294,3 +414,4 @@ if __name__ == "__main__":
    Modbus_Server( redis_handle, redis_rpc_handle,msg_mgr, server_dict, master_remote_dictionary,"modbus_relay","ping_message"  )
     
 
+'''

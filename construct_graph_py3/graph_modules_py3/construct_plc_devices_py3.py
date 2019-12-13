@@ -8,14 +8,16 @@ class Construct_PLC_Devices(object):
        bc.add_header_node("PLC_SERVERS") # mulitple plc servers are allowed
       
        bc.add_header_node( "PLC_SERVER","MAIN_SERVER",properties={} )
+       
        cd.construct_package("PLC_SERVER_DATA")
        cd.add_rpc_client("PLC_RPC_CLIENT")
+       cd.add_rpc_server("PLC_RPC_SERVER")
        cd.close_package_contruction()
        properties                           = {}
-       properties["type"]                  = "rs485_modbus",
        properties["interface_parameters"]  =  { "interface":None, "timeout":.05, "baud_rate":38400 }
        properties["search_device"]         =  "satellite_1" 
-       bc.add_header_node( "SERIAL_LINK","rtu_2", properties = properties, json_flag= True )
+       
+       bc.add_header_node( "IO_LINK","rtu_2", properties = properties, json_flag= True ) ### Can be mulitple io links
        
        properties                   = {}
        properties["modbus_address"] = 100
@@ -57,7 +59,7 @@ class Construct_PLC_Devices(object):
        properties["parameters"]     =  { "address":121 , "search_register":1,"register_number":1 }
        bc.add_info_node( "REMOTE_UNIT","satellite_4", properties =properties,  json_flag= True )   
    
-       bc.end_header_node("SERIAL_LINK") 
+       bc.end_header_node("IO_LINK") 
        bc.end_header_node("PLC_SERVER")
        bc.end_header_node("PLC_SERVERS") # mulitple plc servers are allowed  
        bc.end_header_node("PLC_SYSTEM")

@@ -109,9 +109,14 @@ class Irrigation_Step_Monitoring(object):
      
       
    def sumarize_data(self,current_history):
-       
+       try:
+          current_history["MAIN_FLOW_METER"]["total"] = sum(current_history[i]["data"])
+       except:
+           print("total exception")
+           current_history["MAIN_FLOW_METER"]["total"] = 0
        for i in self.key_list:
            try:
+              
                current_history[i]["mean"] = mean(current_history[i]["data"][self.settling_time:])
                current_history[i]["sd"]  = pstdev(current_history[i]["data"][self.settling_time:])
              
