@@ -7,6 +7,53 @@ import json
 from redis_support_py3.graph_query_support_py3 import  Query_Support
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 from    modbus_redis_server_py3.modbus_serial_ctrl_py3  import ModbusSerialCtrl
+from   modbus_redis_server_py3.msg_manager_py3 import MessageManager
+from     modbus_redis_server_py3.rs485_mgr_py3  import RS485_Mgr  
+from    modbus_redis_server_py3.modbus_serial_ctrl_py3  import ModbusSerialCtrl
+from   modbus_redis_server_py3.msg_manager_py3 import MessageManager
+from   redis_support_py3.redis_rpc_server_py3 import Redis_Rpc_Server
+        
+class Modbus_Server( object ):
+    
+   def __init__( self, redis_rpc_server,interfaces, device_dictionary,msg_handler):  # fill in proceedures
+       self.msg_handler = msg_handler
+  
+
+       self.statistic_handler = Statistic_Handler(redis_handle, redis_rpc_handle,master_remote_dictionary,logging_start, redis_rpc_queue)
+       self.redis_rpc_server = redis_rpc_server
+       self.redis_rpc_server.register_call_back( modbus_key, self.process_modbus_message)
+       self.redis_rpc_server.register_call_back( ping_key, self.process_ping_message)
+       self.redis_rpc_server.start()
+ 
+ 
+   def process_ping_message(self, address):    
+        temp = self.msg_handler.ping_devices([address])
+        return temp[0]["result"]        
+        
+   def process_modbus_message( self,input_msg ):
+
+       address = input_msg[0]
+       
+       self.statistic_handler.process_start_message( address )
+      
+       
+       
+      
+       failure, retries, output_message = self.msg_handler.process_msg( input_msg )
+       
+       if failure != 0:
+           output_msg = "@"
+           self.statistic_handler.log_bad_message( address, retries )
+       else:
+            self.statistic_handler.log_good_message( address, retries )
+       self.statistic_handler.process_end_message()
+       return output_message
+        
+
+   def process_null_msg( self ):
+       self.statistic_handler.process_null_message()
+
+
 
 def contruct_device_map(interfaces):
    return_value = {}
@@ -65,8 +112,21 @@ if __name__ == "__main__":
        interfaces[item["name"]]= item
      
    device_map = contruct_device_map(interfaces)
-   print(device_map)
-      
+   rs485_interface =   RS485_Mgr() 
+   msg_mgr = MessageManager()
+ for i,item in serial_links.items():
+       remote_dict = setup.find_and_register_remotes( item , rs485_interface, msg_mgr )
+       temp_dict = {}
+       temp_dict[i] = item
+       modbus_serial_ctrl  = ModbusSerialCtrl( temp_dict, remote_dict, msg_mgr)
+       for j,k in remote_dict.items():
+           msg_mgr.add_device( k["modbus_address"], modbus_serial_ctrl )  
+           master_remote_dictionary.append(k["modbus_address"])           
+       msg_mgr.add_device( 255,    redis_handle) 
+   
+   print(msg_mgr.ping_devices([100]))
+  
+   Modbus_Server( redis_handle, redis_rpc_handle,msg_mgr, server_dict, master_remote_dictionary,"modbus_relay","ping_message"  )    
    
    
    
