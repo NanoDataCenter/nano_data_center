@@ -50,8 +50,8 @@ class RPC_Server(object):
        self.handler = {}
        self.redis_handle.delete(redis_rpc_queue)
        self.timeout_function = None
-       #self.timeout_value  = data["timeout"]
-       self.timeout_value = 5.0 # five seconds
+       self.timeout_value  = data["timeout"]
+       
 
     def add_time_out_function(self,time_out_function):
        self.timeout_function = time_out_function
@@ -735,16 +735,7 @@ class Generate_Handlers(object):
    
 
 
-   def construct_stream_writer(self,data):
-         return self.construct_redis_stream_writer(data)
-         
-         assert(data["type"] == "STREAM")
-          
-         
-         if self.influx_handler == None:
-            self.construct_influx_handler()
-            
-         return Influx_Stream_Writer(self.influx_handler,data)
+ 
 
 
    def construct_redis_stream_writer(self,data):
@@ -758,17 +749,7 @@ class Generate_Handlers(object):
          
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Stream_Redis_Reader(self.redis_handle,data,key)
-   '''
-   def construct_stream_writer(self,data):
-         assert(data["type"] == "STREAM")
-         key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_List_Writer(self.redis_handle,data,key,self.cloud_handler)
   
-   def construct_stream_reader(self,data):
-         assert(data["type"] == "STREAM")
-         key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         retun Stream_List_Reader(self.redis_handle,data,key,self.cloud_handler)
-   '''
    def construct_job_queue_client(self,data):
          assert(data["type"] == "JOB_QUEUE")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"

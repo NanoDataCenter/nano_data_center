@@ -88,7 +88,7 @@ if __name__ == "__main__":
    data_structures = package_nodes[0]["data_structures"]
    generate_handlers = Generate_Handlers(package_nodes[0],qs)
    ds_handlers = {}
-   ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_stream_writer(data_structures["ERROR_STREAM"])
+   ds_handlers["ERROR_STREAM"]        = generate_handlers.construct_redis_stream_writer(data_structures["ERROR_STREAM"])
    
    
    ds_handlers["ERROR_STREAM"].push( data = { "script":"Reboot", "error_output" : "Process Manager is Rebooting" } )

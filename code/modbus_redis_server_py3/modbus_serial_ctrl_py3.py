@@ -11,33 +11,29 @@ import struct
             
 
 class ModbusSerialCtrl():
-   def __init__( self,  serial_interfaces, remote_devices, message_manager ):
-       self.dict                    = {}
-       self.ping_results            = {}
-       self.serial_interfaces       = serial_interfaces
+   def __init__( self, logical_interface, remote_devices ):
+      
+      
+       self.logical_interface       = logical_interface
        self.remote_devices          = remote_devices
-       self.message_manager         = message_manager
-       self.interfaces              = self._find_interfaces()
        
-       self._open_modbus_logical_interfaces()
-       #print(self.ping_device(100))
+       self.serial_devices              = self.find_physical_serial_interfaces()
+       
+       self.open_logical_interfaces(logical_interface)
+       
 
        
 
    def find_remote( self, address):
        
-       for i in self.remote_devices.keys():
-          logical_interface          = self.remote_devices[i]["interface"]
-          parameters                 = self.remote_devices[i]["parameters"]
-          handler                    = self.serial_interfaces[logical_interface]["handler"]
-          interface_parameters       = self.serial_interfaces[ logical_interface ]["interface_parameters"]
-          remote_addr                = handler.find_address(  parameters)
-          
-          if address == remote_addr :
-             
-             return handler,interface_parameters, parameters
-          
-       return None,None,None
+       if address in self.remote_devices:
+           temp = self.remote_devices[address]
+           handler =  self.logical_interface["handler"]
+           parameters   =temp
+           interface_parameters =  self.logical_interface["interface_parameters"]
+           return handler,interface_parameters, parameters
+       else:   
+           return None,None,None
 
    def ping_all_devices( self ):
        
@@ -62,7 +58,7 @@ class ModbusSerialCtrl():
    def ping_device( self,address ):
       handler, interface_parameters, parameters   = self.find_remote( address)
       if handler != None:
-           flag  = handler.probe_register( parameters )
+           flag  = handler.probe_register( address,parameters["search_register"],parameters["register_number"] )
            return flag
       else:
            return False          
@@ -76,7 +72,7 @@ class ModbusSerialCtrl():
       else:
           raise "no address recognized"
      
-   def _find_interfaces( self ):  # this new and needs tested 
+   def find_physical_serial_interfaces( self ):  # this new and needs tested 
  
     
        os.system("ls /dev/ttyUS* > serial_files.txt")
@@ -86,69 +82,61 @@ class ModbusSerialCtrl():
        with open('serial_files.txt') as f:
            ttyACM_interfaces = f.read().splitlines()
 
-       usb_interfaces = ttyUSB_interfaces
-       usb_interfaces.extend(ttyACM_interfaces)
-       return usb_interfaces
+       serial_devices = ttyUSB_interfaces
+       serial_devices.extend(ttyACM_interfaces)
+       return serial_devices
 
-   def _open_modbus_logical_interfaces( self  ):
+   def open_logical_interfaces( self,logical_interface  ):
         
-        for i,j in self.serial_interfaces.items():
-           
-           if  j["interface_parameters"]["interface"] != None:
-              self._open_fixed_interface( j )
-           else:
-              self._open_floating_interface( j )
+      
+       #print("logical_interface",type(logical_interface),logical_interface)     
+       if  logical_interface["interface_parameters"]["interface"] != None:
+           self.open_fixed_interface( logical_interface )
+       else:
+           self.open_floating_interface(logical_interface )
 
  
      
-   def _open_fixed_interface( self, interface ):
+   def open_fixed_interface( self, interface ):
        handler    = interface["handler"]
        parameters = interface["interface_parameters"]
        flag = handler.open(parameters)
        if flag == False:
           raise Exception('interface_error', interface_id )
  
-   def _open_floating_interface( self,serial_interface ):
+   def open_floating_interface( self,logical_serial_interface ):
        
-       for interface in  self.interfaces:
+       for serial_device in  self.serial_devices:
           
-          if self._try_interface( interface ,serial_interface):
+          if self.try_interface( serial_device ,logical_serial_interface):
             
-             if self._try_ping(serial_interface):
+             if self.try_ping(logical_serial_interface):
                 return
        
        raise Exception('interface_error', serial_interface )
 
-   def _try_interface( self, interface, serial_interface ):
+   def try_interface( self, serial_device, logical_serial_interface ):
       
-       if self.check_other_interfaces(interface) == True:
-           handler    = serial_interface["handler"]
-           parameters = serial_interface["interface_parameters"]
-           parameters["interface"] = interface
-           flag = handler.open(parameters)
-           return flag
-       else:
-           return False
+      
+       handler    = logical_serial_interface["handler"]
+       parameters = logical_serial_interface["interface_parameters"]
+       parameters["interface"] = serial_device
+       flag = handler.open(parameters)
+       return flag
 
+   
 
-   def check_other_interfaces( self, interface ):
-       return_value = True
-       for i in self.serial_interfaces.keys():
-         temp = self.serial_interfaces[i]
-         if temp["interface_parameters"]["interface"] == interface:
-              return False
-       return True
-
-   def _try_ping( self, serial_interface ):
-       handler                   = serial_interface["handler"]
-       interface_parameters      = serial_interface["interface_parameters"]
-       search_device             = serial_interface["search_device"]
-       parameters                = self.remote_devices[search_device]["parameters"]
+   def try_ping( self, logical_serial_interface ):
+       handler                   = logical_serial_interface["handler"]
+       search_device             = logical_serial_interface["search_device"]
+       temp = self.remote_devices[search_device] 
+       search_register           = temp["search_register"]
+       register_number           = temp["register_number"]      
      
-       flag   = handler.probe_register( parameters )
-      
+       flag   = handler.probe_register( search_device,search_register,register_number )
+       #print("try ping flag",flag)
        if flag == False:
-           serial_interface["interface_parameters"]["interface"] = None
+           logical_serial_interface["interface_parameters"] = None
            handler.close()
        return flag
 

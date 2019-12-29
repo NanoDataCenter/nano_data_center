@@ -7,23 +7,22 @@ class Construct_PLC_Devices(object):
        bc.add_header_node("PLC_SYSTEM")
        bc.add_header_node("PLC_SERVERS") # mulitple plc servers are allowed
       
-       bc.add_header_node( "PLC_SERVER","MAIN_SERVER",properties={} )
+       bc.add_header_node( "PLC_SERVER","MAIN_SERVER" )
        
        cd.construct_package("PLC_SERVER_DATA")
        cd.add_rpc_client("PLC_RPC_CLIENT")
-       cd.add_rpc_server("PLC_RPC_SERVER")
-              self.queue_history_length =  1500
-        self.redis_current_key = self.graph_key+":RECENT_DATA"
-        self.redis_hour_key    = self.graph_key+":HOUR_DATA"
-        self.redis_server_queue = self.redis_hour_key+":SERVER_QUEUE"
-        self.redis_basic_queue = self.redis_hour_key+":BASIC_STATS"
-        self.redis_remote_queue_header = self.redis_hour_key+":REMOTES"     
+       cd.add_rpc_server("PLC_RPC_SERVER",properties={"timeout":5})
+       cd.add_hash("PLC_RECENT_DATA")
+       cd.add_hash("PLC_HOURLY_DATA")
+       cd.add_redis_stream("PLC_BASIC_STATUS")
+       cd.add_hash("PLC_REMOTES")
        
+  
        
        cd.close_package_contruction()
        properties                           = {}
        properties["interface_parameters"]  =  { "interface":None, "timeout":.05, "baud_rate":38400 }
-       properties["search_device"]         =  "satellite_1" 
+       properties["search_device"]         =  100 
        
        bc.add_header_node( "IO_LINK","rtu_2", properties = properties, json_flag= True ) ### Can be mulitple io links
        

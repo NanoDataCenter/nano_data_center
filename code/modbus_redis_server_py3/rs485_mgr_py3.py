@@ -80,11 +80,9 @@ class RS485_Mgr():
       return parameters["address"]
 
 
-   def probe_register( self, parameters, counters = None ):
-      
-       address     = parameters["address"]
-       register    = parameters["search_register"]
-       number      = parameters["register_number"]
+   def probe_register( self, address,register,number, counters = None ):
+       parameters = {}
+       parameters["address"] = address
        payload     = struct.pack("<BBBBBB",address,3,(register>>8)&255,register&255,0,number)  # read register 0 1 length
        calculatedChecksum = self._calculateCrcString(payload)
        payload = payload+calculatedChecksum

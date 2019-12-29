@@ -18,20 +18,17 @@ class MessageManager():
        try:
          msg = msg.encode()
        except:
-         pass
-         address = msg[0]
+         rais
+       address = msg[0]
          
          
          
-         if address in self.dict:
-             
-             response = self.dict[ address].process_msg( address, msg )
-             return response
-         else:
-            raise # badd address
-       #except:
-        #   return ""
-          
+       if address in self.dict:
+           response = self.dict[ address].process_msg( address, msg )
+           return response
+       else:
+            raise ValueError("bad address")
+
    def ping_devices( self,address):
   
        return_value = []
