@@ -81,7 +81,7 @@ def construct_redis_instance( qs, site_data ):
     #
     #
     data_structures = package["data_structures"]
-    
+    print("data_structures",data_structures.keys())
     generate_handlers = Generate_Handlers( package, qs )
     
     redis_monitoring_streams = {}

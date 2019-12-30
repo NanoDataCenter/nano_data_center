@@ -16,9 +16,9 @@ from  .new_instrument_py3 import Modbus_Instrument
 
 class Construct_Access_Classes(object):
 
-   def __init__( self ):
+   def __init__( self,generate_handlers ):
        # find ip and port for ip server
-       instrument  =  Modbus_Instrument()
+       instrument  =  Modbus_Instrument(generate_handlers)
        self.instrument = instrument   
 
        self.access_classes = {}

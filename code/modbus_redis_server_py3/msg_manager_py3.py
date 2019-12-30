@@ -18,7 +18,7 @@ class MessageManager():
        try:
          msg = msg.encode()
        except:
-         rais
+         pass
        address = msg[0]
          
          

@@ -10,8 +10,8 @@ class Construct_PLC_Devices(object):
        bc.add_header_node( "PLC_SERVER","MAIN_SERVER" )
        
        cd.construct_package("PLC_SERVER_DATA")
-       cd.add_rpc_client("PLC_RPC_CLIENT")
-       cd.add_rpc_server("PLC_RPC_SERVER",properties={"timeout":5})
+       
+       cd.add_rpc_server("PLC_RPC_SERVER",properties={"timeout":5,"queue":"MAIN_SERVER_QUEUE"})
        cd.add_hash("PLC_RECENT_DATA")
        cd.add_hash("PLC_HOURLY_DATA")
        cd.add_redis_stream("PLC_BASIC_STATUS")

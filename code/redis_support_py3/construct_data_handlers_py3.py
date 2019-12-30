@@ -4,7 +4,7 @@ import redis
 import time
 import base64
 import msgpack
-
+import uuid
 
 from .redis_stream_utilities_py3 import Redis_Stream
 from .cloud_handlers_py3 import Cloud_TX_Handler
@@ -18,27 +18,29 @@ class FIELD_TYPE_ERROR(Exception):
    
 class Redis_RPC_Client(object):
 
-   def __init__( self,redis_handle,data,rpc_queue ):
+   def __init__( self,redis_handle ):
        self.redis_handle = redis_handle
-       self.data = data
-       self.rpc_queue = rpc_queue
+      
+       
    
-     
+   def set_rpc_queue(self,queue):
+       self.rpc_queue = queue
+       
        
    def send_rpc_message( self, method,parameters,timeout=30 ):
         request = {}
         request["method"] = method
         request["params"] = parameters
         request["id"]   = str(uuid.uuid1())    
-        request_msg = msgpack.packb( request )
+        request_msg = msgpack.packb( request,use_bin_type = True )
         self.redis_handle.delete(request["id"] )
-        self.redis_handle.lpush(self.redis_rpc_queue, request_msg)
+        self.redis_handle.lpush(self.rpc_queue, request_msg)
         data =  self.redis_handle.brpop(request["id"],timeout = timeout )
         
         self.redis_handle.delete(request["id"] )
         if data == None:
             raise Rpc_No_Communication("No Communication with Modbus Server")
-        response = msgpack.unpackb(data[1])
+        response = msgpack.unpackb(data[1],encoding='utf-8')
         
         return response
                 
@@ -69,7 +71,8 @@ class RPC_Server(object):
                     if self.timeout_function != None:
                         self.timeout_function()
                else:
-                   input = msgpack.unpackb(input[1])  # 0 parameter is the queue
+                   input = msgpack.unpackb(input[1],encoding='utf-8')  # 0 parameter is the queue
+                   
                    self.process_message(  input )
                        
             except:
@@ -82,7 +85,7 @@ class RPC_Server(object):
         params  = input["params"]
         response = self.handler[method](params)
        
-        self.redis_handle.lpush( id, msgpack.packb(response))        
+        self.redis_handle.lpush( id, msgpack.packb(response,use_bin_type = True))        
         self.redis_handle.expire(id, 30)
 
 class String_Field(object):
@@ -735,13 +738,16 @@ class Generate_Handlers(object):
    
 
 
+   def construct_stream_writer(self,data):
+       return self.construct_redis_stream_writer(data)
  
-
-
    def construct_redis_stream_writer(self,data):
-         assert(data["type"] == "STREAM_REDIS")
-         key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
-         return Stream_Redis_Writer(self.redis_handle,data,key,self.cloud_handler)
+       assert(data["type"] == "STREAM_REDIS")
+       key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
+       return Stream_Redis_Writer(self.redis_handle,data,key,self.cloud_handler)
+
+   def construct_stream_reader(self,data):
+       return self.construct_redis_stream_reader(data)
          
      
    def construct_redis_stream_reader(self,data):
@@ -760,14 +766,14 @@ class Generate_Handlers(object):
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
          return Job_Queue_Server(self.redis_handle,data,key,self.cloud_handler)
 
-   def construct_rpc_client(self,data):
-         assert(data["type"] ==  "RPC_CLIENT")
-         key = self.package["namespace"]+"["+data["name"] +"]"
-         return Redis_RPC_Client(self.redis_handle,data,key)
+   def construct_rpc_client(self):
+        
+         
+         return Redis_RPC_Client(self.redis_handle)
 
    def construct_rpc_sever(self,data):
          assert(data["type"] ==  "RPC_SERVER")
-         key = self.package["namespace"]+"["+data["name"] +"]"
+         key = data["queue"]
          return RPC_Server(self.redis_handle,data,key )
     
 if __name__== "__main__":

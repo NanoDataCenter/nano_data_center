@@ -25,6 +25,7 @@ class NO_Modbus_Communication(Exception):
 class Rpc_No_Communication(Exception):
    """Base class for rpc server errors"""
    pass
+'''
 class Redis_Rpc_Client(object):
 
    def __init__( self,redis_handle,redis_rpc_queue ):
@@ -54,13 +55,13 @@ class Redis_Rpc_Client(object):
         return response
                 
 
-
+'''
 class Modbus_Instrument:
     
-    def __init__(self  ):
+    def __init__(self ,generate_handlers ):
     
-        redis_handle = redis.StrictRedis("192.168.1.84", 6379 ,5,decode_responses = True )
-        self.redis_rpc_client = Redis_Rpc_Client( redis_handle = redis_handle, redis_rpc_queue = "#_RPC_QUEUE_"   )
+        #redis_handle = redis.StrictRedis("192.168.1.84", 6379 ,5,decode_responses = True )
+        self.redis_rpc_client = generate_handlers.construct_rpc_client()
         self.precalculate_read_size = True
                           
                           
@@ -403,9 +404,9 @@ class Modbus_Instrument:
     def _communicate(self, message, number_of_bytes_to_read= 1024):
         #print("_communicate message ",len(message),message)
         
-        message = base64.b64encode(message).decode()
+        #message = base64.b64encode(message).decode()
         return_value = self.redis_rpc_client.send_rpc_message( "modbus_relay",message,timeout=30 )
-        return_value = base64.b64decode(return_value)
+        #return_value = base64.b64decode(return_value)
         if len(return_value) < 4:
             raise NO_Modbus_Communication
         return_value = return_value[:-2]

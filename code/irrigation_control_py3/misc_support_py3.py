@@ -8,7 +8,7 @@ class IO_Control(object):
       self.irrigation_hash_control = irrigation_hash_control
       self.event_handlers = event_handlers
       self.generate_handlers = generate_handlers
-      self.plc_classes = Construct_Access_Classes()
+      self.plc_classes = Construct_Access_Classes(generate_handlers)
       self.construct_plc_elements(qs,redis_site)
       self.master_valves = get_master_valves(redis_site,qs)
       self.cleaning_valves = get_cleaning_valves(redis_site,qs)
@@ -295,8 +295,9 @@ class IO_Control(object):
        
        package = package_sources[0]    
        data_structures = package["data_structures"]
-       handler = self.generate_handlers.construct_rpc_client(data_structures["PLC_RPC_CLIENT"] )
-       return handler
+       
+       queue = data_structures["PLC_RPC_SERVER"]["queue"]
+       return queue
        
    def find_irrigation_controllers(self):
        return_value = []
