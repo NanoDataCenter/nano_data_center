@@ -233,7 +233,7 @@ if __name__ == "__main__":
                                     current_operations = current_operations )
     
    
-    Master_Valve("MASTER_VALVE", cf,cluster_control, io_control, ds_handlers,current_operations,failure_report,irrigation_excessive_flow_limits)
+    Master_Valve("MASTER_VALVE", cf,cluster_control, io_control, ds_handlers,current_operations,failure_report,irrigation_excessive_flow_limits,irrigation_hash_control)
     
     Cleaning_Valve("CLEANING_VALVES",cf,cluster_control, io_control, ds_handlers,current_operations,failure_report,irrigation_excessive_flow_limits)
                             

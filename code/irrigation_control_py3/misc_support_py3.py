@@ -87,7 +87,7 @@ class IO_Control(object):
 
    def turn_on_master_valves_direct( self,*arg ):
        print("turn on master valve direct")
-       self.irrigation_hash_control.hset("MASTER_VALVE",False)
+       self.irrigation_hash_control.hset("MASTER_VALVE",True)
       
        for io_setup in self.master_valves:
             temp = {}

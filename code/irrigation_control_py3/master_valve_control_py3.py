@@ -3,15 +3,16 @@
 # 1. Commands from irrigation programs
 # 2. Commands from web where the valve will stay open a for a tbd time
 # 3. Problem comes during cleaning where master control must be turned off during part of test
-import time
+import time 
 class Master_Valve(object):
 
-   def __init__( self, cluster_id, cf,cluster_control, irrigation_io, handlers,current_operation,failure_report,irrigation_excessive_flow_limits):
+   def __init__( self, cluster_id, cf,cluster_control, irrigation_io, handlers,current_operation,failure_report,irrigation_excessive_flow_limits,irrigation_hash_control):
        self.cf = cf
        self.cluster_ctrl  = cluster_control
        self.irrigation_io = irrigation_io
        self.current_operation = current_operation
        self.failure_report    = failure_report
+       self.irrigation_hash_control = irrigation_hash_control
        self.irrigation_excessive_flow_limits = irrigation_excessive_flow_limits
        self.handlers  = handlers
        self.cluster_id    = cluster_id
@@ -50,7 +51,7 @@ class Master_Valve(object):
     
  
        cf.define_chain("MV_ON_EV_HANDLER",False) # this thread is always active
-       #cf.insert.log("mv off ev handler")
+       
        cf.insert.check_event_no_init("IRI_CLOSE_MASTER_VALVE",self.change_to_off_state)
        cf.insert.check_event_no_init("IRI_OPEN_MASTER_VALVE", self.turn_on_master_valves )
        cf.insert.check_event_no_init("IRI_MASTER_VALVE_SUSPEND", self.change_to_offline_state ) 
@@ -61,6 +62,8 @@ class Master_Valve(object):
 
        cf.define_chain("MV_ON_MONITOR",False) # make sure that there is no flow if master valve is off
        # take care of plc controller and master valves
+       cf.insert.log("mv on handler")
+       
        cf.insert.one_step(self.turn_on_master_valves)
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        #cf.insert.log("mv on monitor")
@@ -77,6 +80,7 @@ class Master_Valve(object):
        #
        cf.define_chain("MV_OFF_EV_HANDLER",False)
        #cf.insert.log("mv off ev handler")
+       
        cf.insert.check_event_no_init("IRI_OPEN_MASTER_VALVE",self.change_to_on_state)
        cf.insert.check_event_no_init("IRI_CLOSE_MASTER_VALVE", self.turn_off_master_valves)
        cf.insert.check_event_no_init("IRI_MASTER_VALVE_SUSPEND", self.change_to_offline_state ) 
@@ -87,6 +91,8 @@ class Master_Valve(object):
 
        cf.define_chain("MV_OFF_MONITOR",False) # make sure that there is no flow if master valve is off
        # take care of plc controller and master valves
+       cf.insert.log("mv off handler")
+       
        cf.insert.one_step(self.turn_off_master_valves)
        cf.insert.wait_event_count( event = "MINUTE_TICK" ) 
        #cf.insert.log("mv off monitor")
@@ -102,6 +108,7 @@ class Master_Valve(object):
        #
        cf.define_chain("MV_OFFLINE_EV_HANDLER",False)
        #cf.insert.log("off line state")
+   
        cf.insert.check_event_no_init("IRI_OPEN_MASTER_VALVE",self.turn_on_master_valves)
        cf.insert.check_event_no_init("IRI_CLOSE_MASTER_VALVE", self.turn_off_master_valves )
        #cf.insert.check_event_no_init("IRI_MASTER_VALVE_SUSPEND", #### ) ####
@@ -121,8 +128,10 @@ class Master_Valve(object):
        # TIMED STATE
        #
        #
+       # This chain checks the events 
        cf.define_chain("MV_TIME_EV_HANDLER",False)
        #cf.insert.log("mv time ev handler")
+       
        cf.insert.check_event_no_init("IRI_OPEN_MASTER_VALVE",self.turn_on_master_valves)
        #cf.insert.check_event_no_init("IRI_CLOSE_MASTER_VALVE",self.set_timed_close_flag  )####
        cf.insert.check_event_no_init("IRI_MASTER_VALVE_SUSPEND", self.change_to_offline_state ) ####
@@ -131,8 +140,10 @@ class Master_Valve(object):
        cf.insert.check_event_no_init("IRI_EXTERNAL_TIMED_OPEN",self.change_to_timed_state)    
        cf.insert.reset()
        
+       #This chain does the time out work
        cf.define_chain("MV_TIME_TURN_OFF",False) # thread becomes active if web commanded it to
        cf.insert.log("mv time turn on")
+       
        cf.insert.one_step(self.irrigation_io.turn_on_pump)
        cf.insert.one_step( self.turn_on_master_valves_timed )
        cf.insert.wait_function( self.determine_time_out ) 
@@ -191,7 +202,7 @@ class Master_Valve(object):
    
    
    def offline_state_exit(self,*parms):
-      if self.current_state == "MV_TIME_CYCLE_DEFERED":
+      if self.current_state == "MV_TIME_CYCLE":
          self.change_to_timed_state()
       elif self.current_state == "MV_OFF":
          self.change_to_off_state()
@@ -243,7 +254,8 @@ class Master_Valve(object):
    def turn_on_master_valves_timed(self,*parms):
        
        self.irrigation_io.turn_on_master_valves_direct()      
-       
+   
+ 
        
    #
    # 
@@ -276,17 +288,18 @@ class Master_Valve(object):
        if event["name"] == "INIT":
           self.monitor_excessive_flow_count = 0
           
+          
        else:
          
          self.master_flow = self.handlers["MQTT_SENSOR_STATUS"].hget("MAIN_FLOW_METER")
          
          if self.master_flow > 1:
             
-            self.master_valve_close_count +=1
-            if self.master_valve_close_count > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_TIME"]:
+            self.monitor_excessive_flow_count +=1
+            if self.monitor_excessive_flow_count > self.irrigation_excessive_flow_limits["EXCESSIVE_FLOW_TIME"]:
                 return True
          else:
-             self.master_valve_close_count = 0
+             self.monitor_excessive_flow_count = 0
                
        return False
 
@@ -298,6 +311,8 @@ class Master_Valve(object):
    def determine_time_out(self,*parms):
       #print(time.time(),self.ref_time)
       #print(time.time() > self.ref_time)
+      #print("----------------->",self.irrigation_hash_control.hget( "MASTER_VALVE"  ))
+       
       if time.time() > self.ref_time:
          return True
       else:
