@@ -112,7 +112,7 @@ class Master_Valve(object):
        cf.insert.check_event_no_init("IRI_OPEN_MASTER_VALVE",self.turn_on_master_valves)
        cf.insert.check_event_no_init("IRI_CLOSE_MASTER_VALVE", self.turn_off_master_valves )
        #cf.insert.check_event_no_init("IRI_MASTER_VALVE_SUSPEND", #### ) ####
-       cf.insert.check_event_no_init("IRI_MASTER_VALVE_RESUME", self.offline_state_exit ) #do nothing for this event
+       cf.insert.check_event_no_init("IRI_MASTER_VALVE_RESUME", self.offline_state_exit ) 
        cf.insert.check_event_no_init("IRI_EXTERNAL_CLOSE", self.cancel_timed_state )
        cf.insert.check_event_no_init("IRI_EXTERNAL_TIMED_OPEN",self.change_to_timed_defered)       
        cf.insert.reset()
@@ -202,6 +202,7 @@ class Master_Valve(object):
    
    
    def offline_state_exit(self,*parms):
+      #print("current state is ",self.current_state)
       if self.current_state == "MV_TIME_CYCLE":
          self.change_to_timed_state()
       elif self.current_state == "MV_OFF":
@@ -215,7 +216,7 @@ class Master_Valve(object):
    
    def change_to_timed_defered(self,*parms):
        #print("change_timed_defered_state")
-       self.current_state = "MV_TIME_CYCLE_DEFERED"
+       self.current_state = "MV_TIME_CYCLE"
  
  
  
@@ -226,8 +227,6 @@ class Master_Valve(object):
        self.cluster_ctrl.enable_cluster_reset_rt(self.cf, self.cluster_id,"MV_TIME_CYCLE" )
    
    def cancel_timed_state(self,*parms):
-       #print("cancel timed state")
-
        self.ref_time = time.time()
    
    def exit_timed_state(self,*parms):
