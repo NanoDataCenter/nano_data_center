@@ -1,17 +1,8 @@
-July 28
+12/31/2019
+1.  Work on modbus logging
+2.  Work on logs to block chain
+3.  Work on PLC program  for current controller
 
-1. work on dependency graph
-   -- dependency graph for elements each  irrigation modes
-   -- element properties
-      -- initialization  -- returns True or False
-      -- event processing
-      -- systems which are dependent
-  -- on initialization a topological ordering of elements
-  -- modules will be in a separte directory .. Shared by systems
- 
- 
-2.  Work on graphing resistance measurement
 
-3. 
   
   

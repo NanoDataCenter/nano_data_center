@@ -15,15 +15,16 @@ from   modbus_redis_server_py3.msg_manager_py3 import MessageManager
 from     modbus_redis_server_py3.rs485_mgr_py3  import RS485_Mgr  
 from    modbus_redis_server_py3.modbus_serial_ctrl_py3  import ModbusSerialCtrl
 from   modbus_redis_server_py3.msg_manager_py3 import MessageManager
-from   redis_support_py3.redis_rpc_server_py3 import Redis_Rpc_Server
+from   modbus_redis_server_py3.modbus_statistics_py3 import Statistic_Handler
+#from   redis_support_py3.redis_rpc_server_py3 import Redis_Rpc_Server
         
 class Modbus_Server( object ):
     
-   def __init__( self,  msg_handler,generate_handlers,data_structures):  # fill in proceedures
+   def __init__( self,  msg_handler,generate_handlers,data_structures,remote_dict):  # fill in proceedures
        self.msg_handler = msg_handler
   
 
-       #self.statistic_handler = Statistic_Handler(data_structures)
+       self.statistic_handler = Statistic_Handler(generate_handlers,data_structures,remote_dict)
        self.rpc_server_handle = generate_handlers.construct_rpc_sever(data_structures["PLC_RPC_SERVER"] )
       
        self.rpc_server_handle.register_call_back( "modbus_relay", self.process_modbus_message)
@@ -40,7 +41,7 @@ class Modbus_Server( object ):
 
        address = input_msg[0]
        
-       #self.statistic_handler.process_start_message( address )
+       self.statistic_handler.process_start_message( address )
       
        
        
@@ -49,18 +50,15 @@ class Modbus_Server( object ):
        
        if failure != 0:
            output_msg = "@"
-           #self.statistic_handler.log_bad_message( address, retries )
+           self.statistic_handler.log_bad_message( address, retries )
        else:
-            pass
-            #self.statistic_handler.log_good_message( address, retries )
-       #self.statistic_handler.process_end_message()
+            self.statistic_handler.log_good_message( address, retries )
+       self.statistic_handler.process_end_message()
        return output_message
         
 
    def process_null_msg( self ):
-      print("null message")
-      return
-       #self.statistic_handler.process_null_message()
+       self.statistic_handler.process_null_message()
 
 
 
@@ -138,6 +136,6 @@ if __name__ == "__main__":
    #print(msg_mgr.ping_devices([100]))
  
    
-   Modbus_Server( msg_mgr,generate_handlers,data_structures  )    
+   Modbus_Server( msg_mgr,generate_handlers,data_structures,remote_dict  )    
  
    

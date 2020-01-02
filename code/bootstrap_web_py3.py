@@ -32,7 +32,8 @@ from bootstrap_web_py3.load_configuration_py3 import Load_Configuration_Data
 from bootstrap_web_py3.load_irrigation_control_py3 import Load_Irrigation_Pages
 from bootstrap_web_py3.load_mqtt_management_py3 import Load_MQTT_Pages
 from bootstrap_web_py3.load_irrigation_statistics import Load_Irrigation_Statistics
-
+from bootstrap_web_py3.load_modbus_statistics_py3 import Load_Modbus_Data
+from redis_support_py3.construct_data_handlers_py3 import Redis_RPC_Client
 class PI_Web_Server(object):
 
    def __init__(self , name, redis_site_data ):
@@ -81,6 +82,7 @@ class PI_Web_Server(object):
        self.load_irrigation_statistics()
       
        self.load_irrigation_control()
+       self.load_modbus_statistics()
  
 
    def get_pw( self,username):
@@ -276,7 +278,16 @@ class PI_Web_Server(object):
                                        valve_current_limits= valve_current_limits)  
 
 
-
+   def load_modbus_statistics(self):
+       
+       Load_Modbus_Data(app = self.app, 
+                        auth = self.auth,
+                        request = request,
+                        render_template = render_template,                        
+                        qs = self.qs,
+                        site = self.redis_site_data["site"],
+                        Generate_Handlers = Generate_Handlers,
+                        Redis_RPC_Client = Redis_RPC_Client )                        
 
 
 

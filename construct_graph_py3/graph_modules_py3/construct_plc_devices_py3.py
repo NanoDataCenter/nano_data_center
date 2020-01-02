@@ -12,13 +12,10 @@ class Construct_PLC_Devices(object):
        cd.construct_package("PLC_SERVER_DATA")
        
        cd.add_rpc_server("PLC_RPC_SERVER",properties={"timeout":5,"queue":"MAIN_SERVER_QUEUE"})
-       cd.add_hash("PLC_RECENT_DATA")
-       cd.add_hash("PLC_HOURLY_DATA")
-       cd.add_redis_stream("PLC_BASIC_STATUS")
+       cd.add_single_element("PLC_RECENT_DATA")
+       cd.add_hash("PLC_BASIC_STATUS")
        cd.add_hash("PLC_REMOTES")
-       
   
-       
        cd.close_package_contruction()
        properties                           = {}
        properties["interface_parameters"]  =  { "interface":None, "timeout":.05, "baud_rate":38400 }

@@ -23,7 +23,13 @@ class Construct_Data_Structures(object):
         self.current_package = None
         self.bc.add_info_node("PACKAGE",self.name,self.properties)
         
-        
+   def add_single_element(self,name,forward=False):
+       assert(name not in self.properties )
+       properties = {}
+       properties["name"] = name
+       properties["type"]  = "SINGLE_ELEMENT"
+       self.properties["data_structures"][name] = properties 
+       
    def add_managed_hash(self,name,fields,forward=False):
        assert(name not in self.properties )
        properties = {}

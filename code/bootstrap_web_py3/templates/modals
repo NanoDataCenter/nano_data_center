@@ -322,10 +322,10 @@
             </div>
             <div class="modal-body">
                 <ul >
-            <li><a href ="/ping_device" , target="_self">Ping Modbus Device</a></li>
-            <li><a href="/modbus_current_status" target="_self">Current Modbus Conditions</a></li>
-            <li><a href="/modbus_basic_status" target ="_self">Hourly Basic Status </a></li>
-            <li><a href="/modbus_device_status/1"  target="_self">Hourly Device Status</a></li>
+            <li><a href ="/ping_devices/0" , target="_self">Ping Modbus Device</a></li>
+            <li><a href="/modbus_current_status/0" target="_self">Current Modbus Conditions</a></li>
+            <li><a href="/modbus_basic_status/0" target ="_self">Hourly Basic Status </a></li>
+            <li><a href="/modbus_device_status/0"  target="_self">Hourly Device Status</a></li>
         
                 </ul>
             </div>

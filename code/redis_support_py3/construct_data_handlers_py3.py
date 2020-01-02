@@ -15,7 +15,10 @@ class Field_Not_Defined(Exception):
       
 class FIELD_TYPE_ERROR(Exception):
    pass
-   
+
+
+
+
 class Redis_RPC_Client(object):
 
    def __init__( self,redis_handle ):
@@ -39,7 +42,7 @@ class Redis_RPC_Client(object):
         
         self.redis_handle.delete(request["id"] )
         if data == None:
-            raise Rpc_No_Communication("No Communication with Modbus Server")
+            raise ValueError("No Communication with Modbus Server")
         response = msgpack.unpackb(data[1],encoding='utf-8')
         
         return response
@@ -319,8 +322,35 @@ class Redis_Hash_Dictionary( object ):
        if self.cloud_handler != None:
           self.cloud_handler.delete(self.data, self.key)          
 
+class Single_Element(object):
+
+   def __init__(self,redis_handle,data,key,cloud_handler):
+       self.redis_handle = redis_handle
+       self.key          = key
+       self.data         = data
+       self.cloud_handler = cloud_handler
+
+   def get( self):
+      
+      pack_data = self.redis_handle.get(self.key)
+      
+      if pack_data == None:
+         return None
+      
+      return  msgpack.unpackb(pack_data,encoding='utf-8')
   
-       
+   def set( self, data ):
+   
+      pack_data = msgpack.packb(data,use_bin_type = True )
+      
+      if self.redis_handle.get(self.key)== pack_data: # donot propagte identical values
+         return
+      self.redis_handle.set(self.key,pack_data)
+      #if self.cloud_handler != None:
+      #   self.cloud_handler.set(self.data,self.key,pack_data)
+
+
+         
 class Job_Queue_Client( object ):
  
    def __init__(self,redis_handle,data, key,  cloud_handler):
@@ -723,7 +753,14 @@ class Generate_Handlers(object):
                                              self.influx_database,
                                              self.influx_retention)
        self.influx_handler.switch_database(self.influx_database)
-         
+
+
+   def construct_single_element(self,data):
+       assert(data["type"] == "SINGLE_ELEMENT")
+       key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"     
+       return   Single_Element( self.redis_handle,data,key,self.cloud_handler )  
+
+       
    def construct_hash(self,data):
          assert(data["type"] == "HASH")
          key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
