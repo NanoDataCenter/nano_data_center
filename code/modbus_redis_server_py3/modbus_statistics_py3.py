@@ -95,7 +95,7 @@ class Statistic_Handler( object ):
 
    def hour_remote_statistics(self):
      
-       for i,item in self.remote_units.items():           
+       for i,item in self.remote_data.items():           
            self.hash_log["REMOTE_DATA"].log_value(i,item)
    
 
@@ -148,7 +148,7 @@ class Statistic_Handler( object ):
        temp = self.basic_state
        temp["remote_data"] = self.remote_data
        self.handlers["RECENT_DATA"].set( temp)   
-       print(self.handlers["RECENT_DATA"].get())
+       #print(self.handlers["RECENT_DATA"].get())
    
    
    
