@@ -67,7 +67,7 @@ class Load_Modbus_Data(Base_Stream_Processing):
        remotes = self.server_remotes[server_name]
        working_handler = handlers["PLC_REMOTES"]
        working_data = working_handler.hget(remotes[remote_id])
-       return self.detail_remote_status(server_name,self.server_names,remote_id,remotes,working_data)
+       return self.detail_remote_status(server_name,self.server_names,modbus_server_id,remote_id,remotes,working_data)
 
    def ping_device( self,modbus_server_id ): 
        server_name = self.server_names[modbus_server_id]
@@ -120,7 +120,7 @@ class Load_Modbus_Data(Base_Stream_Processing):
        stream_keys = self.generate_stream_keys(current_data)
        current_data["TIME_STAMP"] = temp
        plot_data = self.format_current_data(stream_keys,current_data)
-       print(plot_data)
+       
        return self.render_template("modbus/modbus_current_conditions_stream",
                                     modbus_servers=self.server_names,
                                     modbus_server_id=modbus_server_id,
@@ -135,7 +135,9 @@ class Load_Modbus_Data(Base_Stream_Processing):
            if i != "TIME_STAMP":
               if current_data[i] != None:
                  return_value.append(i)
-       return return_value                 
+       return return_value  
+
+ 
 
    
    def format_current_data(self,stream_keys,current_data):
@@ -186,30 +188,87 @@ class Load_Modbus_Data(Base_Stream_Processing):
        
  
  
-   def detail_remote_status(self,server_name,server_names,remote_id,remotes,current_data):
-       print("current_data",current_data)
-
-       return json.dumps("SUCCESS")      
-
-   '''
-       temp_data = self.handlers["MQTT_SENSOR_QUEUE"].revrange("+","-" , count=2160) # 1.5 days
-       temp_data.reverse()
- 
-       chart_title = ""
+   def detail_remote_status(self,server_name,server_names,modbus_server_id,remote_id,remotes,current_data):
+       ### convert TIME_STAMP from string to second time stamp
+       #print("current_data",current_data)
+       timestamp_list = []
+       for i in current_data:
+          timestamp_list.append(datetime.datetime.strptime(i["time_stamp"], "%b %d %Y %H:%M:%S").timestamp())
+       stream_keys = self.generate_stream_keys_remote(current_data)
        
-       stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="",title_x="Date")
-       stream_keys.sort()      
+       #print(timestamp_list)
+       plot_data = self.format_current_data_remote(stream_keys,timestamp_list,current_data)
+       #print(plot_data)
+       return self.render_template("modbus/modbus_remote_conditions",
+                                    modbus_servers=self.server_names,
+                                    modbus_server_id=modbus_server_id,
+                                    remote_unit_id = remote_id,
+                                    remotes = remotes,
+                                    stream_keys_json=json.dumps(stream_keys),
+                                    stream_data=json.dumps(plot_data),
+                                    stream_keys = stream_keys)
+
+   def generate_stream_keys_remote(self,current_data):
+       return_value = []
+       temp  = current_data[0]
        
-       return self.render_template( "streams/base_stream",
-                                     stream_data = stream_data,
-                                     stream_keys = stream_keys,
-                                     title = stream_keys,
-                                     stream_range = stream_range ,
-                                     max_value = 10000000.,
-                                     min_value = -10000000,)
-   '''
+       for i in temp.keys():
+           if i != "time_stamp":
+               return_value.append(i)
+       
+       return return_value          
 
-
+   def format_current_data_remote(self,stream_keys,timestamp_list,current_data):
+       temp_value = {}
+       for item in current_data:
+           for i in stream_keys:
+             if i not in temp_value:
+                temp_value[i] = []
+             temp_value[i].append(item[i])
+       print("keys",temp_value.keys())      
+       return_value = {}     
+       for key ,item in temp_value.items():
+           return_value[key] = self.format_current_data_entry_remote(key,item,timestamp_list)
+       print("keys",return_value.keys())    
+       return return_value 
+   
+   def format_current_data_entry_remote(self,key,item,time_stamp):
+       return_value = {}
+       ntick_x = 20
+       ntick_y = 20
+       x_axis = {
+            "autorange":True,
+            "showgrid":True,
+            "zeroline":True,
+            "ntick": ntick_x,
+            "showline":True,
+            "title":"TIME_STAMP",
+            "mirror":"all"
+             }
+       y_axis = {
+           "autorange":True,
+           "showgrid":True,
+           "zeroline":True,
+           "ntick": ntick_y,
+           "showline":True,
+           "title":key+"/hour",
+           "mirror":"all"
+      
+            }      
+       layout = {
+           'title':key+"/hour",
+		   'showlegend': False,
+		   
+            'xaxis':x_axis,
+            'yaxis':y_axis,
+	        };
+       return_value["layout"] = layout
+       return_value["type"] ='lines+markers'
+       return_value["x"] = time_stamp
+       return_value["y"] = item
+   
+       
+       return return_value
 
 #
 #   local initialization routines

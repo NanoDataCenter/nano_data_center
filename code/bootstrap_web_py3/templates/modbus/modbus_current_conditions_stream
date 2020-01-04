@@ -5,7 +5,7 @@
 
 
      <script type="text/javascript">
-       {% include 'js/modbus/ping_devices.js'  %}
+       {% include 'js/modbus/modbus_device_status.js'  %}
      </script>
      <script type="text/javascript">
        

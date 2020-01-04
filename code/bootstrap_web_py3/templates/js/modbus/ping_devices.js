@@ -6,7 +6,7 @@ $(document).ready(
 
    $("#modbus_server").val( {{modbus_server_id|int  }});
 
-   $("#modbus_server").bind('click',change_server)
+   $("#modbus_server").bind('change',change_server)
  
    function change_server(event,ui)
    {

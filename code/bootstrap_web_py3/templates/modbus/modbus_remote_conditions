@@ -1,19 +1,28 @@
 {% extends "base_template" %}
 
 {% block application_javascript %}
-  <script type="text/javascript" >
-       {% include "js/ajax_functions.js" %}
-       {% include "js/redis_functions.js" %}
-  </script>
+ 
 
 
      <script type="text/javascript">
-       {% include 'js/modbus/ping_devices.js'  %}
+       {% include 'js/modbus/remote_data.js'  %}
      </script>
      <script type="text/javascript">
        
      </script>
+     <script src="/static/js/plotly-latest.min.js"></script> 
+      <script type="text/javascript">
+         True = true
+         False = false
+         stream_data_json = '{{stream_data}}'
+         stream_data = JSON.parse(stream_data_json)
+         stream_keys_json = '{{stream_keys_json}}'
+         stream_keys = JSON.parse(stream_keys_json)
+        
 
+         
+     </script>
+    
 
 {% endblock %}
 
@@ -29,26 +38,52 @@
   {%- endfor %}
     
   </select>
-  </center>  
-  <h3>Select Modbus Remote Device</h3>
-     
+   <h3>Select Modbus Server</h3>
   <select id="remote_unit">
-  {% for remote in remote_devices -%}
-      <option value={{remote}}>{{remote}} </option>
-  {%- endfor %}  
+  {% for server in remotes -%}
+      <option value={{loop.index0}}>{{server}} </option>
+  {%- endfor %}
+    
   </select>
-  <h3>Click To Ping Device</h3>
-  <button type="button" id="ping_device">Ping Device</button>
-  <div data-role="fieldcontain">
-  <label for="ping_result">Ping Results:</label>
-  <input type="text" name="ping_result" id="ping_result" value="       " size="50"  />
+  <h3> Data For Remote {{remotes[remote_unit_id]}}  </h3>
+  
+  </center>  
+  
        
 
-</div><!-- /page -->
+
+
+{% for i in stream_keys %}
+
+<div style="margin-top:50px"></div>
+<div class="container">
+
+
+
+<div id="{{i}}_div" style="width:100%;height:600pt;"></div>
+
+ <script>
+
+ data = stream_data[ '{{i}}' ]
+ trace= {}
+ trace["x"] = data["x"]
+ trace["y"] = data["y"]
+ trace["type"] = data["type"]
+ 
+ layout = data["layout"]
+
+
+ for( i = 0;i< trace.x.length; i++)
+ { 
+    trace.x[i] = new Date(trace.x[i]*1000)
+ } 
+ 
+ Plotly.newPlot("{{i}}_div", [trace],layout);
+    
+</script>
+
+</div>
+
+
+{% endfor %}
 {% endblock %}
-
-
-
-
-
-
