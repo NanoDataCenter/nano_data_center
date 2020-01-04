@@ -60,7 +60,7 @@
  trace["x"] = data["x"]
  trace["y"] = data["y"]
  trace["type"] = data["type"]
- alert(trace["type"])
+ 
  layout = data["layout"]
 
 
