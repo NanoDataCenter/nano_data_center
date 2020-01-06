@@ -110,7 +110,8 @@ class Irrigation_Step_Monitoring(object):
       
    def sumarize_data(self,current_history):
        try:
-          current_history["MAIN_FLOW_METER"]["total"] = sum(current_history[i]["data"])
+         
+          current_history["MAIN_FLOW_METER"]["total"] = sum(current_history["MAIN_FLOW_METER"]["data"])
        except:
            print("total exception")
            current_history["MAIN_FLOW_METER"]["total"] = 0

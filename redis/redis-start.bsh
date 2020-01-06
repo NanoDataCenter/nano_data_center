@@ -1,3 +1,4 @@
+
 /sbin/sysctl vm.overcommit_memory=1
 /home/pi/nano_data_center/redis/redis_primary_start.bsh&  
 #./redis_slave_start.bsh&

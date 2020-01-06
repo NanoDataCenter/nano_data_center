@@ -65,9 +65,11 @@ class MQTT_Log(object):
         for i in list(difference_set):
            self.ds_handlers["MQTT_CONTACT_LOG"].hdelete(i)
            
-        
+        return
         contact_set = set(self.ds_handlers["MQTT_CONTACT_LOG"].hkeys())
         difference_set = device_set -contact_set
+        print("contact_set",contact_set)
+        print("difference_set",difference_set)
         for i in list(difference_set):
             data = {}
             data["time"] = time.time()
@@ -181,14 +183,16 @@ class MQTT_Log(object):
        for key,item in self.stream_average_fields.items():
           
           topic = "/REMOTES/"+item[0]+"/"+item[1]
-          
+         
           if topic not in cache:
              namespace = self.mqtt_bridge.construct_name_space(topic)[0]
-             #print("namespace",namespace)
+             
              data = self.mqtt_bridge.xrevrange_namespace(namespace, time.time(), time.time()-60 , count=5)
-             #print("data",data)
+            
              cache[topic] = data
+             
           processed_data = 0
+          
           for i in cache[topic]:
               data = i["data"]
               processed_data += self.mqtt_messaging.process_mqtt_message(self.mqtt_devices[item[0]]["subscriptions"][item[1]],item[2],data)
@@ -196,7 +200,7 @@ class MQTT_Log(object):
              processed_data = processed_data/len(cache[topic])
              return_value[key] = processed_data
              self.ds_handlers["MQTT_SENSOR_STATUS"].hset(key,processed_data)
-       #print("return_value",return_value)
+       
        if len(list(return_value.keys())) > 0:
 
            self.ds_handlers["MQTT_SENSOR_QUEUE"].push(return_value)
