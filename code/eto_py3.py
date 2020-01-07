@@ -9,6 +9,7 @@ from eto_py3.messo_handlers_py3 import Messo_ETO
 from eto_py3.messo_handlers_py3 import Messo_Precp
 from eto_py3.cimis_spatial_py3 import CIMIS_SPATIAL
 from eto_py3.cimis_handlers_py3 import CIMIS_ETO
+from eto_py3.eto_init_py3 import Initialize_ETO_Accumulation_Table
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
  
 
@@ -18,7 +19,7 @@ ONE_DAY = 24 * 3600
 
 
 class Eto_Management(object):
-    def __init__(self,  eto_sources, package,site_data,qs ):
+    def __init__(self,  eto_sources, package,site_data,qs,initial_accumulation_tables ):
 
         self.eto_sources = eto_sources
         self.package  = package
@@ -29,7 +30,7 @@ class Eto_Management(object):
         self.eto_hash_table =  self.ds_handlers["ETO_ACCUMULATION_TABLE"]
         self.initialize_values()
         self.generate_calculators()
-       
+        initial_accumulation_tables.initialize_eto_tables(self.eto_hash_table)
 
                                
     def generate_redis_handlers(self):
@@ -233,10 +234,12 @@ def construct_eto_instance(qs, site_data ):
     #
     replace_keys(site_data, eto_sources)
     
+    initial_accumulation_tables = Initialize_ETO_Accumulation_Table(qs,site_data)
+
    
    
     
-    eto = Eto_Management(eto_sources, package_sources[0],site_data,qs )
+    eto = Eto_Management(eto_sources, package_sources[0],site_data,qs,initial_accumulation_tables )
     
     
     
@@ -316,8 +319,7 @@ if __name__ == "__main__":
     #import load_files_py3
     from redis_support_py3.graph_query_support_py3 import  Query_Support
     import datetime
-    from eto_py3.eto_init_py3 import User_Data_Tables
-
+    
     from py_cf_new_py3.chain_flow_py3 import CF_Base_Interpreter
 
     #
@@ -338,10 +340,13 @@ if __name__ == "__main__":
      
        
     qs = Query_Support( redis_site )
-    user_table = User_Data_Tables(qs,redis_site)
+    
   
     
     eto = construct_eto_instance( qs, redis_site)
+   
+
+  
     #
     # Adding chains
     #

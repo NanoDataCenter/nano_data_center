@@ -18,7 +18,7 @@ from bootstrap_web_py3.load_static_pages_py3     import  Load_Static_Files
 from bootstrap_web_py3.load_eto_management_py3     import  Load_ETO_Management
 from bootstrap_web_py3.load_redis_access_py3     import  Load_Redis_Access
 from redis_support_py3.graph_query_support_py3 import  Query_Support
-from eto_py3.eto_init_py3 import User_Data_Tables
+
 from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 from core_libraries.irrigation_hash_control_py3 import generate_irrigation_control
 from redis_support_py3.load_files_py3  import APP_FILES
@@ -47,7 +47,7 @@ class PI_Web_Server(object):
        self.data_structure_redis_handle =  redis.StrictRedis( host = redis_site_data["host"] , port=redis_site_data["port"], db=redis_site_data["redis_io_db"] ) 
        
        self.qs = Query_Support( redis_site_data )
-       self.user_table = User_Data_Tables(self.qs,redis_site_data)
+       
        self.app         = Flask(name) 
        self.auth = HTTPDigestAuth()
        self.auth.get_password( self.get_pw )
