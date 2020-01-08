@@ -1,5 +1,5 @@
 
-controller_pin_data = {} 
+//controller_pin_data = {} 
 
 function  mode_change(event, ui) 
 {  
@@ -67,7 +67,7 @@ function new_controller_event(event,ui)
 function controller_pins_success(  )
 {
   
-     controller_pin_data = JSON.parse(controller_pin_json)
+     //controller_pin_data = JSON.parse(controller_pin_json)
      $("#controller_select").empty()
      
      for( var i = 0; i < controller_pin_data.length; i++ )

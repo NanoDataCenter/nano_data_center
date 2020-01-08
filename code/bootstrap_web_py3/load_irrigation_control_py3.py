@@ -110,13 +110,13 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        schedule_data = self.schedule_data()
        controller_pin = self.sys_files.load_file("controller_cable_assignment.json")
        controller_pin_json = json.dumps(controller_pin)
-       controller_valve_group_json = json.dumps(self.sys_files.load_file("valve_group_assignments.json"))
+       controller_valve_group = json.dumps(self.sys_files.load_file("valve_group_assignments.json"))
        return self.render_template("irrigation_templates/irrigation_diagnostics", 
              filename = filename,
              title = title,
              schedule_data = schedule_data ,
-             controller_pin = controller_pin_json , 
-             controller_valve_group_json = controller_valve_group_json             )
+             controller_pin = controller_pin, 
+             controller_valve_group = controller_valve_group             )
 
    def irrigation_queue(self):
        jobs = self.get_queued_irrigation_jobs()

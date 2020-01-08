@@ -21,18 +21,28 @@ import time
 ##
 ## {"controller":"satellite_1", "pin": 9,  "recharge_eto": 0.216, "recharge_rate":0.245 },
 ## eto_site_data
-from eto_py3.eto_init_py3 import Generate_Data_Handler
 
 
 
 class ETO_Management(object):
-   def __init__(self,qs,redis_site,app_files):
+   def __init__(self,qs,redis_site,app_files,Generate_Handlers):
  
        self.app_files = app_files
-       self.generate_handlers = Generate_Data_Handler( qs,redis_site )
-       self.eto_hash_table = self.generate_handlers.get_data_handler()
-   
-      
+       
+       
+       query_list = []
+       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+
+       query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"WEATHER_STATION_DATA"} )
+                                           
+       package_sets, package_sources = qs.match_list(query_list)  
+       package = package_sources[0]
+       data_structures = package["data_structures"]
+       generate_handlers = Generate_Handlers(package,qs)
+       self.eto_hash_table = generate_handlers.construct_hash(data_structures["ETO_ACCUMULATION_TABLE"])
+       print(self.eto_hash_table.hgetall())
+       
       
    def update_eto_values(self,sensor_list):
        self.eto_site_data = self.app_files.load_file( "eto_site_setup.json" )
@@ -59,7 +69,9 @@ class ETO_Management(object):
       sensor_list = self.find_queue_names( io_list )
       if len(sensor_list) == 0:
         return run_time, False,None
+      print("made it here 4")
       run_time = self.find_largest_runtime(run_time,sensor_list)
+      print("made it here 4 a",run_time)
       return run_time,True,sensor_list
       
       
@@ -88,14 +100,16 @@ class ETO_Management(object):
 
    def find_largest_runtime( self, run_time, sensor_list ):
        runtime = 0
-
+       print(sensor_list)
        for j in sensor_list:
            index = j[0]
            queue_name = j[1]
+           print(self.eto_hash_table.hgetall())
            eto_temp = self.eto_site_data[index]
            recharge_eto = float( eto_temp["recharge_eto"] )  # minium eto for sprinkler operation
            recharge_rate = float(eto_temp["recharge_rate"])
            deficient = self.eto_hash_table.hget( queue_name )
+           print(deficient)
            if deficient == None:
               deficient = 0
            if float(deficient) > recharge_eto :

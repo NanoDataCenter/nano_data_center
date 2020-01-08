@@ -156,7 +156,7 @@ if __name__ == "__main__":
     cf = CF_Base_Interpreter()
     cluster_control = Cluster_Control(cf)
     generate_control_events = Generate_Control_Events(cf)
-    eto_management = ETO_Management(qs,redis_site,app_files)
+    eto_management = ETO_Management(qs,redis_site,app_files,Generate_Handlers)
     
     io_control = IO_Control(irrigation_hash_control,generate_control_events,qs,redis_site,generate_handlers)
     ##

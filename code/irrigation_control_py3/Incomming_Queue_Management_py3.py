@@ -80,7 +80,7 @@ class Irrigation_Scheduling(object):
 
    
    def load_step_data( self, schedule_name, schedule_step,  schedule_step_time ,eto_flag ):
-       #print(schedule_name,schedule_step,schedule_step_time)
+       print(schedule_name,schedule_step,schedule_step_time)
        try:
            schedule_step = int(schedule_step)
            if schedule_step_time != None:
@@ -102,11 +102,13 @@ class Irrigation_Scheduling(object):
        schedule_io = step_data[0]
        schedule_step = int(schedule_step)
        schedule_step_time = int(schedule_step_time)
+      
        if ( self.irrigation_hash_control.hget("ETO_MANAGEMENT") == True ) and (eto_flag == True): 
           schedule_step_time,eto_flag,eto_list = self.eto_management.determine_eto_management(schedule_step_time, schedule_io )
        else:
           eto_flag = False
           eto_list = None 
+          
        if schedule_step_time > 0:          
           json_object = {}
           json_object["type"]            = "IRRIGATION_STEP"

@@ -6,9 +6,10 @@
        {% include "js/redis_functions.js" %}
   </script>
  <script type="text/javascript" >
-       schedule_data_json = '{{ schedule_data }}'                
-       controller_pin_json = '{{controller_pin}}'
-      controller_valve_group_json ='{{controller_valve_group_json}}'
+       schedule_data_json = '{{ schedule_data }}'  ;              
+       controller_pin_data = {{controller_pin}};
+       
+      valve_group_data ={{controller_valve_group}};
       </script>
  
    {% if filename == "schedule_control" %}

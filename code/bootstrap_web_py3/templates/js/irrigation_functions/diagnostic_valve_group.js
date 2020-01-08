@@ -1,5 +1,4 @@
 
-valve_group_data = [] 
 
 function  mode_change(event, ui) 
 {  
@@ -68,7 +67,7 @@ function new_valve_group_event(event,ui)
 function valve_group_success(  )
 {
 
-     valve_group_data = JSON.parse(controller_valve_group_json);
+     
 
      $("#valve_group_select").empty()
      for( var i = 0; i < valve_group_data.length; i++ )
