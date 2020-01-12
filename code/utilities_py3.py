@@ -127,9 +127,11 @@ class Monitoring_Base(object):
    def check_for_schedule_activity( self, *args):
       #print("made it here")
       if self.active_function != None:
+        
          if self.active_function() == False:
+          
            return  # something like rain day has occurred
-            
+      
       temp = datetime.datetime.today()
       dow_array = [ 1,2,3,4,5,6,0]
       dow = datetime.datetime.today().weekday()
@@ -138,6 +140,7 @@ class Monitoring_Base(object):
       st_array = [temp.hour,temp.minute]
       item_control = self.app_file.load_file(self.file_name)
       for j in item_control:
+         
           name = j["name"]
           #print( "checking schedule",name )
           if self.check_for_proper_date(j,dow,doy) == True:
@@ -215,7 +218,7 @@ class Irrigation_Schedule_Monitoring(Monitoring_Base):
 
           
    def rain_check(self):
-       return self.irrigation_control.hget("RAIN_FLAG")
+       return not self.irrigation_control.hget("RAIN_FLAG")
 
 
    
@@ -302,7 +305,7 @@ if __name__ == "__main__":
                                         relationship = "PACKAGE", property_mask={"name":"IRRIGIGATION_SCHEDULING_CONTROL_DATA"} )
                                            
     package_sets, package_sources = qs.match_list(query_list)  
- 
+    print("package sources",package_sources)
     package = package_sources[0]
     
     #

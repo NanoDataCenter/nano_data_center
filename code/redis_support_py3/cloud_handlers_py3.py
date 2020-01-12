@@ -4,85 +4,102 @@ import msgpack
 import json
 from .redis_stream_utilities_py3 import Redis_Stream
 
-class Send_Object(object):
-   def __init__(self, redis_handle, transport_queue, queue_depth ):
-       self.redis_handle = redis_handle
-       self.transport_queue = transport_queue
-       self.queue_depth = queue_depth
-       
-       
+class Job_Queue_Client( object ):
+ 
+   def __init__(self,redis_handle,data, key,  cloud_handler):
+      self.data = data
+      self.redis_handle = redis_handle
+      self.key = key
+      self.depth =  data["depth"]
+      self.cloud_handler = cloud_handler
+
+  
+   def push(self,data):
+       pack_data =  msgpack.packb(data,use_bin_type = True )
+       self.redis_handle.lpush(self.key,pack_data)
+       self.redis_handle.ltrim(self.key,0,self.depth)
+       if self.cloud_handler != None:
+           self.cloud_handler.lpush(self.data, self.depth,self.key,pack_data)
 
 
-   def send(self,action, **kwargs):
-       kwargs["ACTION"] = action
-       
-       #print("Cloud TX -- action",kwargs)
-       
-       kwargs_pack = msgpack.packb(kwargs, use_bin_type = True)
-       self.redis_handle.lpush(self.transport_queue,kwargs_pack )
-       self.redis_handle.ltrim(self.transport_queue, 0,self.queue_depth)
-       
-   def length(self):
-       return self.redis_handle.llen(self.transport_queue)
-       
-   def extract(self,maxlength = 20):
-       length = self.redis_handle.llen(self.transport_queue)
-       if length > maxlength:
-         length = maxlength
-       return_list = []
-       for i in range(0,length):
-           return_list.append(self.redis_handle.rpop(self.transport_queue))
-       return_value = msgpack.packb(return_list, use_bin_type = True)
-       return return_value
          
-       
-       
+class Cloud_TX_Handler(object):
 
-class Cloud_TX_Handler(Send_Object):
 
-   def __init__(self, redis_handle, transport_queue = "_TRANSPORT_QUEUE_" , transport_depth = 128 ):
-       Send_Object.__init__(self,redis_handle,transport_queue,transport_depth)
+   def __init__(self, redis_handle, qs):
        self.redis_handle = redis_handle
+       self.init_handler(qs)
 
-   def check_forwarding(self, data):  # do not forward data structures unless specified in the "forward" field
-       if  "forward" in data:
-           if data["forward"] == True:
+   def init_handler(self,qs ):
+      
+       query_list = []
+       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=qs.site )
+       query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"CLOUD_SERVICE_QUEUE_DATA"} )
+                                           
+       package_sets, package_sources = qs.match_list(query_list)  
+       self.package = package_sources[0]
+     
+       data_structures = self.package["data_structures"]
+       self.forward_queue = self.construct_job_queue_client(data_structures["CLOUD_JOB_SERVER"])
+ 
+
+          
+          
+          
+          
+   def construct_job_queue_client(self,data):
+       self.forward_data = data
+       assert(data["type"] == "JOB_QUEUE")
+       key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"
+       return Job_Queue_Client(self.redis_handle,data,key,None )
+     
+
+
+   def send(self,key,input_data):
+       data["site"] = self.site
+       data["key"]  = key
+       data["data"] = input_data
+       self.forward_queue.push_no_forward(data)
+
+       
+       
+
+
+
+
+   def check_forwarding(self):  # do not forward data structures unless specified in the "forward" field
+       if  "forward" in self.forward_data:
+           if self.forward_data["forward"] == True:
               return True
        return False
 
    def delete(self,forward_data,key):
-       if self.check_forwarding(forward_data):
-           self.send("DEL",key=key)
+       pass
  
 
  
    def hset(self,forward_data,key,field,data):
-       if self.check_forwarding(forward_data):
-           self.send("HSET",key=key,field=field,data = data )
+       pass
        
    def hdel(self,forward_dat,key,field):
-       if self.check_forwarding(forward_dat):
-           self.send("HDEL",key=key,field=field)
+      pass
        
    def lpush(self,forward_data,depth, key, data):
-       if self.check_forwarding(forward_data):
-           self.send("LPUSH",key=key,depth=depth,data = data)
+       pass
        
    def list_delete(self, forward_dat,key,index):
-       if self.check_forwarding(forward_dat):
-           self.send("LIST_DELETE",key=key,index = index)
+       pass
        
    def rpop(self,forward_dat,key):
-       if self.check_forwarding(forward_dat):
-           self.send("RPOP",key=key)
+       pass
        
-   def stream_write(self,forward_dat,depth, id, key,  store_dictionary ):
-       if self.check_forwarding(forward_dat):
-           self.send("STREAM_WRITE",id=id,key=key,depth=depth , store_dictionary = store_dictionary )
+   def stream_write(self, key, data ) :
+       if self.check_forwarding():
+          self.send_log(key,data)
        
    def stream_list_write(self, forward_dat,depth, key,data ):
-       if self.check_forwarding(forward_dat):
-           self.send("STREAM_LIST_WRITE", key=key,depth =depth,data = data)
+       pass
        
        
 class Cloud_RX_Handler(object):

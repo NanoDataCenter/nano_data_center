@@ -406,6 +406,7 @@ class Job_Queue_Client( object ):
        self.redis_handle.ltrim(self.key,0,self.depth)
        if self.cloud_handler != None:
            self.cloud_handler.lpush(self.data, self.depth,self.key,pack_data)
+
            
    def delete_jobs(self,data):
        for i in data:
@@ -683,7 +684,7 @@ class Stream_Redis_Writer(Redis_Stream):
        self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=out_data )
 
        if self.cloud_handler != None:
-           self.cloud_handler.stream_write(self.data,  self.depth,id, self.key, out_data ) 
+           self.cloud_handler.stream_write(self.key, data ) 
        
 class Stream_Redis_Reader(Redis_Stream):
        
@@ -739,7 +740,7 @@ class Generate_Handlers(object):
        self.influx_database = redis_handle_password.hget("influx_local_server","database" )
        self.influx_handler = None
        '''
-       self.cloud_handler = Cloud_TX_Handler(self.redis_handle) 
+       self.cloud_handler = Cloud_TX_Handler(self.redis_handle,qs) 
        
    def get_redis_handle(self):
        return self.redis_handle   

@@ -14,6 +14,7 @@ from  graph_modules_py3.construct_controller_py3 import Construct_Controllers
 from  graph_modules_py3.construct_redis_monitor_py3 import Construct_Redis_Monitoring
 from  graph_modules_py3.construct_mqtt_devices_py3  import  Construct_MQTT_Devices
 from  graph_modules_py3.construct_plc_devices_py3   import  Construct_PLC_Devices
+from  graph_modules_py3.construct_cloud_interface_py3 import Construct_Cloud_Service
 
 if __name__ == "__main__" :
 
@@ -48,6 +49,7 @@ if __name__ == "__main__" :
    Construct_Redis_Monitoring(bc,cd)
    Construct_MQTT_Devices(bc,cd)
    Construct_PLC_Devices(bc,cd) 
+   Construct_Cloud_Service(bc,cd)
 
    bc.end_header_node("SITE")
    bc.end_header_node("SYSTEM")

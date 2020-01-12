@@ -33,13 +33,13 @@ class BASIC_FILES( object ):
     def __init__(self, redis_handle,path, redis_site,label):
         self.path = path
         self.redis_site = redis_site
-        self.cloud_handler = Cloud_TX_Handler(redis_handle)
+        
         data = {}
         data["forward"] = True
   
         self.redis_handle = redis_handle
         self.key = "[SITE:"+redis_site["site"]+"][FILE:"+label+ "]"
-        self.hash_driver = Redis_Hash_Dictionary(self.redis_handle,data,self.key,self.cloud_handler)
+        self.hash_driver = Redis_Hash_Dictionary(self.redis_handle,data,self.key,None)
 
         
     def file_exists(self,name):
@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
 
    key = "[SITE:"+redis_site["site"]+"][FILE:"
-   cloud_handler_tx = Cloud_TX_Handler(redis_handle)
+   cloud_handler_tx = None
    files = [f for f in listdir(app_files)]
 
    

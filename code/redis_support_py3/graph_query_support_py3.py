@@ -17,6 +17,7 @@ class Query_Support(object):
       self.rel_sep   = ":"
       self.label_sep = "]"
       self.namespace     = []
+      self.site = redis_site["site"]
 
    def get_redis_graph_handle(self):
        return self.redis_graph_handle
