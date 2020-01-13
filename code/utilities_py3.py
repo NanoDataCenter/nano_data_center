@@ -99,6 +99,7 @@ class Monitoring_Base(object):
       divisor = j["day_div"] +1
       modulus = j["day_mod"]
       result = doy % divisor
+      #print("doy",doy,j["name"],result==modulus,result,divisor,modulus)
       #print(j)
       #print(doy,result,modulus)
       if result == modulus:
@@ -114,16 +115,21 @@ class Monitoring_Base(object):
 
 
    def check_for_proper_date(self, j,dow,doy):
-       if "day_mod" not in j:
-         #print("111",j["name"])
-         return self.schedule_dow(j,dow)
-       elif j["day_mod"] == 0:
-         #print("222",j["name"])
-         return self.schedule_dow(j,dow)
-       else:
-         #print("3333")
+       if "schedule_enable" in j:
+          if j["schedule_enable"] == False:  #checking schedule global enable flag
+             #print("returning false",j)
+             return False
+       #print("check for proper date",j['name'],dow,doy)
+
+       if "day_flag" not in j:
+            self.schedule_dow(j,dow)
+       elif j["day_flag"] > 0:
+
          return self.schedule_doy(j,doy)
-     
+       else:
+ 
+         return  self.schedule_dow(j,dow)
+    
    def check_for_schedule_activity( self, *args):
       #print("made it here")
       if self.active_function != None:
@@ -305,7 +311,7 @@ if __name__ == "__main__":
                                         relationship = "PACKAGE", property_mask={"name":"IRRIGIGATION_SCHEDULING_CONTROL_DATA"} )
                                            
     package_sets, package_sources = qs.match_list(query_list)  
-    print("package sources",package_sources)
+    #print("package sources",package_sources)
     package = package_sources[0]
     
     #
