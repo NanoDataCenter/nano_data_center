@@ -76,6 +76,7 @@ function initialize_edit_functions()
   
   $( "#edit_panel_save" ).bind( "click", save_button );
   $( "#edit_panel_cancel" ).bind( "click", close_button );
+
   $( "#function_choice").bind("change", function_choice );
   initialize_time_control()
   initialize_steps_control()

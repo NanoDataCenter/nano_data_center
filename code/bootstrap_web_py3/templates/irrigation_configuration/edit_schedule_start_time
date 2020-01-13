@@ -1,4 +1,12 @@
+
+
+
    <div  id=start_time data-role="content" class="content" >
+
+       <h3>Click to Enable Schedule</h3>
+            
+          <input type="checkbox" name="enable_schedule" id="enable_schedule" >
+          <label for="enable_schedule">Check to Enable Schedule</label><br>
 
        <h3>Select Starting Time </h3>
         <select id="starting_time">

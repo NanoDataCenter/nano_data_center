@@ -35,9 +35,24 @@ function hide_time_panel()
 
 function time_load_controls(working_data)
 {
+  
+   if( !("schedule_enable" in working_data))
+   {
+      
+      working_data["schedule_enable"] = true
+    
+   }     
+    
+    if( !('day_flag' in working_data))
+   {
+
+      working_data["day_flag"] = 0
+    
+   } 
+    
    if( !('day_flag' in working_data))
    {
-      alert("initialize day flay")
+
       working_data["day_flag"] = 0
     
    }
@@ -53,13 +68,13 @@ function time_load_controls(working_data)
    }
    if( !('day_div' in working_data))
    {
-      alert("initialize day_divisor")
+      
       working_data["day_div"] = 0
     
    }   
    if( !('day_mod' in working_data))
    {
-      alert("initialize day_divisor")
+      
       working_data["day_mod"] = 0
     
    }
@@ -87,7 +102,8 @@ function time_load_controls(working_data)
    if( temp_dow[4] != 0 ){ $("#thursday").prop( "checked", true ) } else {$("#thursday").prop( "checked", false )}
    if( temp_dow[5] != 0 ){ $("#friday").prop( "checked", true )} else {$("#friday").prop( "checked", false ) }
    if( temp_dow[6] != 0 ){ $("#saturday").prop( "checked", true ) } else {$("#saturday").prop( "checked",false  )}
-
+   
+   if( working_data["schedule_enable"] == true ){ $("#enable_schedule").prop( "checked", true ) } else {$("#enable_schedule").prop( "checked",false  )}
 }
  
 
@@ -118,14 +134,19 @@ function get_data_time_page( working_data)
      dow.push( dow_filter("saturday") )
 
      
-     alert($("#day_sched").val())
-     alert($("#day_div").val())
-     alert($("#day_mod").val())
+     
      working_data["dow"] = dow;     
      working_data["start_time"]  =  eval($("#starting_time").val()) 
      working_data["end_time"] =  eval($("#ending_time").val()) 
      working_data["day_flag"] =  $("#day_sched").val() -1
      working_data["day_div"]  =  $("#day_div").val() -1
      working_data["day_mod"]  =  $("#day_mod").val() -1
-   
+     if( $("#enable_schedule").is(":checked") == true )
+     {
+        working_data["schedule_enable"] = true
+     }
+     else
+     {
+        working_data["schedule_enable"] = false
+     }
 }

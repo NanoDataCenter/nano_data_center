@@ -7,7 +7,8 @@ function initialize_steps_control()
 
 
 function show_steps_panel()
-{
+{  
+   $("#function_choice").val('0')
    $("#edit_steps").show();
    $("#edit_a_step").hide();
    $("#edit_a_valve").hide();
