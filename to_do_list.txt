@@ -1,8 +1,16 @@
-12/31/2019
-1.  Work on modbus logging
-2.  Work on logs to block chain
-3.  Work on PLC program  for current controller
-
-
-  
-  
+Things to do today
+1. farm_control
+   A. add flow sensor from sat 1
+   B. add current sensor from sat 1
+   C. Work on data structure forwarding
+   
+2. ethereum node
+   A. get base unit functioning
+   B. start web site
+   C. get job server working
+   
+3. weather station
+   A. get wifin working
+   B. verify weather link
+   
+   

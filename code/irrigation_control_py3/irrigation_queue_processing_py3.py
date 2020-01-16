@@ -296,7 +296,7 @@ class Process_Irrigation_Command(object):
        if json_object["type"] == "RESET_SYSTEM_QUEUE":
            print("reset system")
            self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"RESET_SYSTEM_QUEUE","level":"RED"})
-           self.handlers.save()
+           
            os.system("reboot")
            return       
            

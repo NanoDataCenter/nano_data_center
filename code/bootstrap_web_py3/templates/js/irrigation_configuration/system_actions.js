@@ -54,7 +54,7 @@ function dow_filter( name )
      }
      
      system_actions[index] = working_data
-     ajax_post_confirmation('/ajax/save_sys_file/system_actions.json', system_actions,
+     ajax_post_confirmation('/ajax/save_app_file/system_actions.json', system_actions,
                              "Do you want to change configuration","Changes Made",
                              "Changes Not Made !!!!" ) 
   

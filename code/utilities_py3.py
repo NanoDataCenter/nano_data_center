@@ -109,20 +109,24 @@ class Monitoring_Base(object):
 
    def schedule_dow(self,j,dow):
        if j["dow"][dow] != 0 :
+          #print("dow true")
           return True
        else:
+          #print("dow false")
           return False
 
 
    def check_for_proper_date(self, j,dow,doy):
+       #print(j["name"],dow,doy)
        if "schedule_enable" in j:
           if j["schedule_enable"] == False:  #checking schedule global enable flag
              #print("returning false",j)
              return False
        #print("check for proper date",j['name'],dow,doy)
-
+       #print("checing flag")
        if "day_flag" not in j:
-            self.schedule_dow(j,dow)
+            #print("day flag not present")
+            return self.schedule_dow(j,dow)
        elif j["day_flag"] > 0:
 
          return self.schedule_doy(j,doy)
@@ -179,6 +183,7 @@ class Monitoring_Base(object):
       doy = datetime.datetime.today().timetuple().tm_yday
       st_array = [temp.hour,temp.minute]
       sprinkler_ctrl = self.app_file.load_file("system_actions.json")
+
       for j in sprinkler_ctrl:
           
           name     = j["name"]
@@ -188,8 +193,9 @@ class Monitoring_Base(object):
             
             start_time = j["start_time"]
             end_time   = j["end_time"]
-    
+            #print("system activity",name,start_time,end_time)
             if self.determine_start_time( start_time,end_time ):
+                print("start time passed",name)
                 if self.check_flag( name ):
                      print( "queue in schedule ",name )
                      temp = {}

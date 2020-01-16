@@ -18,7 +18,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       cd.add_job_queue("IRRIGATION_JOB_SCHEDULING",100,forward=False)
       cd.add_job_queue("IRRIGATION_PENDING",100)
       cd.add_job_queue("IRRIGATION_CURRENT",1)    
-      cd.add_redis_stream("IRRIGATION_PAST_ACTIONS",2000)
+      cd.add_redis_stream("IRRIGATION_PAST_ACTIONS",2000,forward=True)
       cd.close_package_contruction()
       bc.add_info_node("CURRENT_LIMITS","CURRENT_LIMITS",properties = {"EQUIPMENT":1.0 ,"IRRIGATION": 1.75} )
       bc.add_info_node("IRRIGATION_VALVE_CURRENT_LIMIT","IRRIGATION_VALVE_CURRENT_LIMIT",properties ={ "limit":.5 } )
@@ -61,7 +61,9 @@ class Construct_Irrigation_Scheduling_Control(object):
       fields["SLAVE_MAX_CURRENT"] = { "type":"dictionary", "fields":{'MAX_EQUIPMENT_CURRENT':0,'MAX_IRRIGATION_CURRENT':0,"timestamp":time.time()} }
       fields["SLAVE_RELAY_STATE"] = { "type":"dictionary", "fields":{'EQUIPMENT_STATE':True,'IRRIGATION_STATE':True,"timestamp":time.time()} }
       fields["INSTANT_CURRENT"] = { "type":"dictionary","fields":{'EQUIPMENT_CURRENT':0,'IRRIGATION_CURRENT':0,"timestamp":time.time()} }
-      
+      fields["PLC_FLOW_METER"] = { "type":"float","init_value":0 }
+      fields["PLC_SLAVE_CURRENT"] = { "type":"float","init_value":0 }
+      fields["PLC_EQUIPMENT_CURRENT"] = { "type":"float","init_value":0 }
       cd.add_managed_hash(name = "IRRIGATION_CONTROL",fields= fields)
       cd.close_package_contruction()
     
@@ -73,7 +75,6 @@ class Construct_Irrigation_Scheduling_Control(object):
  
       bc.end_header_node("IRRIGIGATION_SCHEDULING_CONTROL")
      
-
 
 
    def construct_irrigation_object(self,bc,name,dependency=[]):

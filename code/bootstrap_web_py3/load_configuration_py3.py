@@ -40,9 +40,9 @@ class Load_Configuration_Data(object):
 
 
    def system_actions(self):  
-       system_actions = self.sys_files.load_file( "system_actions.json" )
+       system_actions = self.app_files.load_file( "system_actions.json" )
        
-       
+    
        return self.render_template( "irrigation_configuration/system_actions",  
                                title="Configure System Events",
                                system_actions       =  system_actions ,

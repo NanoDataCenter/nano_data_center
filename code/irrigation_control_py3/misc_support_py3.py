@@ -233,9 +233,35 @@ class IO_Control(object):
            action_class.write_wd_flag( modbus_address )
  
 
+   def measure_valve_current( self,*args):
+
+       controller = self.irrigation_controllers[self.current_device["remote"]]
+       action_class = self.find_class( controller["type"] )
+       register     = self.current_device["register"]
+       conversion   = self.current_device["conversion"]
+       current      = action_class.measure_analog(  controller["modbus_address"], [register, conversion ] )
+ 
+       redis_dict = self.ir_data["CURRENT"]["dict"]
+       redis_key = self.ir_data["CURRENT"]["key"]
+       self.redis_old_handle.hset(redis_dict,redis_key,current)
        
+       return current      
        
-       
+   def measure_flow_rates ( self, *args ):
+       for i in  self.fc_list:
+           remote = i["remote"]
+           print("flow rate remote",remote)
+           controller     = self.irrigation_controllers[i["remote"]]
+           action_class   = self.find_class( controller["type"] )
+           print("i",i["io_setup"])
+           conversion_rate = i["io_setup"]["conversion_factor"]
+           flow_value = action_class.measure_counter( controller["modbus_address"], i["io_setup"] )
+           print("flow_value",flow_value)
+           self.redis_old_handle.lpush("QUEUES:SPRINKLER:FLOW:"+str(i),flow_value )
+           self.redis_old_handle.ltrim("QUEUES:SPRINKLER:FLOW:"+str(i),0,800)
+           if i["main_flow_meter"] == "True":
+               self.redis_old_handle.hset("CONTROL_VARIABLES","global_flow_sensor",flow_value )         
+               self.redis_old_handle.hset("CONTROL_VARIABLES","global_flow_sensor_corrected",flow_value*conversion_rate )       
        
    def turn_on_equipment_relay(self,*args):
        pass
