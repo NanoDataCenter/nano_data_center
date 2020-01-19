@@ -19,6 +19,7 @@ class Construct_Weather_Stations(object):
       self.add_station_cimis_satellite()
       self.add_station_messo_west_sruc1_eto()
       self.add_station_messo_west_sruc1_rain()
+      self.add_station_wunderground()
       bc.end_header_node("WEATHER_STATIONS")
 
    def add_station_wunderground(self):
