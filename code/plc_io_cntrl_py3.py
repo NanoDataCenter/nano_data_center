@@ -25,39 +25,38 @@ class PLC_IO_Control(object):
        while 1:
            self.minute_measurement = {}
            return_value = {}
-           return_value["FLOW_METERS"] = {}
-           self.measure_flow_meters(return_value["FLOW_METERS"])
-           return_value["IRRIGATION_CURRENT"] = {}
-           self.measure_irrigation_current(return_value["IRRIGATION_CURRENT"])
-           return_value["SLAVE_CURRENT"] = {}
-           self.measure_slave_current(return_value["SLAVE_CURRENT"])
+           self.measure_flow_meters(return_value)
+           self.measure_irrigation_current(return_value)
+           self.measure_slave_current(return_value)
+           print("return_value",return_value)
            self.ds_handlers["PLC_MEASUREMENTS_STREAM"].push(return_value)
            time.sleep(60)
                
               
 
-   def measure_flow_meters(self,input):
-       return_value = {}
+   def measure_flow_meters(self,return_value):
+       
        for i in self.plc_flow_meas:
            return_value[i["name"]] = self.make_flow_measurement(i,"PLC_FLOW_METER")
-       input = return_value
+       
 
-   def measure_irrigation_current(self):
+   def measure_irrigation_current(self,return_value):
        for i in self.plc_irrigation_current_meas:
+           
           return_value[i["name"]] = self.make_current_measurement(i,"PLC_EQUIPMENT_CURRENT")
 
-   def measure_slave_current(self):
+   def measure_slave_current(self,return_value):
        for i in self.plc_slave_current_meas:
            return_value[i["name"]] = self.make_current_measurement(i,"PLC_SLAVE_CURRENT")
 
            
-   def make_current_measurement(self,input,status_key): 
+   def make_current_measurement(self,i,status_key): 
        controller     = i["remote"]
        rpc_queue   =    self.plc_table[controller]["rpc_queue"]
        type   =    self.plc_table[controller]["type"]
        action_class   = self.construct_access_class.find_class( type,rpc_queue )
-      
-       conversion_rate = i["io_setup"]["conversion_factor"]
+       
+       conversion = i["conversion"]
        register        = i["register"]
        current_value =  action_class.measure_analog(  self.plc_table[controller]["modbus_address"], [register, conversion ] )
        if i["main"] == True:
@@ -72,47 +71,14 @@ class PLC_IO_Control(object):
        action_class   = self.construct_access_class.find_class( type,rpc_queue )
       
        conversion_rate = i["io_setup"]["conversion_factor"]
-       flow_value = action_class.measure_counter( self.plc_table[controller]["modbus_address"], i["io_setup"] )
+       flow_value = action_class.measure_counter( self.plc_table[controller]["modbus_address"], i["io_setup"] )*conversion_rate
        if i["main"] == True:
            self.generate_irrigation_control.hset(status_key,flow_value) 
-       return return_value
+       return flow_value
        
        
        
-   '''
-   def measure_valve_current( self,*args):
 
-       controller = self.irrigation_controllers[self.current_device["remote"]]
-       action_class = self.find_class( controller["type"] )
-       register     = self.current_device["register"]
-       conversion   = self.current_device["conversion"]
-       current      = action_class.measure_analog(  controller["modbus_address"], [register, conversion ] )
- 
-       redis_dict = self.ir_data["CURRENT"]["dict"]
-       redis_key = self.ir_data["CURRENT"]["key"]
-       self.redis_old_handle.hset(redis_dict,redis_key,current)
-       
-       return current      
-       
-   def measure_flow_rates ( self, *args ):
-       for i in  self.fc_list:
-           print("i",i)
-           raise
-           remote = i["remote"]
-           print("flow rate remote",remote)
-           controller     = self.irrigation_controllers[i["remote"]]
-           action_class   = self.find_class( controller["type"] )
-           print("i",i["io_setup"])
-           conversion_rate = i["io_setup"]["conversion_factor"]
-           flow_value = action_class.measure_counter( controller["modbus_address"], i["io_setup"] )
-           print("flow_value",flow_value)
-           self.redis_old_handle.lpush("QUEUES:SPRINKLER:FLOW:"+str(i),flow_value )
-           self.redis_old_handle.ltrim("QUEUES:SPRINKLER:FLOW:"+str(i),0,800)
-           if i["main_flow_meter"] == "True":
-               self.redis_old_handle.hset("CONTROL_VARIABLES","global_flow_sensor",flow_value )         
-               self.redis_old_handle.hset("CONTROL_VARIABLES","global_flow_sensor_corrected",flow_value*conversion_rate )    
-  
-   '''
    def construct_plc_flow_measurements(self,redis_site,qs): 
        self.plc_flow_meas = []
        query_list = []   
@@ -175,7 +141,7 @@ class PLC_IO_Control(object):
        data_structures = package["data_structures"]
        generate_handlers = Generate_Handlers(package,qs)
        self.ds_handlers = {}
-       self.ds_handlers["PLC_MEASUREMENTS_STREAM"] = generate_handlers.construct_redis_stream_reader(data_structures["PLC_MEASUREMENTS_STREAM"])                
+       self.ds_handlers["PLC_MEASUREMENTS_STREAM"] = generate_handlers.construct_redis_stream_writer(data_structures["PLC_MEASUREMENTS_STREAM"])                
        self.construct_access_class =   Construct_Access_Classes(generate_handlers)
 
 

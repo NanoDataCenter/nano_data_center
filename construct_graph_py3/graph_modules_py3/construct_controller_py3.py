@@ -20,10 +20,10 @@ class Construct_Controllers(object):
        properties["command_list"].append( { "file":" -m  mqtt_clients.mqtt_local_publish_server_py3","restart":True })
        properties["command_list"].append( { "file":"modbus_server_py3.py  MAIN_SERVER","restart":True })
        properties["command_list"].append( { "file":"irrigation_ctrl_startup_py3.py","restart":True })
-       #properties["command_list"].append( { "file":"redis_cloud_upload_py3.py","restart":True })
+       properties["command_list"].append( { "file":"plc_io_cntrl_py3.py","restart":True })
        
        #properties["command_list"].append( { "file":"redis_cloud_download_py3.py","restart":True })
-       bc.add_header_node("PROCESSOR","nano_data_center",properties=properties)
+       bc.add_header_node("PROCESSOR","nano_data_center",properties=properties) # name is identified in site_data["local_node"]
 
        properties["command_list"] =[]
            
