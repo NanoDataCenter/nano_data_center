@@ -6,7 +6,7 @@ class Construct_PLC_Measurements(object):
 
        bc.add_header_node("PLC_MEASUREMENTS")
        bc.add_header_node("PLC_FLOW_METERS")
-       properties={ "main" : "True",  "type":"CLICK", "remote":"satellite_1", 
+       properties={ "main" : "True",  "remote":"satellite_1", 
                     "io_setup" : {"latch_bit":"C201",
                                   "read_register":"DS301",  
                                   "conversion_factor":0.0224145939 }
