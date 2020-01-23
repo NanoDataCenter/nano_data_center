@@ -137,7 +137,7 @@ class Process_Irrigation_Command(object):
       #  Bring system to  off condition 
       #
       cf.insert.log( "Bringing system to off condition" )
-      #cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
+      cf.insert.one_step(cluster_control.disable_cluster, cluster_id )
       cf.insert.one_step(irrigation_io.disable_all_sprinklers )
       cf.insert.one_step(self.clear_json_object)
       cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)

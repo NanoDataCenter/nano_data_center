@@ -199,7 +199,7 @@ if __name__ == "__main__":
     
     Process_Irrigation_Command( redis_site_data = redis_site,
                                  handlers=ds_handlers,
-                                 cluster_id = 1, #### not sure what this is
+                                 cluster_id = "IRRIGATION_CONTROL", 
                                  cluster_control = cluster_control,
                                  cf = cf,
                                  app_files = app_files,

@@ -98,6 +98,7 @@ class CF_Base_Interpreter(object):
 
     def disable_chain_base(self, chain):
         chain = self.chain_to_list(chain)
+        #print("disable chains",chain)
         for i in chain:
            
             assert isinstance(i, str), "chain name is not a string"
@@ -116,6 +117,7 @@ class CF_Base_Interpreter(object):
 
     def enable_chain_base(self, chain):
         chain = self.chain_to_list(chain)
+        #print("enable chains",chain)
         for i in chain:
             assert isinstance(i, str), "chain name is not a string"
             k = self.find_chain_object(i)

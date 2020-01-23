@@ -162,6 +162,7 @@ class Cluster_Control(object):
        return return_value
 
    def  disable_cluster_states( self, cf, states_to_reset):
+        #print("disable cluster states",states_to_reset)
         for j in states_to_reset:
             position = cf.chain_map[j]
             cf.chains[position]["auto_start"] = False  # allow reset before chain flow starts
