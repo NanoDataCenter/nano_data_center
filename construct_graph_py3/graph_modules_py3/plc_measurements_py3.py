@@ -6,7 +6,7 @@ class Construct_PLC_Measurements(object):
 
        bc.add_header_node("PLC_MEASUREMENTS")
        bc.add_header_node("PLC_FLOW_METERS")
-       properties={ "main" : "True",  "remote":"satellite_1", 
+       properties={ "main" : True,  "remote":"satellite_1", 
                     "io_setup" : {"latch_bit":"C201",
                                   "read_register":"DS301",  
                                   "conversion_factor":0.0224145939 }
@@ -17,12 +17,12 @@ class Construct_PLC_Measurements(object):
        
        
        bc.add_header_node("PLC_SLAVE_CURRENTS")
-       bc.add_info_node("CURRENT_DEVICE" ,"plc_slave_1",properties={ "main" : "True","remote":"satellite_1","register":"DF1", "conversion":1.0 })
+       bc.add_info_node("CURRENT_DEVICE" ,"plc_slave_1",properties={ "main" : True,"remote":"satellite_1","register":"DF1", "conversion":1.0 })
 
        bc.end_header_node("PLC_SLAVE_CURRENTS")
        
        bc.add_header_node("PLC_IRRIGATION_CURRENTS")
-       bc.add_info_node("CURRENT_DEVICE" ,"plc_irrigation_1",properties={ "main" : "True","remote":"satellite_1","register":"DF2", "conversion":1.0 })
+       bc.add_info_node("CURRENT_DEVICE" ,"plc_irrigation_1",properties={ "main" : True,"remote":"satellite_1","register":"DF2", "conversion":1.0 })
        bc.end_header_node("PLC_IRRIGATION_CURRENTS")
 
        cd.construct_package("PLC_MEASUREMENTS_PACKAGE")      
