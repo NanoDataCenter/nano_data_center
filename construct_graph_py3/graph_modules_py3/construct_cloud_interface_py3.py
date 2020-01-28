@@ -14,7 +14,7 @@ class Construct_Cloud_Service(object):
       
 
       bc.add_header_node("CLOUD_SERVICE_HOST_INTERFACE")
-      bc.add_info_node( "HOST_INFORMATION","HOST_INFORMATION",properties={"host":"192.168.1.41" ,"port": 6379, "key_data_base": 3, "key":"_UPLOAD_QUEUE_" } )
+      bc.add_info_node( "HOST_INFORMATION","HOST_INFORMATION",properties={"host":"192.168.1.41" ,"port": 6379, "key_data_base": 3, "key":"_UPLOAD_QUEUE_" ,"depth":1024} )
       bc.end_header_node("CLOUD_SERVICE_HOST_INTERFACE")
       bc.end_header_node("CLOUD_SERVICE_QUEUE")
  
