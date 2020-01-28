@@ -14,12 +14,40 @@ class IO_Control(object):
       self.cleaning_valves = get_cleaning_valves(redis_site,qs)
       self.ir_ctrl = self.find_irrigation_controllers() 
       self.find_class = self.plc_classes.find_class
+      self.construct_plc_irrigation_measurements(redis_site,qs)
       
       #
       # Build device tables
       #
       self.disable_all_sprinklers()
       
+   def construct_plc_slave_current_measurements(self,redis_site,qs):
+       self.plc_slave_current_meas = []
+       query_list = []   
+       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+       query_list = qs.add_match_relationship( query_list,relationship="PLC_MEASUREMENTS" )
+       query_list = qs.add_match_relationship( query_list,relationship="PLC_SLAVE_CURRENTS" )
+       query_list = qs.add_match_terminal( query_list, 
+                                           relationship = "CURRENT_DEVICE")
+                                                 
+       sensor_sets, sensor_nodes = qs.match_list(query_list)
+       
+       for i in sensor_nodes:
+          self.plc_slave_current_meas.append(i)
+   
+   def construct_plc_irrigation_measurements(self,redis_site,qs):
+       self.plc_irrigation_current_meas = []
+       query_list = []   
+       query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+       query_list = qs.add_match_relationship( query_list,relationship="PLC_MEASUREMENTS" )
+       query_list = qs.add_match_relationship( query_list,relationship="PLC_IRRIGATION_CURRENTS" )
+       query_list = qs.add_match_terminal( query_list, 
+                                           relationship = "CURRENT_DEVICE")
+                                                 
+       sensor_sets, sensor_nodes = qs.match_list(query_list)
+       
+       for i in sensor_nodes:
+          self.plc_irrigation_current_meas.append(i)
       
       
  
@@ -54,10 +82,36 @@ class IO_Control(object):
    def turn_off_pump(self,*args):
        print("turn_off_pump")
        print("function not currently supported")      
+   
+   
+   def monitor_current(self,current_limit):
+       temp = self.measure_valve_current()
+       return True
+       if temp > current_limit:
+         return False
+       else:
+         return True
+         
+   def check_equipment_relay(self,*args):
+       return True # return true or false depending upon state of relay
        
+       
+       
+   def check_equipment_current(self,*args):
+       return .30 #      
 
    def measure_valve_current( self,*args):
-       return 1
+       i = self.plc_irrigation_current_meas[0]
+       controller     =  i["remote"]
+       rpc_queue      =  self.plc_table[controller]["rpc_queue"]
+       type           =  self.plc_table[controller]["type"]
+       action_class   =  self.plc_classes.find_class( type,rpc_queue )
+       
+       conversion = i["conversion"]
+       register        = i["register"]
+       current_value =  action_class.measure_analog(  self.plc_table[controller]["modbus_address"], [register, conversion ] )
+       print("current_value",current_value)
+       return current_value
        
      
    def get_master_valve_setup(self):
@@ -233,19 +287,7 @@ class IO_Control(object):
            action_class.write_wd_flag( modbus_address )
  
 
-   def measure_valve_current( self,*args):
-
-       controller = self.irrigation_controllers[self.current_device["remote"]]
-       action_class = self.find_class( controller["type"] )
-       register     = self.current_device["register"]
-       conversion   = self.current_device["conversion"]
-       current      = action_class.measure_analog(  controller["modbus_address"], [register, conversion ] )
- 
-       redis_dict = self.ir_data["CURRENT"]["dict"]
-       redis_key = self.ir_data["CURRENT"]["key"]
-       self.redis_old_handle.hset(redis_dict,redis_key,current)
-       
-       return current      
+  
        
    def measure_flow_rates ( self, *args ):
        for i in  self.fc_list:
@@ -333,5 +375,3 @@ class IO_Control(object):
        
        return return_value       
 
-   def monitor_current(self,current_limit):
-       return True

@@ -75,6 +75,7 @@
                    <li><a href="/control/irrigation_queue" target="_self">Manage Pending Irrigation Queue</a></li>
                    <li><a href ='/control/display_past_actions/ALL' target="_self">Past Actions</a></li>
                    <li><a href ='/control/sensor_stream' target="_self">Irrigation 1 minute data</a></li>
+                   <li><a href ='/control/plc_stream' target="_self">PLC Stream 1 minute data</a></li>
         
         
                 </ul>

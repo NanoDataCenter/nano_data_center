@@ -43,7 +43,8 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        ### past actions
        a1= auth.login_required( self.display_past_actions )
        app.add_url_rule("/control/display_past_actions/<string:event>","display_past_actions",a1)
- 
+       
+
        a1 = auth.login_required( self.mode_change )
        app.add_url_rule('/ajax/mode_change',"get_mode_change",a1, methods=["POST"]) 
 
@@ -60,6 +61,10 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
        a1 = auth.login_required( self.irrigation_sensor_stream)
        app.add_url_rule("/control/sensor_stream","control_sensor_stream",a1)
        
+       ### PLC Streams
+       a1= auth.login_required( self.plc_stream )
+       app.add_url_rule('/control/plc_stream' ,"plc_stream",a1)
+    
        
    def irrigation_sensor_stream(self):
 
@@ -86,7 +91,29 @@ class Load_Irrigation_Pages(Base_Stream_Processing):
                                      min_value = -10000000,)
                                 
 
-
+   def plc_stream(self):
+       print(self.handlers.keys())
+       temp_data = self.handlers["PLC_MEASUREMENTS_STREAM"].revrange("+","-" , count=2160) # 1.5 days
+       temp_data.reverse()
+       '''
+       filtered_data = []
+       for i in temp_data:
+          temp = i["data"]
+          temp["timestamp"] = i["timestamp"]
+          filtered_data.append(temp)
+       '''   
+       chart_title = ""
+       
+       stream_keys,stream_range,stream_data = self.format_data_variable_title(temp_data,title=chart_title,title_y="",title_x="Date")
+       stream_keys.sort()      
+       
+       return self.render_template( "streams/base_stream",
+                                     stream_data = stream_data,
+                                     stream_keys = stream_keys,
+                                     title = stream_keys,
+                                     stream_range = stream_range ,
+                                     max_value = 10000000.,
+                                     min_value = -10000000,)
   
    def queue_irrigation_jobs(self):
        schedule_data = self.schedule_data()

@@ -177,18 +177,10 @@ class Valve_Resistance_Check(object):
        #
        #
        #
-       relay_state = self.io_control.get_irrigation_relay_state()
-       coil_current = self.io_control.get_max_current()
-       if relay_state == False:
-          details["remote"] = self.valve_object[0]
-          details["bit"]    = self.valve_object[1]
-          details["relay_state"] = False
-        
-          self.current_operation= {}
-          self.current_operation["state"] = "MEASURE_RESISTANCE"
-          self.failure_report(self.current_operation,"MEASURE_RESISTANCE_RELAY",None,details )
-          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"measure_resistance","details":details,"level":"RED"})
        
+       coil_current = self.io_control.measure_valve_current()
+ 
+       print("coil_current",self.irrigation_current_limit,coil_current )
        if coil_current > self.irrigation_current_limit:
           details["remote"] = self.valve_object[0]
           details["bit"]    = self.valve_object[1]

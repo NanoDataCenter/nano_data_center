@@ -24,6 +24,7 @@
                    <li id="time">Time Of Step:      </li>
                    <li id="duration">Current Duration:  </li>  
                    <li id="flow_rate">Current Flow Rate:  </li>
+                   <li id="plc_flow_rate">PLC Flow Rate:  </li>
                    <li id="cleaning_rate">Cleaning Flow Rate:  </li>
                    <li id="irrigation_current">Irrigation  Current: </li>
                    <li id="equipment_current">Equipment  Current: </li>

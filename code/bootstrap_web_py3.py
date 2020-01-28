@@ -238,6 +238,25 @@ class PI_Web_Server(object):
        ds_handlers["MQTT_SENSOR_QUEUE"] = generate_handlers.construct_redis_stream_reader(data_structures["MQTT_SENSOR_QUEUE"])
     
        irrigation_control = generate_irrigation_control(self.redis_site_data,self.qs)
+       query_list = []   
+       query_list = self.qs.add_match_relationship( query_list,relationship="SITE",label=self.redis_site_data["site"] )
+       query_list = self.qs.add_match_relationship( query_list,relationship="PLC_MEASUREMENTS" )
+       query_list = self.qs.add_match_terminal( query_list, 
+                                           relationship = "PACKAGE", 
+                                           property_mask={"name":"PLC_MEASUREMENTS_PACKAGE"} )
+                                           
+       package_sets, package_sources = self.qs.match_list(query_list)
+       
+       package = package_sources[0]       
+   
+        
+       data_structures = package["data_structures"]
+       generate_handlers = Generate_Handlers(package,self.qs)
+       
+       ds_handlers["PLC_MEASUREMENTS_STREAM"] = generate_handlers.construct_redis_stream_reader(data_structures["PLC_MEASUREMENTS_STREAM"])              
+       
+       
+       
        Load_Irrigation_Pages(self.app, self.auth,request, app_files=self.app_files, sys_files=self.sys_files,
                   render_template=render_template, redis_handle= self.data_structure_redis_handle, handlers= ds_handlers ,irrigation_control=irrigation_control)
     

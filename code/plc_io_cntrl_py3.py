@@ -43,11 +43,11 @@ class PLC_IO_Control(object):
    def measure_irrigation_current(self,return_value):
        for i in self.plc_irrigation_current_meas:
            
-          return_value[i["name"]] = self.make_current_measurement(i,"PLC_EQUIPMENT_CURRENT")
+          return_value[i["name"]] = self.make_current_measurement(i,"PLC_IRRIGATION_CURRENT")
 
    def measure_slave_current(self,return_value):
        for i in self.plc_slave_current_meas:
-           return_value[i["name"]] = self.make_current_measurement(i,"PLC_SLAVE_CURRENT")
+           return_value[i["name"]] = self.make_current_measurement(i,"PLC_EQUIPMENT_CURRENT")
 
            
    def make_current_measurement(self,i,status_key): 
@@ -60,7 +60,8 @@ class PLC_IO_Control(object):
        register        = i["register"]
        current_value =  action_class.measure_analog(  self.plc_table[controller]["modbus_address"], [register, conversion ] )
        if i["main"] == True:
-           self.generate_irrigation_control.hset(status_key,current_value) 
+           print("update irrigation table",status_key,current_value)
+           self.hash_update.hset(status_key,current_value) 
        return current_value
        
        
@@ -72,8 +73,10 @@ class PLC_IO_Control(object):
       
        conversion_rate = i["io_setup"]["conversion_factor"]
        flow_value = action_class.measure_counter( self.plc_table[controller]["modbus_address"], i["io_setup"] )*conversion_rate
+       print("i",i)
        if i["main"] == True:
-           self.generate_irrigation_control.hset(status_key,flow_value) 
+           print("update irrigation table",status_key,flow_value)
+           self.hash_update.hset(status_key,flow_value) 
        return flow_value
        
        
