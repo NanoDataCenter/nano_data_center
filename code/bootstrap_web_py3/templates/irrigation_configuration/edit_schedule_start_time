@@ -212,7 +212,7 @@
     <h3>Select Day Scheduling Mode </h3>
     <select id="day_sched">
             <option value=0>Day of Week Scheduling</option>
-            <option value=2>Modulus of Day of Year Scheduling</option>
+            <option value=1>Modulus of Day of Year Scheduling</option>
 
 
     </select>

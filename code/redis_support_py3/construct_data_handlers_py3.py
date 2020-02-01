@@ -625,7 +625,7 @@ class Stream_Reader(Redis_Stream):
        return data_list
      
        
-'''
+
 class Influx_Stream_Writer(object):
 
    def __init__(self,influx_handler,data):
@@ -641,7 +641,7 @@ class Influx_Stream_Writer(object):
        influx_data["measurement"] = self.measurement
 
        print("influx write",self.influx_handler.write_point(influx_data,tags))
-       
+'''      
 class Stream_Redis_Writer(Redis_Stream):
        
    def __init__(self,redis_handle,   data,key,cloud_handler):
@@ -684,7 +684,7 @@ class Stream_Redis_Writer(Redis_Stream):
        self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=out_data )
 
        if self.cloud_handler != None:
-           self.cloud_handler.stream_write(self.key, data ) 
+           self.cloud_handler.stream_write(self.data,self.key, data ) 
        
 class Stream_Redis_Reader(Redis_Stream):
        
@@ -745,7 +745,7 @@ class Generate_Handlers(object):
    def get_redis_handle(self):
        return self.redis_handle   
 
-
+   '''
    def construct_influx_handler(self):
  
        self.influx_handler =  Influx_Handler(self.influx_server,
@@ -755,7 +755,7 @@ class Generate_Handlers(object):
                                              self.influx_retention)
        self.influx_handler.switch_database(self.influx_database)
 
-
+   '''
    def construct_single_element(self,data):
        assert(data["type"] == "SINGLE_ELEMENT")
        key = self.package["namespace"]+"["+data["type"]+":"+data["name"] +"]"     

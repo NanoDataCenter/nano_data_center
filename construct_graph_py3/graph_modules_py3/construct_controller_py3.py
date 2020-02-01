@@ -21,7 +21,7 @@ class Construct_Controllers(object):
        properties["command_list"].append( { "file":"modbus_server_py3.py  MAIN_SERVER","restart":True })
        properties["command_list"].append( { "file":"irrigation_ctrl_startup_py3.py","restart":True })
        properties["command_list"].append( { "file":"plc_io_cntrl_py3.py","restart":True })
-       
+       properties["command_list"].append( { "file":"cloud_handlers_py3.py","restart":True })
        #properties["command_list"].append( { "file":"redis_cloud_download_py3.py","restart":True })
        bc.add_header_node("PROCESSOR","nano_data_center",properties=properties) # name is identified in site_data["local_node"]
 
@@ -34,7 +34,7 @@ class Construct_Controllers(object):
               
 
        cd.construct_package("DATA_STRUCTURES")      
-       cd.add_redis_stream("ERROR_STREAM")
+       cd.add_redis_stream("ERROR_STREAM",forward=True)
        cd.add_hash("ERROR_HASH")
        cd.add_job_queue("WEB_COMMAND_QUEUE",1)
        cd.add_hash("WEB_DISPLAY_DICTIONARY")
@@ -42,10 +42,10 @@ class Construct_Controllers(object):
 
 
        cd.construct_package("SYSTEM_MONITORING")
-       cd.add_redis_stream("FREE_CPU") # one month of data
-       cd.add_redis_stream("RAM")
-       cd.add_redis_stream("DISK_SPACE") # one month of data
-       cd.add_redis_stream("TEMPERATURE")
+       cd.add_redis_stream("FREE_CPU",forward = True) # one month of data
+       cd.add_redis_stream("RAM",forward = True)
+       cd.add_redis_stream("DISK_SPACE",forward = True) # one month of data
+       cd.add_redis_stream("TEMPERATURE",forward = True)
        cd.add_redis_stream("PROCESS_VSZ")
        cd.add_redis_stream("PROCESS_RSS")
        cd.add_redis_stream("PROCESS_CPU")

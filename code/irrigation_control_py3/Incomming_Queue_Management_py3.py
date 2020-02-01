@@ -108,7 +108,7 @@ class Irrigation_Scheduling(object):
        else:
           eto_flag = False
           eto_list = None 
-          
+      
        if schedule_step_time > 0:          
           json_object = {}
           json_object["type"]            = "IRRIGATION_STEP"
@@ -123,6 +123,7 @@ class Irrigation_Scheduling(object):
          
           self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
        else:
+           
            details = "Schedule "+ schedule_name +" step "+str(schedule_step)+" IRRIGATION_ETO_RESTRICTION"
            
            self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_ETO_RESTRICTION","details":details,"level":"YELLOW"})

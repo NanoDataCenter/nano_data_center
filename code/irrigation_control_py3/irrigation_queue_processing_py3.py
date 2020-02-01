@@ -309,6 +309,7 @@ class Process_Irrigation_Command(object):
           if  json_object["eto_flag"] == True:
              runtime,flag,list_data = self.eto_management.determine_eto_management(json_object["run_time"], json_object["io_setup"] )
              json_object["run_time"] = runtime
+             '''
              if runtime == 0:
                  details = "Schedule "+ json_object["schedule_name"] +" step "+str(json_object["step"] )+" IRRIGATION_ETO_RESTRICTION"
 
@@ -316,7 +317,7 @@ class Process_Irrigation_Command(object):
                  self.cf.queue_event("RELEASE_IRRIGATION_CONTROL", 0)
                  return 
  
-          
+             '''
           self.handlers["IRRIGATION_CURRENT_CLIENT"].push(json_object)
           self.cluster_ctrl.enable_cluster_reset_rt( cf_handle, self.cluster_id,"DIAGNOSITIC_CONTROL" )
        return "DISABLE"

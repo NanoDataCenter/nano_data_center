@@ -1,3 +1,4 @@
+import msgpack
 
 class Job_Queue_Client( object ):
  
@@ -55,7 +56,15 @@ class Job_Queue_Client( object ):
        for i in data:
          self.redis_handle.lset(self.key,i,"__DELETE_ME__")
        self.redis_handle.lrem(self.key,0,"__DELETE_ME__")
-         
+ 
+
+def valid_data( input_data):
+
+   if "site" in input_data:
+       if "name" in input_data:
+          if "data" in input_data:
+              return True
+   return False              
 
 if __name__ == "__main__":
 
@@ -129,9 +138,14 @@ if __name__ == "__main__":
     
        print(local_queue.length())
        while local_queue.length() > 0:
-           data = local_server.pop()
-           print(remote_client.length())
-           remote_client.push(data)
+           data = local_queue.pop()
+           print("data",data[1])
+           if valid_data(data[1]):
+             
+              print(remote_client.length())
+              remote_client.push(data)
+           else:
+              print("invalid data")
        time.sleep(5)
    
    

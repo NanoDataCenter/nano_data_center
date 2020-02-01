@@ -10,9 +10,9 @@ class Construct_Weather_Stations(object):
       cd.add_hash("RAIN_VALUES")
       cd.add_hash("ETO_VALUES")
       cd.add_hash("ETO_ACCUMULATION_TABLE")   
-      cd.add_redis_stream("ETO_HISTORY")
-      cd.add_redis_stream("RAIN_HISTORY")
-      cd.add_redis_stream("EXCEPTION_LOG")
+      cd.add_redis_stream("ETO_HISTORY",forward = True)
+      cd.add_redis_stream("RAIN_HISTORY",forward = True)
+      cd.add_redis_stream("EXCEPTION_LOG",forward = True)
  
       cd.close_package_contruction()
       self.add_station_cimis()

@@ -166,10 +166,18 @@ class Irrigation_Control_Basic(object):
       self.io_control.turn_on_valves(self.json_object['io_setup'])
       self.update_json_object(self.json_object)
       time.sleep(5)
-     
+      if self.json_object["run_time"] == 0:
+           details = "Schedule "+ self.json_object["schedule_name"] +" step "+str(self.json_object["step"] )+" IRRIGATION_ETO_RESTRICTION"
+           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"load schedule data","details":details,"level":"YELLOW"}) 
+           return False           
       if self.io_control.monitor_current(self.current_limit):
-         
-         return True
+          details = {}
+          details["schedule_name"] = self.json_object["schedule_name"]
+          details["step"]          = self.json_object["step"]
+          details["run_time"]      = self.json_object["run_time"]
+          details["io_setup"]      = self.json_object["io_setup"]
+          self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_STATION_START","details":details,"level":"GREEN"})        
+          return True
       else:
           details = {}
           details["schedule_name"] = self.json_object["schedule_name"]
@@ -180,7 +188,7 @@ class Irrigation_Control_Basic(object):
           
           return False
 
-
+               
    def monitor_irrigation( self, cf_handle, chainObj, parameters, event):
       return_value = True
       if event["name"] == "INIT":
@@ -193,9 +201,12 @@ class Irrigation_Control_Basic(object):
       # update selective plc watchdogs
       self.update_json_object(self.json_object)
       if self.json_object[ 'eto_list'] != None:
-            self.manage_eto.update_eto_queue_minute( self.json_object['eto_list'] )
-      print(self.json_object["elasped_time"] , self.json_object["run_time"])
-      if self.json_object["elasped_time"] <= self.json_object["run_time"]  :
+          flag =   self.manage_eto.update_eto_queue_minute( self.json_object['eto_list'] )
+      else:
+          flag = True
+
+      print(self.json_object["elasped_time"] , self.json_object["run_time"],flag)
+      if (self.json_object["elasped_time"] <= self.json_object["run_time"]) and (flag == True )  :
            self.step_monitor.step_logging(self.json_object)       
  
       else:

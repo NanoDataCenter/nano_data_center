@@ -123,7 +123,7 @@ class ETO_Management(object):
        return runtime
 
    def update_eto_queue_minute( self, sensor_list ):
-       
+       flag = False
        for l in  sensor_list:
            j_index = l[0]
            queue_name = l[1]
@@ -138,6 +138,8 @@ class ETO_Management(object):
            deficient = deficient - (recharge_rate/60) # recharge rate is per hour
            if deficient < 0 :
                deficient = 0 
+           if deficient > 0 :
+               flag = True
            
            self.eto_hash_table.hset(  queue_name, deficient )   
-
+       return flag

@@ -49,16 +49,7 @@ class Construct_Data_Structures(object):
        self.properties["data_structures"][name] = properties 
         
       
-   def add_stream(self,measurement, index = 0 ,forward=False):
 
-       assert(measurement not in self.properties )
-       properties = {}
-       properties["site"] = self.site
-       properties["type"]  = "STREAM"
-       properties["measurement"] = measurement
-       properties["index"] = index
-       properties["forward"] =forward
-       self.properties["data_structures"][measurement] = properties 
 
    def add_redis_stream(self,name,depth=1024,forward=False):
        assert(name not in self.properties )
@@ -70,14 +61,7 @@ class Construct_Data_Structures(object):
        self.properties["data_structures"][name] = properties 
 
        
-   def add_stream_list(self,name,depth,forward=False):
-       assert(name not in self.properties )
-       properties = {}
-       properties["name"] = name
-       properties["type"]  = "STREAM_LIST"
-       properties["depth"]  =depth
-       properties["forward"] =forward
-       self.properties["data_structures"][name] = properties 
+
        
    def add_job_queue(self,name,depth,forward=False):
        assert(name not in self.properties )

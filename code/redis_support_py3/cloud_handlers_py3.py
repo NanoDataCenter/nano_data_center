@@ -18,8 +18,7 @@ class Job_Queue_Client( object ):
        pack_data =  msgpack.packb(data,use_bin_type = True )
        self.redis_handle.lpush(self.key,pack_data)
        self.redis_handle.ltrim(self.key,0,self.depth)
-       if self.cloud_handler != None:
-           self.cloud_handler.lpush(self.data, self.depth,self.key,pack_data)
+
 
 
          
@@ -27,6 +26,7 @@ class Cloud_TX_Handler(object):
 
 
    def __init__(self, redis_handle, qs):
+       self.site = qs.site
        self.redis_handle = redis_handle
        self.init_handler(qs)
 
@@ -46,7 +46,8 @@ class Cloud_TX_Handler(object):
 
           
           
-          
+   
+   
           
    def construct_job_queue_client(self,data):
        self.forward_data = data
@@ -56,11 +57,14 @@ class Cloud_TX_Handler(object):
      
 
 
-   def send(self,key,input_data):
+   def send_log(self,meta_data,input_data):
+       data = {}
+       
        data["site"] = self.site
-       data["key"]  = key
+       data["name"]  = meta_data["name"]
        data["data"] = input_data
-       self.forward_queue.push_no_forward(data)
+       print("data",data)
+       self.forward_queue.push(data)
 
        
        
@@ -68,10 +72,13 @@ class Cloud_TX_Handler(object):
 
 
 
-   def check_forwarding(self):  # do not forward data structures unless specified in the "forward" field
-       if  "forward" in self.forward_data:
-           if self.forward_data["forward"] == True:
+   def check_forwarding(self,meta_data):  # do not forward data structures unless specified in the "forward" field
+       
+       if  "forward" in meta_data:
+           if meta_data["forward"] == True:
+             
               return True
+       print("return false")
        return False
 
    def delete(self,forward_data,key):
@@ -94,12 +101,13 @@ class Cloud_TX_Handler(object):
    def rpop(self,forward_dat,key):
        pass
        
-   def stream_write(self, key, data ) :
-       if self.check_forwarding():
-          self.send_log(key,data)
+   def stream_write(self,meta_data, key, data ) :
+       if self.check_forwarding(meta_data):
+          self.send_log(meta_data,data)
        
-   def stream_list_write(self, forward_dat,depth, key,data ):
-       pass
+       
+       
+   
        
        
 class Cloud_RX_Handler(object):

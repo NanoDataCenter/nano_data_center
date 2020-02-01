@@ -8,7 +8,7 @@ function initialize_time_control()
 
 function select_day_scheduling_method()
 {
-    
+ 
  if($("#day_sched").val() == 0)
    {
       $("#dow_times").show();
@@ -25,6 +25,7 @@ function select_day_scheduling_method()
 function show_time_panel()
 {
    $("#start_time").show();
+   select_day_scheduling_method();
 }
 
 function hide_time_panel()
@@ -69,7 +70,7 @@ function time_load_controls(working_data)
    if( !('day_div' in working_data))
    {
       
-      working_data["day_div"] = 0
+      working_data["day_div"] = 1
     
    }   
    if( !('day_mod' in working_data))
@@ -79,9 +80,14 @@ function time_load_controls(working_data)
     
    }
    
-   $("#day_sched")[0].selectedIndex =  working_data["day_flag"];
-   $("#day_div")[0].selectedIndex =  working_data["day_div"]-1;
-   $("#day_mod")[0].selectedIndex =  working_data["day_mod"];
+   if(working_data["day_flag"] < 0)
+   {
+       working_data["day_flag"] = 0
+   }
+  
+   $("#day_sched").val( working_data["day_flag"]);
+   $("#day_div").val( working_data["day_div"]);
+   $("#day_mod").val( working_data["day_mod"]);
    
    
    temp_start_times = working_data["start_time"]
@@ -138,9 +144,9 @@ function get_data_time_page( working_data)
      working_data["dow"] = dow;     
      working_data["start_time"]  =  eval($("#starting_time").val()) 
      working_data["end_time"] =  eval($("#ending_time").val()) 
-     working_data["day_flag"] =  $("#day_sched").val() -1
-     working_data["day_div"]  =  $("#day_div").val() -1
-     working_data["day_mod"]  =  $("#day_mod").val() -1
+     working_data["day_flag"] =  $("#day_sched").val() 
+     working_data["day_div"]  =  $("#day_div").val()
+     working_data["day_mod"]  =  $("#day_mod").val() 
      if( $("#enable_schedule").is(":checked") == true )
      {
         working_data["schedule_enable"] = true
