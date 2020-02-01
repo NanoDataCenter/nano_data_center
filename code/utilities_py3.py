@@ -96,8 +96,8 @@ class Monitoring_Base(object):
 
 
    def schedule_doy(self,j,doy):
-      divisor = j["day_div"] +1
-      modulus = j["day_mod"]
+      divisor = int(j["day_div"])
+      modulus = int(j["day_mod"])
       result = doy % divisor
       #print("doy",doy,j["name"],result==modulus,result,divisor,modulus)
       #print(j)
@@ -127,7 +127,7 @@ class Monitoring_Base(object):
        if "day_flag" not in j:
             #print("day flag not present")
             return self.schedule_dow(j,dow)
-       elif j["day_flag"] > 0:
+       elif int(j["day_flag"]) > 0:
 
          return self.schedule_doy(j,doy)
        else:
@@ -195,7 +195,7 @@ class Monitoring_Base(object):
             end_time   = j["end_time"]
             #print("system activity",name,start_time,end_time)
             if self.determine_start_time( start_time,end_time ):
-                print("start time passed",name)
+                #print("start time passed",name)
                 if self.check_flag( name ):
                      print( "queue in schedule ",name )
                      temp = {}
