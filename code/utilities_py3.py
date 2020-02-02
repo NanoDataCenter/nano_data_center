@@ -101,7 +101,7 @@ class Monitoring_Base(object):
       result = doy % divisor
       #print("doy",doy,j["name"],result==modulus,result,divisor,modulus)
       #print(j)
-      #print(doy,result,modulus)
+      #print("doy result",doy,result,modulus)
       if result == modulus:
         return True
       else:
@@ -197,7 +197,7 @@ class Monitoring_Base(object):
             if self.determine_start_time( start_time,end_time ):
                 #print("start time passed",name)
                 if self.check_flag( name ):
-                     print( "queue in schedule ",name )
+                     #print( "queue in schedule ",name )
                      temp = {}
                      temp["command"]        = command
                      temp["schedule_name"]  = name
