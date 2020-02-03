@@ -75,8 +75,10 @@ if __name__ == "__main__":
    query_list = qs.add_match_terminal(query_list,relationship="PROCESS_INITIALIZATION")
    initialization_sets, initialization_nodes = qs.match_list(query_list)
    
-   initialization_list = initialization_nodes[0]["command_list"] 
-   
+   if len(initialization_nodes) > 0:
+      initialization_list = initialization_nodes[0]["command_list"] 
+   else:
+      initialization_list= []
    query_list = []
    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=site_data["site"] )
    query_list = qs.add_match_relationship( query_list,relationship="PROCESSOR",label=site_data["local_node"] )
@@ -84,7 +86,7 @@ if __name__ == "__main__":
                                         relationship = "PACKAGE", label = "DATA_STRUCTURES" )
   
    package_sets, package_nodes = qs.match_list(query_list)  
-   
+   print(package_nodes)
    data_structures = package_nodes[0]["data_structures"]
    generate_handlers = Generate_Handlers(package_nodes[0],qs)
    ds_handlers = {}
