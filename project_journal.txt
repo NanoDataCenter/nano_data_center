@@ -1,0 +1,19 @@
+objects
+2/4/2020
+1. .41 node
+A.  Setup block chain input server
+B.  Setup block chain output server
+C.  Start flash vue web server
+
+
+2. .227
+A.  complete merge
+B.  Problem with power up reset deleted all scheduded irrigation task
+
+### journal activities
+2/4 results
+1. .41 node
+A. worked on setup block chain input server
+2. .227
+Problem with power up reset which deleted all scheduled irrigation task
+ 
