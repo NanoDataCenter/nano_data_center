@@ -8,7 +8,7 @@ import uuid
 
 from .redis_stream_utilities_py3 import Redis_Stream
 from .cloud_handlers_py3 import Cloud_TX_Handler
-from .influxdb_driver.influxdb_driver_py3 import Influx_Handler
+
 
 class Field_Not_Defined(Exception):
     pass       
@@ -681,10 +681,12 @@ class Stream_Redis_Writer(Redis_Stream):
        packed_data  =msgpack.packb(data,use_bin_type = True )
        out_data = {}
        out_data["data"] = packed_data
+       
        self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=out_data )
-
+       
        if self.cloud_handler != None:
            self.cloud_handler.stream_write(self.data,self.key, data ) 
+       
        
 class Stream_Redis_Reader(Redis_Stream):
        

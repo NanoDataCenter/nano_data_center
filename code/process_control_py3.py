@@ -172,7 +172,8 @@ class System_Control(object):
 
        
    def launch_processes( self,*unused ):
- 
+       self.ds_handlers["ERROR_HASH"].hset( "REBOOT" , { "script": "REBOOT", "error_output" : "SYSEM REBOOT" } )
+       self.ds_handlers["ERROR_STREAM"].push( data = { "script": "REBOOT", "error_output" : "SYSEM REBOOT" } )
        for script in self.startup_list:
            temp = self.process_hash[script]
            temp.launch()

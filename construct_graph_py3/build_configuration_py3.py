@@ -20,7 +20,7 @@ def basic_init(self):
    
 class Build_Configuration(object):
    def __init__( self, redis_site ):  
-       self.redis_handle = redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["graph_db"] , decode_responses=True)
+       self.redis_handle = redis.StrictRedis( host = redis_site["host"] , port=redis_site["port"], db=redis_site["graph_db"] , decode_responses=False)
        self.delete_all()
        self.keys = set()
        basic_init(self)
@@ -124,8 +124,10 @@ class Build_Configuration(object):
    def extract_db(self):
        keys = self.redis_handle.keys("*")
        self.extract = {}
-       print("len",len(keys))
+       #print("len",len(keys))
        for i in keys:
+           #print("key",i)
+           self.redis_handle.dump(i)
            self.extract[i] = self.redis_handle.dump(i)
            
    def save_extraction(self,filename):

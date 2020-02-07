@@ -63,7 +63,7 @@ class Cloud_TX_Handler(object):
        data["site"] = self.site
        data["name"]  = meta_data["name"]
        data["data"] = input_data
-       print("data",data)
+       #print("data",data)
        self.forward_queue.push(data)
 
        
@@ -78,7 +78,7 @@ class Cloud_TX_Handler(object):
            if meta_data["forward"] == True:
              
               return True
-       print("return false")
+       #print("return false")
        return False
 
    def delete(self,forward_data,key):
