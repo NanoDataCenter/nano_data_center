@@ -217,7 +217,7 @@ class Process_Irrigation_Command(object):
 
       
  
-      self.handlers["IRRIGATION_PENDING_SERVER"].delete_all()  # for testing duration only
+      #self.handlers["IRRIGATION_PENDING_SERVER"].delete_all()  # for testing duration only
       print(self.handlers["IRRIGATION_PENDING_SERVER"].length()) # for testing duration only
 
      

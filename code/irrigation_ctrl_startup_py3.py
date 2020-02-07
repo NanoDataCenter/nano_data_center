@@ -168,7 +168,11 @@ if __name__ == "__main__":
     if status[0] == True:
        temp = status[1]
        ds_handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"Deleting_Irrigation_Job","details":{"schedule_name":temp["schedule_name"],"step":temp["step"]},"level":"RED"})
-    ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all() # delete current job to prevent circular reboots
+
+    print("IRRIGATION_CURRENT_CLIENT",ds_handlers["IRRIGATION_CURRENT_CLIENT"].length())
+    print("IRRIGATION_CURRENT_CLIENT",ds_handlers["IRRIGATION_CURRENT_CLIENT"].length())
+    print("IRRIGATION_CURRENT_CLIENT",ds_handlers["IRRIGATION_CURRENT_CLIENT"].length())
+    #ds_handlers["IRRIGATION_CURRENT_CLIENT"].delete_all() # delete current job to prevent circular reboots
 
 
 
