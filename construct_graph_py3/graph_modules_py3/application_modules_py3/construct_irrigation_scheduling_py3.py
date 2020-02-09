@@ -17,7 +17,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       cd.add_job_queue("IRRIGATION_VALVE_JOB_QUEUE",250)
       cd.add_job_queue("IRRIGATION_JOB_SCHEDULING",100,forward=False)
       cd.add_job_queue("IRRIGATION_PENDING",100)
-      cd.add_job_queue("IRRIGATION_CURRENT",1)    
+      cd.add_job_queue("IRRIGATION_CURRENT",2)    
       cd.add_redis_stream("IRRIGATION_PAST_ACTIONS",2000,forward=True)
       cd.close_package_contruction()
       bc.add_info_node("CURRENT_LIMITS","CURRENT_LIMITS",properties = {"EQUIPMENT":1.0 ,"IRRIGATION": 1.75} )

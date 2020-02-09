@@ -217,7 +217,7 @@ class Process_Irrigation_Command(object):
 
       
  
-      self.handlers["IRRIGATION_PENDING_SERVER"].delete_all()  # for testing duration only
+      #self.handlers["IRRIGATION_PENDING_SERVER"].delete_all()  # for testing duration only
       print(self.handlers["IRRIGATION_PENDING_SERVER"].length()) # for testing duration only
 
      
@@ -306,8 +306,11 @@ class Process_Irrigation_Command(object):
           json_object["restart"] =  False
           json_object["elasped_time"] = 0 
           self.handlers["IRRIGATION_CURRENT_CLIENT"].delete_all()
+          #print("made it here ")
           if  json_object["eto_flag"] == True:
+             #print("made it here 1")
              runtime,flag,list_data = self.eto_management.determine_eto_management(json_object["run_time"], json_object["io_setup"] )
+             #print("made it here 2",runtime,flag,list_data)
              json_object["run_time"] = runtime
              '''
              if runtime == 0:

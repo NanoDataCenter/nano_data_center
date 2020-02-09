@@ -102,9 +102,10 @@ class Irrigation_Scheduling(object):
        schedule_io = step_data[0]
        schedule_step = int(schedule_step)
        schedule_step_time = int(schedule_step_time)
-      
+       print("schedute_step time",schedule_step_time)
        if ( self.irrigation_hash_control.hget("ETO_MANAGEMENT") == True ) and (eto_flag == True): 
           schedule_step_time,eto_flag,eto_list = self.eto_management.determine_eto_management(schedule_step_time, schedule_io )
+          print("schedute_step time",schedule_step_time)
        else:
           eto_flag = False
           eto_list = None 
@@ -120,10 +121,10 @@ class Irrigation_Scheduling(object):
           json_object["eto_enable"]      =  eto_flag
           json_object["eto_list"]        =  eto_list
           json_object["eto_flag"]        = eto_flag
-         
+          print("made it") 
           self.handlers["IRRIGATION_PENDING_CLIENT"].push(json_object)
        else:
-           
+           print("did not make it")
            details = "Schedule "+ schedule_name +" step "+str(schedule_step)+" IRRIGATION_ETO_RESTRICTION"
            
            self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"IRRIGATION_ETO_RESTRICTION","details":details,"level":"YELLOW"})
