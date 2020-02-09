@@ -1,6 +1,7 @@
 
 import redis
 import msgpack
+from ethereum_block_chain.block_chain_insert_py3  import  Save_Block_Chain_Data
 
 
 class Job_Queue_Server( object ):
@@ -19,6 +20,7 @@ class Job_Queue_Server( object ):
        return self.redis_handle.llen(self.key)
        
  
+   
 
  
    def pop(self):
@@ -55,10 +57,16 @@ def valid_data( input_data):
    if "site" in input_data:
        
        if "name" in input_data:
+          
           if "data" in input_data:
               return True
   
-   return False  
+   return False 
+
+def format_data( input_data):
+   return [str(input_data["site"]),str(input_data["name"]),json.dumps(input_data["data"] )]
+   
+
 
 
 if __name__ == "__main__":
@@ -101,6 +109,17 @@ if __name__ == "__main__":
     
 
     
+    query_list = []
+    query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
+
+    query_list = qs.add_match_terminal( query_list, 
+                                        relationship = "PACKAGE", property_mask={"name":"CLOUD_SERVICE_QUEUE_DATA"} )
+                                           
+    package_sets, package_sources = qs.match_list(query_list) 
+    package = package_sources[0]    
+    data_structures = package["data_structures"]
+    generate_handlers = Generate_Handlers(package,qs)
+    sub_event_hash = generate_handlers.construct_hash(data_structures["CLOUD_SUB_EVENTS"])
     
 
    
@@ -118,30 +137,43 @@ if __name__ == "__main__":
     remote_redis_handle = redis.StrictRedis( host = host_source["host"] , port=host_source["port"], db=host_source["key_data_base"] )
     input_server = Job_Queue_Server(remote_redis_handle,key = host_source["key"])
    
-    length = input_server.length()
-    for i in range(0,length):
-       data = input_server.show_a_job(i)
-
-       data = data[1]
-       data = data[1]
-       
-       print(i,valid_data(data))
-       
+    save_block_chain_data = Save_Block_Chain_Data()
       
     while 1:
     
        print(input_server.length())
        
        while input_server.length() > 0:
-           data = input_server.show_next_job()
+           data = input_server.pop()
+           
            if data[0] == True:
-             if valid_data(data[1]) == True:
-                print("input data is valid")
+             print(data[1][1])
+             
+             if valid_data(data[1][1]) == True:
+                data = format_data(data[1][1])
+                print(data)
+                
+                tx_receipt = save_block_chain_data.append_data("EventHandler","transmit_event",data)
+                #print(tx_receipt)
+                sub_event_hash[data[1]].hset(tx_receipt) 
              else:
                 print("input_data is not valid")
-           quit()
+                quit()
+           
 
        time.sleep(5)
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    
    
    
