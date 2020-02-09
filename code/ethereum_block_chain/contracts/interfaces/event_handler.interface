@@ -1,0 +1,8 @@
+interface EventHandler_Interface
+{
+
+function transmit_event( string calldata event_id, string calldata  sub_event, string calldata data) external;
+
+}
+
+
