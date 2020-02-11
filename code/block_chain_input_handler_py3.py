@@ -154,8 +154,8 @@ if __name__ == "__main__":
                 print(data)
                 
                 tx_receipt = save_block_chain_data.append_data("EventHandler","transmit_event",data)
-                #print(tx_receipt)
-                sub_event_hash[data[1]].hset(tx_receipt) 
+                print(tx_receipt.blockNumber)
+                sub_event_hash.hset(data[1],tx_receipt.blockNumber) 
              else:
                 print("input_data is not valid")
                 quit()
