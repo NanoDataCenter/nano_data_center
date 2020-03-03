@@ -21,7 +21,7 @@ class Construct_Irrigation_Scheduling_Control(object):
       cd.add_redis_stream("IRRIGATION_PAST_ACTIONS",2000,forward=True)
       cd.close_package_contruction()
       bc.add_info_node("CURRENT_LIMITS","CURRENT_LIMITS",properties = {"EQUIPMENT":1.0 ,"IRRIGATION": 1.75} )
-      bc.add_info_node("IRRIGATION_VALVE_CURRENT_LIMIT","IRRIGATION_VALVE_CURRENT_LIMIT",properties ={ "limit":.5 } )
+      bc.add_info_node("IRRIGATION_VALVE_CURRENT_LIMIT","IRRIGATION_VALVE_CURRENT_LIMIT",properties ={ "limit":.75 } )
       bc.add_info_node("EXCESSIVE_FLOW_LIMITS","EXCESSIVE_FLOW_LIMITS",properties={ "EXCESSIVE_FLOW_VALUE":30,"EXCESSIVE_FLOW_TIME":5 } )
       bc.add_info_node("CLEANING_LIMITS","CLEANING_LIMITS",properties={ "limit":25000 } )
       bc.add_info_node("CLEANING_FLOW_LIMITS","CLEANING_FLOW_LIMITS",properties={ "limit":2 } )

@@ -21,7 +21,7 @@ class Construct_Controllers(object):
        properties["command_list"].append( { "file":"modbus_server_py3.py  MAIN_SERVER","restart":True })
        properties["command_list"].append( { "file":"irrigation_ctrl_startup_py3.py","restart":True })
        properties["command_list"].append( { "file":"plc_io_cntrl_py3.py","restart":True })
-       properties["command_list"].append( { "file":"cloud_interface_py3.py","restart":True })
+       #properties["command_list"].append( { "file":"cloud_interface_py3.py","restart":True })
        #properties["command_list"].append( { "file":"redis_cloud_download_py3.py","restart":True })
        bc.add_header_node("PROCESSOR","nano_data_center",properties=properties) # name is identified in site_data["local_node"]
 

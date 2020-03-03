@@ -75,7 +75,9 @@ class Process_Irrigation_Command(object):
                                                              get_json_object = self.get_json_object,
                                                              current_operations=current_operations,
                                                              generate_control_events = generate_control_events,
-                                                             irrigation_current_limit = self.irrigation_current_limit)
+                                                             irrigation_current_limit = self.irrigation_current_limit,
+                                                             qs = qs,
+                                                             redis_site = redis_site_data)
                                                             
                                                       
       self.clean_filter = Clean_Filter(cf,cluster_control,irrigation_io, 

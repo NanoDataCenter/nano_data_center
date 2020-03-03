@@ -15,24 +15,7 @@
       
       {% include "js/process_control/process_control.js" %}
       </script>
-      <script type="text/javascript">
 
-$("#controller_select").val( {{ controller_id|int  }});
-
-$("#controller_select").bind('click',change_controller)
- 
-function change_controller(event,ui)
-{
-  current_page = window.location.href
-  
- 
-  current_page = current_page.slice(0,-2)
-  
-  current_page = current_page+"/"+$("#controller_select")[0].selectedIndex
-  window.location.href = current_page
-}
- 
-</script>
   
 {% endblock %}
 
