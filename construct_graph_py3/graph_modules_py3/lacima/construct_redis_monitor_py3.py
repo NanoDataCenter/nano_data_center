@@ -4,7 +4,7 @@ import json
 
 ONE_MONTH = 24*30
 
-class Construct_Redis_Monitoring(object):
+class Construct_Lacima_Redis_Monitoring(object):
 
    def __init__(self,bc,cd):
    

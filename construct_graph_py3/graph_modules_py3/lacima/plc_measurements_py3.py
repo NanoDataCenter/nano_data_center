@@ -1,4 +1,4 @@
-class Construct_PLC_Measurements(object):
+class Construct_Lacima_PLC_Measurements(object):
 
    def __init__(self,bc,cd):
        self.bc = bc
