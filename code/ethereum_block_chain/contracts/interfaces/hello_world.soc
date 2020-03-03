@@ -1,0 +1,33 @@
+pragma solidity 0.5.13;
+
+
+
+{% include 'event_handler.interface' %}
+
+contract HelloWorld 
+{
+string textToPrint = "hello world";
+
+EventHandler_Interface event_manager;
+
+constructor( address _t ) public
+{
+  event_manager = EventHandler_Interface(_t);
+
+}
+
+function changeText( string memory _text) public
+{
+  textToPrint = _text;
+  event_manager.transmit_event("changeText","subEvent",_text);
+}
+
+function printSomething() public view returns (string memory) 
+{
+
+  return textToPrint;
+  
+}
+
+}
+

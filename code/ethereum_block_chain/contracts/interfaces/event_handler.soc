@@ -1,0 +1,23 @@
+pragma solidity 0.5.13;
+
+{% include 'event_handler.interface' %}
+
+contract EventHandler is EventHandler_Interface
+{
+    event Update_Event(
+        string event_id,
+        string sub_event,
+        string data
+  
+    );
+
+
+function transmit_event( string memory event_id, string memory sub_event, string memory data) public
+{
+  
+  emit Update_Event(event_id,sub_event,data);
+}
+
+
+
+}
