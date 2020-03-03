@@ -5,7 +5,7 @@ from .application_modules_py3.construct_weather_stations_py3 import Construct_We
 from .application_modules_py3.construct_irrigation_scheduling_py3 import Construct_Irrigation_Scheduling_Control
 
 
-class Construct_Applications(object):
+class Construct_Lacima_Applications(object):
 
    def __init__(self,bc,cd):  # bc is build configuration class cd is construct data structures
        bc.add_header_node("APPLICATION_SUPPORT")

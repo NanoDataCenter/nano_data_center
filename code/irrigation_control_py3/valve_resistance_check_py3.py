@@ -19,9 +19,11 @@ class Valve_Resistance_Check(object):
                  get_json_object,
                  current_operations,
                  generate_control_events,
-                 irrigation_current_limit):
+                 irrigation_current_limit,
+                 qs,
+                 redis_site):
                  
-                 
+         
        self.get_json_object = get_json_object
        self.handlers = handlers
        self.sys_files    = sys_files
@@ -40,6 +42,9 @@ class Valve_Resistance_Check(object):
        self.irrigation_hash_control = irrigation_hash_control
        self.hash_logging   = Hash_Logging_Object(self.handlers, "IRRIGATION_VALVE_TEST",measurement_depths["valve_depth"] )
        
+       
+
+      
 
    def construct_chains( self, cf):
 
@@ -168,34 +173,32 @@ class Valve_Resistance_Check(object):
        self.remote = json_object[0]
        self.output = json_object[1]
 
- 
+
            
    def valve_measurement(self, cf_handle, chainObj, parameters, event ):
        if event["name"] == "INIT":
           return "CONTINUE"
-       # check time stamp
-       #
-       #
-       #
+ 
        
        coil_current = self.io_control.measure_valve_current()
  
-       print("coil_current",self.irrigation_current_limit,coil_current )
+       #print("coil_current",self.irrigation_current_limit,coil_current )
        if coil_current > self.irrigation_current_limit:
+          details = {}
           details["remote"] = self.valve_object[0]
           details["bit"]    = self.valve_object[1]
-          details["relay_state"] = relay_state
+         
           details["current"] = coil_current
           details["limit"] = self.irrigation_current_limit
         
           self.current_operation= {}
           self.current_operation["state"] = "MEASURE_RESISTANCE"
-          self.failure_report(self.current_operation,"MEASURE_RESISTANCE_CURRENT",None,details )
+          #self.failure_report(self.current_operation,"MEASURE_RESISTANCE_CURRENT",None,details )
           self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"measure_resistance","details":details,"level":"RED"})
              
        
        logging_key = self.remote+":"+str(self.output)
-       print(logging_key,coil_current)
+       print("***********************************",logging_key,coil_current)
        self.hash_logging.log_value(logging_key,coil_current )
        self.io_control.disable_all_sprinklers()
  

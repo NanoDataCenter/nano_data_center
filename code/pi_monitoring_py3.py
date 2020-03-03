@@ -37,7 +37,7 @@ from redis_support_py3.construct_data_handlers_py3 import Generate_Handlers
 
 class PI_MONITOR( object ):
 
-   def __init__( self, package_node,generate_handlers ):
+   def __init__( self, package_node,generate_handlers,site_node ):
        data_structures = package_node["data_structures"]
        self.ds_handlers = {}
        self.ds_handlers["FREE_CPU"]           = generate_handlers.construct_stream_writer(data_structures["FREE_CPU"])
@@ -57,7 +57,7 @@ class PI_MONITOR( object ):
        self.ds_handlers["SOCK"]        = generate_handlers.construct_stream_writer(data_structures["SOCK"])  
        self.ds_handlers["TCP"]        = generate_handlers.construct_stream_writer(data_structures["TCP"])  
        self.ds_handlers["UDP"]        = generate_handlers.construct_stream_writer(data_structures["UDP"])  
-
+       self.site_node = site_node
 
        
        self.construct_chains()
@@ -119,8 +119,8 @@ class PI_MONITOR( object ):
                     temp_dict["RSS"]            = temp_value["RSS"]
                     temp_dict["VSZ"]            = temp_value["VSZ"]
                     temp_dict["%CPU"]           = temp_value["%CPU"]
-                   
-                    self.ds_handlers["PROCESS_STATE"].push(data = temp_dict)
+                    
+                    self.ds_handlers["PROCESS_STATE"].push(data = temp_dict,local_node = self.site_node)
 
        
 
@@ -143,7 +143,7 @@ class PI_MONITOR( object ):
                    if temp_value["COMMAND"] == "python3":
                        key = temp_value["PARAMETER1"]
                        return_value[key] = temp_value["VSZ"]
-
+       
        return return_value
        
    def rss_handler( self , *args  ):
@@ -166,7 +166,7 @@ class PI_MONITOR( object ):
                    if temp_value["COMMAND"] == "python3":
                        key = temp_value["PARAMETER1"]
                        return_value[key] = temp_value["RSS"]
-
+       
        return return_value
        
    def cpu_handler( self , *args  ):
@@ -189,7 +189,7 @@ class PI_MONITOR( object ):
                    if temp_value["COMMAND"] == "python3":
                        key = temp_value["PARAMETER1"]
                        return_value[key] = temp_value["%CPU"]
-
+       
        return return_value
 
    def measure_free_cpu( self,*args):
@@ -202,6 +202,7 @@ class PI_MONITOR( object ):
        fields = data[-1].split()
        for i in range(2,len(fields)):
            return_value[headers[i]] = float(fields[i])
+       
        return return_value
 
    def proc_memory( self, *args ):
@@ -215,44 +216,48 @@ class PI_MONITOR( object ):
           key = items[0].strip()
           values = items[1].split("kB")
           return_value[key] = values[0].strip()
+       
        return return_value
        
   
    def assemble_free_cpu( self, *args ):
        data = self.measure_free_cpu()
-       self.ds_handlers["FREE_CPU"].push(data = data)
+       self.ds_handlers["FREE_CPU"].push(data = data,local_node = self.site_node)
+       
        return "DISABLE"
  
    def assemble_ram( self, *args ):
        memory_dict = self.proc_memory()
-       self.ds_handlers["RAM"].push( data = memory_dict)
+       self.ds_handlers["RAM"].push( data = memory_dict,local_node = self.site_node)
+       
        return "DISABLE"
        
        
    def assemble_temperature( self, *args):
        temp_f = self.measure_temperature()
-       self.ds_handlers["TEMPERATURE"].push(data = {"TEMP_F":temp_f})
+       self.ds_handlers["TEMPERATURE"].push(data = {"TEMP_F":temp_f},local_node = self.site_node)
+       
        return "DISABLE"
 
        
    def assemble_vsz(self,*args):
        data = self.vsz_handler()
-       self.ds_handlers["PROCESS_VSZ"].push( data =  data )
+       self.ds_handlers["PROCESS_VSZ"].push( data =  data,local_node = self.site_node )
        return "DISABLE"
        
    def assemble_rss(self,*args):
        data = self.rss_handler()
-       self.ds_handlers["PROCESS_RSS"].push( data = data )
+       self.ds_handlers["PROCESS_RSS"].push( data = data,local_node = self.site_node )
        return "DISABLE"
        
    def assemble_cpu_handler(self,*args):
        data = self.cpu_handler()
-       self.ds_handlers["PROCESS_CPU"].push( data = data )
+       self.ds_handlers["PROCESS_CPU"].push( data = data,local_node = self.site_node )
        return "DISABLE"
       
    def assemble_disk_space(self,*args):
       data = self.measure_disk_space()     
-      self.ds_handlers["DISK_SPACE"].push(data = data)
+      self.ds_handlers["DISK_SPACE"].push(data = data,local_node = self.site_node)
       return "DISABLE" 
  
    def assemble_cpu_core(self,*args):
@@ -318,7 +323,7 @@ class PI_MONITOR( object ):
           i = i+1
 
        print("data",data)   
-       self.ds_handlers[stream_key].push(data = data)
+       self.ds_handlers[stream_key].push(data = data,local_node = self.site_node)
 
    def parse_one_line(self, sar_command, stream_field ):
         f = os.popen(sar_command)
@@ -340,7 +345,7 @@ class PI_MONITOR( object ):
        
         print("data",data)
           
-        self.ds_handlers[stream_field].push(data = data)
+        self.ds_handlers[stream_field].push(data = data,local_node = self.site_node)
  
    def construct_chains(self,*args):
 
@@ -399,7 +404,7 @@ if __name__ == "__main__":
   
    
    generate_handlers = Generate_Handlers(package_nodes[0],qs)
-   pi_monitor = PI_MONITOR(package_nodes[0],generate_handlers)
+   pi_monitor = PI_MONITOR(package_nodes[0],generate_handlers,site_data["local_node"])
    
    
 else:

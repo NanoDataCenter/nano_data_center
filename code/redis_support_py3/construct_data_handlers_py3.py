@@ -673,7 +673,7 @@ class Stream_Redis_Writer(Redis_Stream):
 
 
 
-   def push(self,data={} ,id="*" ):
+   def push(self,data={} ,id="*",local_node = None ):
        
        
        if len(list(data.keys())) == 0:
@@ -685,7 +685,7 @@ class Stream_Redis_Writer(Redis_Stream):
        self.xadd(key = self.key, max_len=self.depth,id=id,data_dict=out_data )
        
        if self.cloud_handler != None:
-           self.cloud_handler.stream_write(self.data,self.key, data ) 
+           self.cloud_handler.stream_write(self.data,self.key, data,local_node ) 
        
        
 class Stream_Redis_Reader(Redis_Stream):

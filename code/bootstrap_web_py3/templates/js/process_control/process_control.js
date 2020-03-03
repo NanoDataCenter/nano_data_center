@@ -153,11 +153,29 @@ function  change_process_status(event,ui)
   
 
 }
+      
+
+
+ 
+function change_controller(event,ui)
+{
+  current_page = window.location.href
+  
+ 
+  current_page = current_page.slice(0,-2)
+  
+  current_page = current_page+"/"+$("#controller_select")[0].selectedIndex
+  window.location.href = current_page
+}
+ 
 
 $(document).ready(
  function()
  {
-   load_data()   
+   load_data() 
+   
+   $("#controller_select").val( {{ controller_id|int  }});
+   $("#controller_select").bind('change',change_controller)   
    $("#refresh_b").bind("click",refresh_data)
    $("#change_state").bind("click",change_process_status)
 

@@ -1,7 +1,7 @@
 import json
 
 
-class Construct_Cloud_Service(object):
+class Construct_Lacima_Cloud_Service(object):
 
    def __init__(self,bc,cd):
       self.bc = bc

@@ -57,9 +57,9 @@ class Cloud_TX_Handler(object):
      
 
 
-   def send_log(self,meta_data,input_data):
+   def send_log(self,meta_data,input_data,local_node = None):
        data = {}
-       
+       data["local_node"] = local_node
        data["site"] = self.site
        data["name"]  = meta_data["name"]
        data["data"] = input_data
@@ -101,9 +101,9 @@ class Cloud_TX_Handler(object):
    def rpop(self,forward_dat,key):
        pass
        
-   def stream_write(self,meta_data, key, data ) :
+   def stream_write(self,meta_data, key, data,local_node = None ) :
        if self.check_forwarding(meta_data):
-          self.send_log(meta_data,data)
+          self.send_log(meta_data,data,local_node)
        
        
        

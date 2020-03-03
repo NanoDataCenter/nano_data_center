@@ -1,7 +1,7 @@
 import json
 
 
-class Construct_MQTT_Devices(object):
+class Construct_Lacima_MQTT_Devices(object):
 
    def __init__(self,bc,cd):
       self.bc = bc
