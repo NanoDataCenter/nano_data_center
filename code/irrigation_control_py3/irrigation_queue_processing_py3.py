@@ -446,7 +446,7 @@ class Process_Irrigation_Command(object):
    def accumulate_cleaning_filter(self,cf_handle, chainObj, parameters, event):
        
        cleaning_sum      = self.irrigation_hash_control.hget("CLEANING_ACCUMULATION")     
-       gpm               = self.handlers["MQTT_SENSOR_STATUS"].hget("MAIN_FLOW_METER")
+       gpm               = self.irrigation_hash_control.hget("PLC_FLOW_METER")
        #print("gpm",gpm)
        cleaning_sum += gpm
        self.irrigation_hash_control.hset("CLEANING_ACCUMULATION",cleaning_sum)

@@ -34,9 +34,9 @@ class Irrigation_Step_Monitoring(object):
                         "INPUT_PUMP_CURRENT",
                         "OUTPUT_PUMP_CURRENT"]
        self.sensor_list = ["WELL_PRESSURE",
-                           "EQUIPMENT_CURRENT",
-                           "IRRIGATION_CURRENT",
-                           "MAIN_FLOW_METER",
+                           "PLC_EQUIPMENT_CURRENT",
+                           "PLC_IRRIGATION_CURRENT",
+                           "PLC_FLOW_METER",
                            "CLEANING_FLOW_METER",
                            "INPUT_PUMP_CURRENT",
                            "OUTPUT_PUMP_CURRENT"
