@@ -10,6 +10,7 @@ class Construct_Lacima_Cloud_Service(object):
       bc.add_header_node("CLOUD_SERVICE_QUEUE")
       cd.construct_package("CLOUD_SERVICE_QUEUE_DATA")
       cd.add_job_queue("CLOUD_JOB_SERVER",2048,forward=False)
+      cd.add_hash("CLOUD_SUB_EVENTS")
       cd.close_package_contruction()
       
 
