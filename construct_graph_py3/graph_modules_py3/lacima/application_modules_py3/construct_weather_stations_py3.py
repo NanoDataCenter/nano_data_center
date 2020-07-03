@@ -23,7 +23,7 @@ class Construct_Weather_Stations(object):
       bc.end_header_node("WEATHER_STATIONS")
 
    def add_station_wunderground(self):
-       properties = {"access_key":"WUNDERGROUND","type":"WUNDERGROUND","pws":'KCAMURRI101','lat':33.2,"alt":2400, "priority":1}
+       properties = {"access_key":"WUNDERGROUND","type":"WUNDERGROUND","pws":'KCAMURRI101','lat':33.2,"alt":2400, "priority":1000}
        self.bc.add_info_node( "WS_STATION",'KCAMURRI101',properties=properties) 
        
       
