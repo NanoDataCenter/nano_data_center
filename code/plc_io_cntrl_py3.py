@@ -14,7 +14,7 @@ class PLC_IO_Control(object):
        self.hash_update = self.generate_irrigation_control(redis_site,qs)
        self.construct_plc_elements(redis_site,qs)
        self.construct_plc_flow_measurements(redis_site,qs) 
-       self.construct_plc_slave_current_measurements(redis_site,qs) 
+       self.construct_plc_subordinate_current_measurements(redis_site,qs) 
        self.construct_plc_irrigation_measurements(redis_site,qs) 
        self.generate_data_handlers(redis_site,qs)
 
@@ -27,7 +27,7 @@ class PLC_IO_Control(object):
            return_value = {}
            self.measure_flow_meters(return_value)
            self.measure_irrigation_current(return_value)
-           self.measure_slave_current(return_value)
+           self.measure_subordinate_current(return_value)
            print("return_value",return_value)
            self.ds_handlers["PLC_MEASUREMENTS_STREAM"].push(return_value)
            time.sleep(60)
@@ -45,8 +45,8 @@ class PLC_IO_Control(object):
           print("irrigation",self.make_current_measurement(i,"PLC_IRRIGATION_CURRENT"))
           return_value[i["name"]] = self.make_current_measurement(i,"PLC_IRRIGATION_CURRENT")
 
-   def measure_slave_current(self,return_value):
-       for i in self.plc_slave_current_meas:
+   def measure_subordinate_current(self,return_value):
+       for i in self.plc_subordinate_current_meas:
            print("equipment",self.make_current_measurement(i,"PLC_EQUIPMENT_CURRENT"))
            return_value[i["name"]] = self.make_current_measurement(i,"PLC_EQUIPMENT_CURRENT")
 
@@ -100,8 +100,8 @@ class PLC_IO_Control(object):
           self.plc_flow_meas.append(i)
           
        
-   def construct_plc_slave_current_measurements(self,redis_site,qs):
-       self.plc_slave_current_meas = []
+   def construct_plc_subordinate_current_measurements(self,redis_site,qs):
+       self.plc_subordinate_current_meas = []
        query_list = []   
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
        query_list = qs.add_match_relationship( query_list,relationship="PLC_MEASUREMENTS" )
@@ -112,7 +112,7 @@ class PLC_IO_Control(object):
        sensor_sets, sensor_nodes = qs.match_list(query_list)
        
        for i in sensor_nodes:
-          self.plc_slave_current_meas.append(i)
+          self.plc_subordinate_current_meas.append(i)
           
        
    def construct_plc_irrigation_measurements(self,redis_site,qs):

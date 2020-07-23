@@ -35,12 +35,12 @@ class Check_Off(object):
        cf.insert.one_step( self.io_control.disable_all_sprinklers  )
        cf.insert.log( "wait to charge well tank" )
        cf.insert.wait_event_count(  count = 30 )
-       cf.insert.one_step( self.io_control.turn_on_master_valves  )# turn turn on master valve
-       cf.insert.one_step(  self.io_control.turn_off_cleaning_valves  )# turn turn off master valve
+       cf.insert.one_step( self.io_control.turn_on_main_valves  )# turn turn on main valve
+       cf.insert.one_step(  self.io_control.turn_off_cleaning_valves  )# turn turn off main valve
        cf.insert.log( "wait 5 minutes to charge sprinkler lines" )
        cf.insert.wait_event_count( count = 300 ) 
        cf.insert.one_step(  self.check_off  )
-       cf.insert.one_step(  self.io_control.turn_off_master_valves  )# turn turn on master valve
+       cf.insert.one_step(  self.io_control.turn_off_main_valves  )# turn turn on main valve
        cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
        cf.insert.log( "check off is terminated" )
        cf.insert.send_event("IRI_MASTER_VALVE_RESUME",None)

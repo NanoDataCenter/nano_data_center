@@ -23,21 +23,21 @@ class Clean_Filter(object):
        cf.insert.send_event("IRI_MASTER_VALVE_SUSPEND",None)
        cf.insert.one_step(  self.irrigation_io.disable_all_sprinklers  )
        cf.insert.one_step(  self.irrigation_io.turn_off_cleaning_valves  )# turn off cleaning valve
-       cf.insert.one_step(  self.irrigation_io.turn_on_master_valves  )# turn turn on master valve
+       cf.insert.one_step(  self.irrigation_io.turn_on_main_valves  )# turn turn on main valve
        cf.insert.one_step(  self.load_duration_counter,3)
        cf.insert.log( "Clean Step 2")
        cf.insert.wait_event_count( count = 120 )
        cf.insert.log( "Clean Step 3" )
-       cf.insert.one_step( self.irrigation_io.turn_off_master_valves )# turn turn off master valve
+       cf.insert.one_step( self.irrigation_io.turn_off_main_valves )# turn turn off main valve
        cf.insert.one_step(  self.irrigation_io.turn_on_cleaning_valves  )# turn on cleaning valve
 
        cf.insert.wait_event_count( count = 30 ) 
        cf.insert.log( "Clean Step 4" ) 
-       cf.insert.one_step(  self.irrigation_io.turn_on_master_valves  )# turn turn on master valve
+       cf.insert.one_step(  self.irrigation_io.turn_on_main_valves  )# turn turn on main valve
        cf.insert.wait_event_count( count = 10 )
        cf.insert.log( "Clean Step 5" )
-       cf.insert.one_step(  self.irrigation_io.turn_off_cleaning_valves  )# turn turn off master valve
-       cf.insert.one_step( self.irrigation_io.turn_off_master_valves  )# turn turn off cleaning valve
+       cf.insert.one_step(  self.irrigation_io.turn_off_cleaning_valves  )# turn turn off main valve
+       cf.insert.one_step( self.irrigation_io.turn_off_main_valves  )# turn turn off cleaning valve
        cf.insert.one_step(  self.irrigation_io.disable_all_sprinklers )
        cf.insert.one_step( self.clear_cleaning_sum  )
        cf.insert.one_step( self.log_clean_filter  )

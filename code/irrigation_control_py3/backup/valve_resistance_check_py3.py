@@ -68,9 +68,9 @@ class Valve_Resistance_Check(object):
                 pin    = str(k[1][0])
                 self.update_entry( remote_dictionary, pin_dictionary, remote,pin, schedule ,  dictionary )
 
-       master_valve = self.sys_files.load_file("master_valve_setup.json")
+       main_valve = self.sys_files.load_file("main_valve_setup.json")
 
-       for j in master_valve:
+       for j in main_valve:
           remote = j[0]
           pin    = str(j[1][0])
           self.update_entry( remote_dictionary, pin_dictionary, remote,pin, schedule ,  dictionary )         

@@ -68,8 +68,8 @@ class Modbus_TCP_Control:
 
 
    def ping_device( self,address ,register ):
-       slave_id = 1
-       payload     = struct.pack("<BBBBBB",slave_id,3,(register>>8)&255,register&255,0,1)  # read register 0 1 length
+       subordinate_id = 1
+       payload     = struct.pack("<BBBBBB",subordinate_id,3,(register>>8)&255,register&255,0,1)  # read register 0 1 length
        calculatedChecksum = self._calculateCrcString(payload)
        payload = payload+calculatedChecksum
      

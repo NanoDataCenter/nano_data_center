@@ -17,7 +17,7 @@ class Check_Off(object):
    def check_off (self, cf_handle, chainObj, parameters, event ):
         if event["name"] == "INIT":
            return
-        self.io_control.turn_off_master_valves()
+        self.io_control.turn_off_main_valves()
         temp = float(self.handlers["MQTT_SENSOR_STATUS"].hget("MAIN_FLOW_METER"))
         
         if temp   > 1.:
@@ -44,13 +44,13 @@ class Check_Off(object):
        
        
        cf.insert.one_step( self.io_control.disable_all_sprinklers  )
-       cf.insert.one_step(  self.io_control.turn_off_master_valves  )# turn turn off master valve
+       cf.insert.one_step(  self.io_control.turn_off_main_valves  )# turn turn off main valve
        
        cf.insert.log( "wait to charge well tank" )
        cf.insert.wait_event_count(  count = 30 )
        
-       cf.insert.log("turn on master valve and see if any leaks")
-       cf.insert.one_step( self.io_control.turn_on_master_valves  )# turn turn on master valve
+       cf.insert.log("turn on main valve and see if any leaks")
+       cf.insert.one_step( self.io_control.turn_on_main_valves  )# turn turn on main valve
        cf.insert.one_step(  self.io_control.turn_off_cleaning_valves  )# turn turn off cleaning valve
        
        cf.insert.log( "wait 5 minutes to charge sprinkler lines" )

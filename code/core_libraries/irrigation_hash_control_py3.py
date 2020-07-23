@@ -113,7 +113,7 @@ def get_current_limits(redis_site,qs):
     limits_sets, limit_sources = qs.match_list(query_list) 
     return limit_sources[0]
 
-def get_master_valves(redis_site,qs):  
+def get_main_valves(redis_site,qs):  
  
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
