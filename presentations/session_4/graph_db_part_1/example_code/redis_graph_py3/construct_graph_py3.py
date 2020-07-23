@@ -100,7 +100,7 @@ if __name__ == "__main__" :
    properties["moisture_list_store"]         =   "MOISTURE_1_DATA_STORE"
    properties["air_temp_list_store"]         =   "MOISTURE_1_AIR_TEMP_LIST_STORE"
    properties["roll_over_list_store"]        =   "MOISTURE_1_ROLL_OVER_LIST_STORE"
-   properties["slave_controller_address"]    =    40
+   properties["subordinate_controller_address"]    =    40
    cf.add_info_node( "MOISTURE_CTR","moisture_1", properties = properties, json_flag= True )
  
    cf.end_header_node("MOISTURE_CONTROLLERS")
@@ -175,7 +175,7 @@ if __name__ == "__main__" :
 
    cf.add_header_node("MASTER_VALVES")
    cf.add_info_node("MASTER_VALVE_CONTROLLER","satellite_1",json_flag = True,
-        properties = { "remote":"satellite_1","master_valve":43, "cleaning_valve":44 })
+        properties = { "remote":"satellite_1","main_valve":43, "cleaning_valve":44 })
 
    cf.end_header_node("MASTER_VALVES")
        

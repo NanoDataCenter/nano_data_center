@@ -1,6 +1,6 @@
 
 from plc_control_py3.construct_classes_py3 import Construct_Access_Classes
-from core_libraries.irrigation_hash_control_py3 import get_master_valves
+from core_libraries.irrigation_hash_control_py3 import get_main_valves
 from core_libraries.irrigation_hash_control_py3 import get_cleaning_valves
 class IO_Control(object):
 
@@ -10,7 +10,7 @@ class IO_Control(object):
       self.generate_handlers = generate_handlers
       self.plc_classes = Construct_Access_Classes(generate_handlers)
       self.construct_plc_elements(qs,redis_site)
-      self.master_valves = get_master_valves(redis_site,qs)
+      self.main_valves = get_main_valves(redis_site,qs)
       self.cleaning_valves = get_cleaning_valves(redis_site,qs)
       self.ir_ctrl = self.find_irrigation_controllers() 
       self.find_class = self.plc_classes.find_class
@@ -21,8 +21,8 @@ class IO_Control(object):
       #
       self.disable_all_sprinklers()
       
-   def construct_plc_slave_current_measurements(self,redis_site,qs):
-       self.plc_slave_current_meas = []
+   def construct_plc_subordinate_current_measurements(self,redis_site,qs):
+       self.plc_subordinate_current_meas = []
        query_list = []   
        query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
        query_list = qs.add_match_relationship( query_list,relationship="PLC_MEASUREMENTS" )
@@ -33,7 +33,7 @@ class IO_Control(object):
        sensor_sets, sensor_nodes = qs.match_list(query_list)
        
        for i in sensor_nodes:
-          self.plc_slave_current_meas.append(i)
+          self.plc_subordinate_current_meas.append(i)
    
    def construct_plc_irrigation_measurements(self,redis_site,qs):
        self.plc_irrigation_current_meas = []
@@ -114,14 +114,14 @@ class IO_Control(object):
        return current_value
        
      
-   def get_master_valve_setup(self):
+   def get_main_valve_setup(self):
        return self.irrigation_hash_control.hget("MASTER_VALVE_SETUP")
 
    def disable_all_sprinklers( self,*arg ):
        print("disable all sprinklers")
        self.irrigation_hash_control.hset("MASTER_VALVE",False)       
        self.turn_off_cleaning_valves()
-       self.turn_off_master_valves()
+       self.turn_off_main_valves()
  
        for item in self.ir_ctrl:
            control_block = self.plc_table[item]
@@ -132,29 +132,29 @@ class IO_Control(object):
            action_class = self.find_class( type,rpc_queue)
            action_class.disable_all_sprinklers( modbus_address, [] )
        
-   def turn_on_master_valves( self,*arg ):
-       self.event_handlers.change_master_valve_on()
+   def turn_on_main_valves( self,*arg ):
+       self.event_handlers.change_main_valve_on()
        
-   def turn_off_master_valves( self,*arg ):
-       #print("turn off master valve") 
-       self.event_handlers.change_master_valve_off()
+   def turn_off_main_valves( self,*arg ):
+       #print("turn off main valve") 
+       self.event_handlers.change_main_valve_off()
 
-   def turn_on_master_valves_direct( self,*arg ):
-       print("turn on master valve direct")
+   def turn_on_main_valves_direct( self,*arg ):
+       print("turn on main valve direct")
        self.irrigation_hash_control.hset("MASTER_VALVE",True)
       
-       for io_setup in self.master_valves:
+       for io_setup in self.main_valves:
             temp = {}
             temp["remote"] = io_setup["remote"]
             temp["bits"] = io_setup["pins"]
             self.turn_on_valve( temp )
 
        
-   def turn_off_master_valves_direct( self,*arg ):
-       print("turn off master valve direct")
+   def turn_off_main_valves_direct( self,*arg ):
+       print("turn off main valve direct")
        self.irrigation_hash_control.hset("MASTER_VALVE",False)
       
-       for io_setup in self.master_valves:
+       for io_setup in self.main_valves:
             temp = {}
             temp["remote"] = io_setup["remote"]
             temp["bits"] = io_setup["pins"]

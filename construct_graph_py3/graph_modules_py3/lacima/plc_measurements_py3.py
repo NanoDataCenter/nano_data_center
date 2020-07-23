@@ -17,7 +17,7 @@ class Construct_Lacima_PLC_Measurements(object):
        
        
        bc.add_header_node("PLC_SLAVE_CURRENTS")
-       bc.add_info_node("CURRENT_DEVICE" ,"plc_slave_1",properties={ "main" : True,"remote":"satellite_1","register":"DF1", "conversion":5./100. })
+       bc.add_info_node("CURRENT_DEVICE" ,"plc_subordinate_1",properties={ "main" : True,"remote":"satellite_1","register":"DF1", "conversion":5./100. })
 
        bc.end_header_node("PLC_SLAVE_CURRENTS")
        

@@ -29,9 +29,9 @@ class Generate_Hash_Control_Handler():
        self.access_handler["ETO_MANAGEMENT"]   = self.set_eto_management_flag
        self.access_handler["FLOW_CUT_OFF"]   = self.set_flow_cutoff
        self.access_handler["CLEANING_INTERVAL"]   =   self.set_cleaning_interval
-       self.access_handler["MASTER_VALVE"]   =  self.set_master_valve
+       self.access_handler["MASTER_VALVE"]   =  self.set_main_valve
        self.access_handler["CLEANING_VALVE"]   = self.set_cleaning_valve
-       self.access_handler["MASTER_VALVE_SETUP"]   = self.set_master_valve_setup
+       self.access_handler["MASTER_VALVE_SETUP"]   = self.set_main_valve_setup
        self.access_handler["SCHEDULE_NAME"]   = self.set_schedule_name
        self.access_handler["STEP"]   =        self.set_step_number
        self.access_handler["RUN_TIME"]   =   self.set_run_time
@@ -143,14 +143,14 @@ class Generate_Hash_Control_Handler():
   
    
       
-   def get_master_valve(self):
+   def get_main_valve(self):
        temp = self.handler.hget("MASTER_VALVE")
        if (temp == 0) or (temp == 1 ):
          return temp
        self.handler.hset("MASTER_VALVE",0)
        return 0
  
-   def set_master_valve(self,data):
+   def set_main_valve(self,data):
        data = int(data)
        if (data == 0) or (data == 1 ):
              self.handler.hset("MASTER_VALVE",data)
@@ -175,14 +175,14 @@ class Generate_Hash_Control_Handler():
            self.handler.hset("CLEANING_VALVE",0)
        return 
 
-   def get_master_valve_setup(self):
+   def get_main_valve_setup(self):
        temp = self.handler.hget("MASTER_VALVE_SETUP")
        if (temp == 0) or (temp == 1 ):
          return temp
        self.handler.hset("MASTER_VALVE_SETUP",0)
        return 0
         
-   def set_master_valve_setup(self,data):
+   def set_main_valve_setup(self,data):
        data = int(data)
        if (data == 0) or (data == 1 ):
              self.handler.hset("MASTER_VALVE_SETUP",data)

@@ -23,16 +23,16 @@ class Generate_Control_Events(object):
        self.cf.send_event("IRI_CLEANING_VALVE_MONITOR_ONLINE") 
            
 
-   def change_master_valve_off(self):
+   def change_main_valve_off(self):
        self.cf.send_event("IRI_CLOSE_MASTER_VALVE") 
           
-   def change_master_valve_on(self):
+   def change_main_valve_on(self):
        self.cf.send_event("IRI_OPEN_MASTER_VALVE") 
           
-   def change_master_valve_offline(self,*args):
+   def change_main_valve_offline(self,*args):
        self.cf.send_event("IRI_MASTER_VALVE_SUSPEND") 
           
-   def change_master_valve_online(self,*args):       
+   def change_main_valve_online(self,*args):       
        self.cf.send_event("IRI_MASTER_VALVE_RESUME") 
           
    def cancel_timed_state(self):
@@ -45,7 +45,7 @@ class Generate_Control_Events(object):
 def verify_startup(io_control,current_operations,failure_report):
     # check critical systems
     # check current controller
-    #self.failure_report(self.current_operation,"MASTER_VALVE","OFF",{"flow_rate":self.master_flow}   )
+    #self.failure_report(self.current_operation,"MASTER_VALVE","OFF",{"flow_rate":self.main_flow}   )
     #self.failure_report(self.current_operation,"CLEANING_VALVE",None,{"flow_rate":self.cleaning_flow}   )
     #self.failure_report(self.current_operations,"EQUIPMENT_OVER_CURRENT",None,{"value":value,"limit":self.equipment_current_limit})
     #self.failure_report(self.current_operation,"Check_Off",None,{"flow_rate":temp} )
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     from   irrigation_control_py3.Incomming_Queue_Management_py3 import Process_External_Commands
     from   irrigation_control_py3.misc_support_py3 import IO_Control
     from   irrigation_control_py3.irrigation_queue_processing_py3 import Process_Irrigation_Command
-    from irrigation_control_py3.master_valve_control_py3 import Master_Valve
+    from irrigation_control_py3.main_valve_control_py3 import Main_Valve
     from irrigation_control_py3.cleaning_valve_control_py3 import Cleaning_Valve
     from irrigation_control_py3.eto_management_py3 import ETO_Management
     from irrigation_control_py3.Failure_Report_py3 import Failure_Report
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
     query_list = qs.add_match_terminal( query_list,relationship="MASTER_VALVES",label="MASTER_VALVES" )
     control_field, control_field_nodes = qs.match_list(query_list)
-    master_valves = control_field_nodes[0] 
+    main_valves = control_field_nodes[0] 
 
     query_list = []
     query_list = qs.add_match_relationship( query_list,relationship="SITE",label=redis_site["site"] )
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     # Three items are running at the same time
     # 1.  Monitor Commands coming from other processes job queue "IRRIGATION_JOB_SCHEDULING"
     # 2.  Dispatch Commands individual commands from Outside Processes 
-    # 3.  Control Master Valve as Master Valve can be controlled individually from schedued irrigation
+    # 3.  Control Main Valve as Main Valve can be controlled individually from schedued irrigation
     #
 
     query_list = []
@@ -210,7 +210,7 @@ if __name__ == "__main__":
                                  sys_files = sys_files,
                                  manage_eto =eto_management,
                                  irrigation_io = io_control,
-                                 master_valves = master_valves,
+                                 main_valves = main_valves,
                                  cleaning_valves = cleaning_valves,
                                  measurement_depths =measurement_depths,
                                  eto_management = eto_management,
@@ -237,7 +237,7 @@ if __name__ == "__main__":
                                     current_operations = current_operations )
     
    
-    Master_Valve("MASTER_VALVE", cf,cluster_control, io_control, ds_handlers,current_operations,failure_report,irrigation_excessive_flow_limits,irrigation_hash_control)
+    Main_Valve("MASTER_VALVE", cf,cluster_control, io_control, ds_handlers,current_operations,failure_report,irrigation_excessive_flow_limits,irrigation_hash_control)
     
     Cleaning_Valve("CLEANING_VALVES",cf,cluster_control, io_control, ds_handlers,current_operations,failure_report,irrigation_excessive_flow_limits)
                             
