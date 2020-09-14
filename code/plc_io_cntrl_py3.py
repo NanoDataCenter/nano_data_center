@@ -62,7 +62,11 @@ class PLC_IO_Control(object):
        print("register",register)
        print("conversion",conversion)
        current_value =  action_class.measure_analog(  self.plc_table[controller]["modbus_address"], [register, conversion ] )
+       if register == "DF2":
+          current_value = current_value-2.52
+          current_value = current_value/.185
        if i["main"] == True:
+           
            print("update irrigation table current",status_key,current_value)
            self.hash_update.hset(status_key,current_value) 
        return current_value

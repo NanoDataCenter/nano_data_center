@@ -110,6 +110,8 @@ class IO_Control(object):
        conversion = i["conversion"]
        register        = i["register"]
        current_value =  action_class.measure_analog(  self.plc_table[controller]["modbus_address"], [register, conversion ] )
+       current_value = current_value-2.52
+       current_value = current_value/.185
        print("current_value",current_value)
        return current_value
        
