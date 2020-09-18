@@ -54,8 +54,10 @@ class Valve_Resistance_Check(object):
        cf.insert.assert_function_terminate( "RELEASE_IRRIGATION_CONTROL" ,
                                              None, self.io_control.verify_irrigation_controllers)
        
-       cf.insert.one_step( self.assemble_relevant_valves ) #  
+       cf.insert.one_step( self.assemble_relevant_valves ) # 
+       cf.insert.one_step(self.measure_offset)       
        cf.insert.enable_chains(["test_each_valve"])
+       
        cf.insert.wait_event_count( event = "IR_V_Valve_Check_Done" )
        cf.insert.log("event IR_V_Valve_Check_Done")
        cf.insert.one_step(self.log_valve_check)
@@ -86,6 +88,11 @@ class Valve_Resistance_Check(object):
    def construct_clusters( self, cluster, cluster_id, state_id ):
        cluster.define_state( cluster_id, state_id, ["resistance_check"]  )
 
+   def measure_offset(self, *args):
+       self.io_control.turn_on_valves(  [{"remote": "satellite_1", "bits":[40]}] )
+       time.sleep(2)       
+       self.offset = self.io_control.measure_valve_current()
+       print("offset is ",self.offset)
 
    def assemble_relevant_valves(self, *args):
        self.job_dictionary = set()
@@ -163,7 +170,7 @@ class Valve_Resistance_Check(object):
        json_object = self.job_queue.pop()
        
        self.valve_object = json_object
-       #print("valve object",self.valve_object)
+       print("valve object",self.valve_object)
       
           
        self.io_control.clear_max_currents()
@@ -180,9 +187,9 @@ class Valve_Resistance_Check(object):
           return "CONTINUE"
  
        
-       coil_current = self.io_control.measure_valve_current()
+       coil_current= self.io_control.measure_valve_current()-self.offset
  
-       #print("coil_current",self.irrigation_current_limit,coil_current )
+       print("coil_current",self.irrigation_current_limit,coil_current )
        if coil_current > self.irrigation_current_limit:
           details = {}
           details["remote"] = self.valve_object[0]
