@@ -196,8 +196,8 @@ class Process_External_Commands(object):
        self.commands["QUEUE_SCHEDULE_STEP_TIME_NO_ETO"]  = self.irrigation_sched.queue_schedule_step_time_no_eto   
        self.commands["DIRECT_VALVE_CONTROL"]      = self.irrigation_sched.direct_valve_control       
        self.commands["CLEAN_FILTER"]              = self.clean_filter                
-       self.commands["OPEN_MASTER_VALVE"]         = self.open_master_valve           
-       self.commands["CLOSE_MASTER_VALVE"]        = self.close_master_valve         
+       self.commands["OPEN_MASTER_VALVE"]         = self.open_main_valve           
+       self.commands["CLOSE_MASTER_VALVE"]        = self.close_main_valve         
        self.commands["RESET_SYSTEM_QUEUE"]        = self.reset_system_queue
        self.commands["RESET_SYSTEM_NOW"]          = self.reset_system_now       
        self.commands["CHECK_OFF"]                 = self.check_off       
@@ -319,13 +319,13 @@ class Process_External_Commands(object):
       
  
 
-   def open_master_valve( self, object_data ):
+   def open_main_valve( self, object_data ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"OPEN_MASTER_VALVE","level":"YELLOW"})
        self.generate_control_events.change_to_timed_state()
 
      
   
-   def close_master_valve( self, object_data ):
+   def close_main_valve( self, object_data ):
        self.handlers["IRRIGATION_PAST_ACTIONS"].push({"action":"CLOSE_MASTER_VALVE","level":"YELLOW"})
        self.generate_control_events.cancel_timed_state()
       

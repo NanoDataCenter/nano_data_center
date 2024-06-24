@@ -30,7 +30,7 @@ class Ambient_Weather_Station( object ):
      
      
    def compute_previous_day( self):
-       master_response = []
+       main_response = []
        dt1 = datetime.datetime.now() + datetime.timedelta(days=-1)
        year = str(dt1.year).zfill(4)
        month = str(dt1.month).zfill(2)
@@ -41,7 +41,7 @@ class Ambient_Weather_Station( object ):
        url += "&endTime="+year+"-"+month +"-"+day +'%%20'+"23:59:59&limit=1000"
        response = self.__load_web_page__(url)
        
-       master_response = response
+       main_response = response
        dt2 = datetime.datetime.now() + datetime.timedelta(days=0)
        year = str(dt2.year).zfill(4)
        month = str(dt2.month).zfill(2)
@@ -51,8 +51,8 @@ class Ambient_Weather_Station( object ):
        url += "?applicationKey="+self.application_key+"&apiKey="+self.api_key
        url += "&endTime="+year+"-"+month +"-"+day +'%%20'+"23:59:59&limit=1000"
        response = self.__load_web_page__(url)
-       master_response.extend(response)
-       self.__parse_data__(master_response,dt1,dt2)
+       main_response.extend(response)
+       self.__parse_data__(main_response,dt1,dt2)
 
    def __load_web_page__( self, url ):
        print("url",url)

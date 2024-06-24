@@ -1,6 +1,6 @@
 import time   
 import json
-from  .master_valve_control_py3 import Master_Valve
+from  .main_valve_control_py3 import Main_Valve
 
 
 from .valve_resistance_check_py3  import   Valve_Resistance_Check

@@ -139,7 +139,7 @@ class Irrigation_Control_Basic(object):
            self.ref_current = self.current
        else:
            self.json_object["io_restarts"] +=1
-           self.io_control.turn_on_master_valves()
+           self.io_control.turn_on_main_valves()
            self.io_control.turn_on_valve(self.json_object["io_setup"])
 
   
@@ -275,7 +275,7 @@ class Irrigation_Control_Basic(object):
        
              
        self.io_control.load_duration_counters( self.json_object["run_time"]  )
-       self.io_control.turn_on_master_valves()
+       self.io_control.turn_on_main_valves()
        self.io_control.turn_on_valve(self.json_object["io_setup"])
        self.elasped_time = 0
        self.update_control_variables()       
@@ -346,7 +346,7 @@ class Irrigation_Control_Basic(object):
  
        self.io_control.disable_all_sprinklers()
        self.io_control.clear_duration_counters()
-       self.io_control.turn_off_master_valves()
+       self.io_control.turn_off_main_valves()
 
  
    def convert_to_integers( self, dictionary, list_elements):

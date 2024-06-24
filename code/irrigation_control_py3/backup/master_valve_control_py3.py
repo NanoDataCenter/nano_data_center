@@ -1,5 +1,5 @@
 
-class Master_Valve(object):
+class Main_Valve(object):
 
    def __init__( self, cluster_id, cf,cluster_control, irrigation_io, redis_handle ):
        self.cf = cf
@@ -14,7 +14,7 @@ class Master_Valve(object):
        cluster_control.define_cluster( cluster_id, self.state_list , "MV_monitor_chain" )
        cluster_control.define_state( cluster_id, "ON", ["MV_time_cycle","MV_monitor_valve"])
        cluster_control.define_state( cluster_id, "OFF", ["MV_OFF"])
-       self.irrigation_io.turn_off_master_valves() 
+       self.irrigation_io.turn_off_main_valves() 
        self.cluster_ctrl.enable_cluster_reset_rt(  self.cf,self.cluster_id, "OFF" )
     
 
@@ -41,13 +41,13 @@ class Master_Valve(object):
        cf.insert.one_step(self.cluster_ctrl.disable_cluster, self.cluster_id )
        cf.insert.terminate()
 
-       # purpose is to turn on the master valve if some thing turned it off
+       # purpose is to turn on the main valve if some thing turned it off
        cf.define_chain("MV_monitor_valve",False) 
        #cf.insert.log("chain MV_monitor_valve is on")
        cf.insert.wait_event_count( count = 5 ) # 5 seconds
        cf.insert.verify_function_reset( reset_event=None,reset_event_data=None, 
-                                        function = self.master_valve_off )
-       cf.insert.one_step( self.irrigation_io.turn_on_master_valves )
+                                        function = self.main_valve_off )
+       cf.insert.one_step( self.irrigation_io.turn_on_main_valves )
        cf.insert.reset()
 
        self.suspend_chain = False
@@ -69,7 +69,7 @@ class Master_Valve(object):
            return
        
        if self.suspend_chain == False:
-           self.irrigation_io.turn_off_master_valves() 
+           self.irrigation_io.turn_off_main_valves() 
 
        
        self.cluster_ctrl.enable_cluster_reset_rt(cf_handle, self.cluster_id,"OFF" )
@@ -103,8 +103,8 @@ class Master_Valve(object):
 
            self.deferred_enable = False
 
-   def master_valve_off(self, cf_handle, chainObj, parameters, event):
-       print("checking master valve")
+   def main_valve_off(self, cf_handle, chainObj, parameters, event):
+       print("checking main valve")
        if self.redis_handle.hget("CONTROL_VARIABLES","MASTER_VALVE_SETUP") == "ON":
           return_value = False
        else:

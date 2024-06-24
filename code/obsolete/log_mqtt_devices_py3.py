@@ -105,13 +105,13 @@ class Current_Monitor(Base_Monitor):
    def __init__(self,device_id,irrigation_control):
        self.irrigation_control = irrigation_control
        Base_Monitor.__init__(self,device_id)
-       self.add_handler("SLAVE_CURRENTS",self.slave_currents)
-       self.add_handler("SLAVE_EQUIPMENT_RELAY_TRIP",self.slave_irrigation_relay_trip)
-       self.add_handler("SLAVE_IRRIGATION_RELAY_TRIP",self.slave_equipment_relay_trip)
-       self.add_handler("SLAVE_MAX_CURRENT",self.slave_max_current)
-       self.add_handler("SLAVE_RELAY_STATE",self.slave_relay_state)
+       self.add_handler("SLAVE_CURRENTS",self.subordinate_currents)
+       self.add_handler("SLAVE_EQUIPMENT_RELAY_TRIP",self.subordinate_irrigation_relay_trip)
+       self.add_handler("SLAVE_IRRIGATION_RELAY_TRIP",self.subordinate_equipment_relay_trip)
+       self.add_handler("SLAVE_MAX_CURRENT",self.subordinate_max_current)
+       self.add_handler("SLAVE_RELAY_STATE",self.subordinate_relay_state)
        
-   def slave_currents(self,composite_record,data):
+   def subordinate_currents(self,composite_record,data):
        
        key = self.device_id+"/"+data["topic"]
        key_1 = key+":IRRIGATION_VALVES"
@@ -126,7 +126,7 @@ class Current_Monitor(Base_Monitor):
        composite_record[key_1].append(data["EQUIPMENT"]["DC"])
        self.irrigation_control.hset("EQUIPMENT_CURRENT",data["EQUIPMENT"]["DC"])
  
-   def slave_irrigation_relay_trip(self,composite_record,data):
+   def subordinate_irrigation_relay_trip(self,composite_record,data):
        results = {}
        results["timestamp"] = time.time()
        
@@ -138,7 +138,7 @@ class Current_Monitor(Base_Monitor):
        self.irrigation_control.hset("SLAVE_IRRIGATION_RELAY_TRIP",results)   
 
        
-   def slave_equipment_relay_trip(self,composite_record,data):
+   def subordinate_equipment_relay_trip(self,composite_record,data):
        results = {}
        results["timestamp"] = time.time()
        
@@ -149,7 +149,7 @@ class Current_Monitor(Base_Monitor):
        self.irrigation_control.hset("SLAVE_EQUIPMENT_RELAY_TRIP",results)  
 
        
-   def slave_max_current(self,composite_record,data):
+   def subordinate_max_current(self,composite_record,data):
         results = {}
         #print(data)
         results["timestamp"] = time.time()
@@ -160,7 +160,7 @@ class Current_Monitor(Base_Monitor):
         #print("results",results)
         self.irrigation_control.hset("SLAVE_MAX_CURRENT",results)     
       
-   def slave_relay_state(self,composite_record,data):
+   def subordinate_relay_state(self,composite_record,data):
           results = {}
           #print(data)
           results["timestamp"] = time.time()
@@ -205,7 +205,7 @@ class MQTT_Log(object):
        data["status"]  = True
        data[b"CURRENT_VALUE"] = 0
        data[b"LIMIT_VALUE"] = 0
-       self.mqtt_handlers['CURRENT_MONITOR_1'].slave_irrigation_relay_trip([],data)
+       self.mqtt_handlers['CURRENT_MONITOR_1'].subordinate_irrigation_relay_trip([],data)
        print(self.irrigation_control.hget("SLAVE_IRRIGATION_RELAY_TRIP"))   
        
        data = {}
@@ -213,7 +213,7 @@ class MQTT_Log(object):
        data["status"]  = True
        data[b"CURRENT_VALUE"] = 0
        data[b"LIMIT_VALUE"] = 0
-       self.mqtt_handlers['CURRENT_MONITOR_1'].slave_equipment_relay_trip([],data)
+       self.mqtt_handlers['CURRENT_MONITOR_1'].subordinate_equipment_relay_trip([],data)
        print(self.irrigation_control.hget("SLAVE_EQUIPMENT_RELAY_TRIP"))   
 
        results = {}
@@ -222,7 +222,7 @@ class MQTT_Log(object):
        results["device_id"] = ""       
        results[b'MAX_EQUIPMENT_CURRENT'] = 0
        results[b'MAX_IRRIGATION_CURRENT'] = 0 
-       self.mqtt_handlers['CURRENT_MONITOR_1'].slave_max_current([],results)
+       self.mqtt_handlers['CURRENT_MONITOR_1'].subordinate_max_current([],results)
        print(self.irrigation_control.hget("SLAVE_MAX_CURRENT"))     
 
        results = {}
@@ -231,7 +231,7 @@ class MQTT_Log(object):
        results["device_id"] = ""        
        results[b'EQUIPMENT_STATE'] = 1
        results[b'IRRIGATION_STATE'] = True
-       self.mqtt_handlers['CURRENT_MONITOR_1'].slave_relay_state([],results)
+       self.mqtt_handlers['CURRENT_MONITOR_1'].subordinate_relay_state([],results)
        print(self.irrigation_control.hget("SLAVE_RELAY_STATE")) 
 
    
@@ -276,10 +276,10 @@ class MQTT_Log(object):
            self.ds_handlers["MQTT_SENSOR_QUEUE"].push({"timestamp":time.time(),"data":summarized_data })
            for key,data in summarized_data.items():
               self.ds_handlers["MQTT_SENSOR_STATUS"].hset(key,data)
-           self.check_slave_devices()  
+           self.check_subordinate_devices()  
              
              
-   def check_slave_devices(self):
+   def check_subordinate_devices(self):
         keys = self.ds_handlers["MQTT_CONTACT_LOG"].hkeys()
         reference_time = time.time()
         for i in keys:

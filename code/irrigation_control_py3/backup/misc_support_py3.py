@@ -20,7 +20,7 @@ class IO_Control(object):
            if "irrigation" in element["function"]:
               self.ir_ctrl.append(element)  # finding irrigation controllers.
 
-       self.mv_list = self.gm.match_terminal_relationship(  "MASTER_VALVE_CONTROLLER")  #finding all master valves
+       self.mv_list = self.gm.match_terminal_relationship(  "MASTER_VALVE_CONTROLLER")  #finding all main valves
        for i in self.mv_list:
            remote = i["remote"]
            if remote in self.irrigation_controllers:
@@ -28,7 +28,7 @@ class IO_Control(object):
            else:   
                raise ValueError("Remote does not support MASTER VALVE ")
 
-       self.fc_list = self.gm.match_terminal_relationship(  "FLOW_METER_CONTROL" )  #finding all master valves
+       self.fc_list = self.gm.match_terminal_relationship(  "FLOW_METER_CONTROL" )  #finding all main valves
        for i in self.fc_list:
            remote = i["remote"]
            if remote in self.irrigation_controllers:
@@ -100,8 +100,8 @@ class IO_Control(object):
 
               
  
-   def turn_on_master_valves( self,*arg ):
-       print("turn on master valve")
+   def turn_on_main_valves( self,*arg ):
+       print("turn on main valve")
        self.redis_old_handle.hset("CONTROL_VARIABLES","MASTER_VALVE_SETUP","ON")
 
        redis_dict = self.ir_data["MASTER_VALVE"]["dict"]
@@ -110,10 +110,10 @@ class IO_Control(object):
        for item in self.mv_list:
            controller = self.irrigation_controllers[item["remote"]]
            action_class = self.find_class(controller["type"])
-           action_class.turn_on_valves( controller["modbus_address"], [item["master_valve"]] )
+           action_class.turn_on_valves( controller["modbus_address"], [item["main_valve"]] )
             
-   def turn_off_master_valves( self,*arg ):
-       print("turn off master valve")
+   def turn_off_main_valves( self,*arg ):
+       print("turn off main valve")
        self.redis_old_handle.hset("CONTROL_VARIABLES", "MASTER_VALVE_SETUP","OFF")
        redis_dict = self.ir_data["MASTER_VALVE"]["dict"]
        redis_key = self.ir_data["MASTER_VALVE"]["key"]
@@ -123,7 +123,7 @@ class IO_Control(object):
             controller = self.irrigation_controllers[item["remote"]]
             action_class = self.find_class( controller["type"] )
             action_class.disable_all_sprinklers( controller["modbus_address"], [] )
-            action_class.turn_off_valves(  controller["modbus_address"], [item["master_valve"]] )
+            action_class.turn_off_valves(  controller["modbus_address"], [item["main_valve"]] )
 
 
    def turn_on_cleaning_valves( self,*arg ):

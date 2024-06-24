@@ -160,9 +160,9 @@ class Irrigation_Control_Basic(object):
    def start(self,*args):
      
    
-      # turn on master valve
+      # turn on main valve
       self.io_control.load_duration_counters(self.json_object)
-      self.io_control.turn_on_master_valves()
+      self.io_control.turn_on_main_valves()
       self.io_control.turn_on_valves(self.json_object['io_setup'])
       self.update_json_object(self.json_object)
       time.sleep(5)
@@ -195,7 +195,7 @@ class Irrigation_Control_Basic(object):
            return True
       #print("json_object",self.json_object)
       self.json_object["elasped_time"]  =      self.json_object["elasped_time"] +1
-      self.io_control.turn_on_master_valves()
+      self.io_control.turn_on_main_valves()
       self.io_control.turn_on_valves(self.json_object['io_setup'])
       # update duration counter  -- so we can have large runtimes
       # update selective plc watchdogs

@@ -26,13 +26,13 @@ class Clean_Filter(object):
        cf.define_chain("clean_filter_action_chain", False)  #tested
        cf.insert.disable_chains(["cleaning_flow_accumulated"])
        cf.insert.log( "Clean Step 1" )
-       cf.insert.one_step(self.generate_control_events.change_master_valve_offline)
+       cf.insert.one_step(self.generate_control_events.change_main_valve_offline)
        cf.insert.one_step(self.generate_control_events.change_cleaning_valve_offline)
        cf.insert.wait_event_count(count = 2)
        cf.insert.one_step(  self.irrigation_io.disable_all_sprinklers  )
        cf.insert.one_step(  self.irrigation_io.turn_off_cleaning_valves  )# turn off cleaning valve
        cf.insert.wait_event_count(count = 2)
-       cf.insert.one_step(  self.irrigation_io.turn_on_master_valves  )# turn turn on master valve
+       cf.insert.one_step(  self.irrigation_io.turn_on_main_valves  )# turn turn on main valve
      
        cf.insert.log( "Clean Step 2")
        cf.insert.wait_event_count(event = "MINUTE_TICK",count = 2)
@@ -40,25 +40,25 @@ class Clean_Filter(object):
        cf.insert.one_step(self.clear_cleaning_sum)
        cf.insert.enable_chains(["cleaning_flow_accumulated"])
        cf.insert.log( "Clean Step 3" )
-       cf.insert.one_step( self.irrigation_io.turn_off_master_valves )# turn turn off master valve
+       cf.insert.one_step( self.irrigation_io.turn_off_main_valves )# turn turn off main valve
        cf.insert.one_step(  self.irrigation_io.turn_on_cleaning_valves  )# turn on cleaning valve
 
        cf.insert.wait_event_count( count = 30 ) 
        ######
        
        cf.insert.log( "Clean Step 4" ) 
-       cf.insert.one_step(  self.irrigation_io.turn_on_master_valves  )# turn turn on master valve
+       cf.insert.one_step(  self.irrigation_io.turn_on_main_valves  )# turn turn on main valve
        cf.insert.wait_event_count( count = 10 )
        cf.insert.log( "Clean Step 5" )
-       cf.insert.one_step(  self.irrigation_io.turn_off_cleaning_valves  )# turn turn off master valve
-       cf.insert.one_step( self.irrigation_io.turn_off_master_valves  )# turn turn off cleaning valve
+       cf.insert.one_step(  self.irrigation_io.turn_off_cleaning_valves  )# turn turn off main valve
+       cf.insert.one_step( self.irrigation_io.turn_off_main_valves  )# turn turn off cleaning valve
        cf.insert.one_step(  self.irrigation_io.disable_all_sprinklers )
        cf.insert.wait_event_count(event = "MINUTE_TICK",count = 1)
        cf.insert.wait_event_count(count = 15)
        cf.insert.disable_chains(["cleaning_flow_accumulated"])
        cf.insert.one_step( self.check_cleaning_sum  )
        
-       cf.insert.one_step(self.generate_control_events.change_master_valve_online)
+       cf.insert.one_step(self.generate_control_events.change_main_valve_online)
        cf.insert.one_step(self.generate_control_events.change_cleaning_valve_online)
        cf.insert.wait_event_count(count = 2)
        cf.insert.send_event( "RELEASE_IRRIGATION_CONTROL")
